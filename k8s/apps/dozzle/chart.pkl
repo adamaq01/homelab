@@ -1,0 +1,171 @@
+/// Dozzle (https://dozzle.dev), a web UI for viewing container logs, run in its
+/// Kubernetes mode (`DOZZLE_MODE=k8s`). Hand-written from the manifest in
+/// https://dozzle.dev/guide/k8s, since Dozzle doesn't publish one as a fetchable file.
+///
+/// Requires the Kubernetes Metrics Server to show resource usage.
+module chart
+
+import "@k8s/api/core/v1/ServiceAccount.pkl"
+import "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
+import "@k8s/api/core/v1/Service.pkl"
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "@k8s/api/rbac/v1/ClusterRole.pkl"
+import "@k8s/api/rbac/v1/ClusterRoleBinding.pkl"
+import "app.pkl" as App
+
+local saName = "pod-viewer"
+local roleName = "pod-viewer-role"
+local pvcName = "dozzle-data"
+local appLabel = "dozzle"
+
+serviceAccount: ServiceAccount = new {
+  metadata {
+    name = saName
+  }
+}
+
+clusterRole: ClusterRole = new {
+  metadata {
+    name = roleName
+  }
+  rules {
+    new {
+      apiGroups { "" }
+      resources { "pods"; "pods/log"; "nodes" }
+      verbs { "get"; "list"; "watch" }
+    }
+    new {
+      apiGroups { "apps" }
+      resources { "deployments"; "replicasets"; "daemonsets"; "statefulsets" }
+      verbs { "get" }
+    }
+    new {
+      apiGroups { "batch" }
+      resources { "jobs"; "cronjobs" }
+      verbs { "get" }
+    }
+    new {
+      apiGroups { "metrics.k8s.io" }
+      resources { "pods" }
+      verbs { "get"; "list" }
+    }
+  }
+}
+
+/// The upstream guide's ClusterRoleBinding subject namespace defaults to `default`; it must
+/// instead match [App.namespace] (the namespace this Application actually deploys into) or the
+/// binding silently grants nothing.
+clusterRoleBinding: ClusterRoleBinding = new {
+  metadata {
+    name = "pod-viewer-binding"
+  }
+  subjects {
+    new {
+      kind = "ServiceAccount"
+      name = saName
+      namespace = App.namespace
+    }
+  }
+  roleRef {
+    kind = "ClusterRole"
+    name = roleName
+    apiGroup = "rbac.authorization.k8s.io"
+  }
+}
+
+/// ReadWriteOnce + `Recreate` (below) means config/notification rules briefly become
+/// unavailable during pod rollouts. For zero-downtime, switch to a ReadWriteMany storage class
+/// and `RollingUpdate`.
+pvc: PersistentVolumeClaim = new {
+  metadata {
+    name = pvcName
+  }
+  spec {
+    accessModes { "ReadWriteOnce" }
+    resources {
+      requests {
+        ["storage"] = "1Gi"
+      }
+    }
+  }
+}
+
+deployment: Deployment = new {
+  metadata {
+    name = "dozzle"
+  }
+  spec {
+    selector {
+      matchLabels {
+        ["app"] = appLabel
+      }
+    }
+    strategy {
+      type = "Recreate"
+    }
+    template {
+      metadata {
+        labels {
+          ["app"] = appLabel
+        }
+      }
+      spec {
+        serviceAccountName = saName
+        containers {
+          new {
+            name = "dozzle"
+            image = "amir20/dozzle:latest"
+            ports {
+              new { containerPort = 8080 }
+            }
+            env {
+              new { name = "DOZZLE_MODE"; value = "k8s" }
+            }
+            volumeMounts {
+              new { name = "data"; mountPath = "/data" }
+            }
+          }
+        }
+        volumes {
+          new {
+            name = "data"
+            persistentVolumeClaim {
+              claimName = pvcName
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+service: Service = new {
+  metadata {
+    name = "dozzle-service"
+  }
+  spec {
+    type = "ClusterIP"
+    selector {
+      ["app"] = appLabel
+    }
+    ports {
+      new {
+        port = 8080
+        targetPort = 8080
+        protocol = "TCP"
+      }
+    }
+  }
+}
+
+output {
+  value = new Listing {
+    serviceAccount
+    clusterRole
+    clusterRoleBinding
+    pvc
+    deployment
+    service
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
