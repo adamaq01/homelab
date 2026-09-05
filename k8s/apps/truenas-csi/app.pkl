@@ -26,8 +26,11 @@ source {
           volumeBindingMode = "Immediate"
           parameters {
             protocol = "nvmeof"
+            datasetPath = "k8s/nvmeof"
             compression = "LZ4"
             volblocksize = "64K"
+            sync = "DISABLED"
+            sparse = true
           }
         }
       }
