@@ -1,0 +1,36 @@
+amends ".../app.pkl"
+
+// renovate: datasource=github-releases packageName=truenas/truenas-csi
+local version = "1.3.0"
+
+source {
+  repoURL = "https://raw.githubusercontent.com/truenas/truenas-csi/master/charts"
+  chart = "truenas-csi"
+  targetRevision = version
+  path = null
+  helm {
+    valuesObject = new {
+      truenas {
+        url = "wss://nas.home.adamaq01.fr/api/current"
+        defaultPool = "k8s"
+        insecureSkipTLS = true
+        // Manually created for now
+        existingSecret = "truenas-csi-credentials"
+      }
+      storageClasses {
+        new {
+          name = "truenas-nvmeof"
+          isDefault = true
+          reclaimPolicy = "Delete"
+          allowVolumeExpansion = true
+          volumeBindingMode = "Immediate"
+          parameters {
+            protocol = "nvmeof"
+            compression = "LZ4"
+            volblocksize = "64K"
+          }
+        }
+      }
+    }
+  }
+}
