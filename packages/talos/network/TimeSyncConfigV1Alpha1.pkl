@@ -1,0 +1,36 @@
+/// TimeSyncConfig is a config document to configure time synchronization (NTP).
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.TimeSyncConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "NTPConfig.pkl"
+import "PTPConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "TimeSyncConfig"
+
+/// enabled
+///
+/// Indicates if the time synchronization is enabled for the machine. Defaults to true.
+enabled: Boolean?
+
+/// bootTimeout
+///
+/// Specifies the timeout when the node time is considered to be in sync unlocking the boot sequence. NTP
+/// sync will be still running in the background. Defaults to “infinity” (waiting forever for time sync)
+bootTimeout: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?
+
+/// ntp
+///
+/// Specifies NTP configuration to sync the time over network. Mutually exclusive with PTP configuration.
+ntp: NTPConfig?
+
+/// ptp
+///
+/// Specific PTP (Precision Time Protocol) configuration to sync the time over PTP devices. Mutually
+/// exclusive with NTP configuration.
+ptp: PTPConfig?

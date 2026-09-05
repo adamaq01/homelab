@@ -1,0 +1,46 @@
+/// RegistryTLSConfig configures TLS for a registry endpoint.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.RegistryTLSConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "RegistryTLSConfig"
+
+/// name
+///
+/// Registry endpoint to apply the TLS configuration to.
+///
+/// Registry endpoint is the hostname part of the endpoint URL, e.g. ‘my-mirror.local:5000’ for
+/// ‘https://my-mirror.local:5000/v2/’.
+///
+/// The TLS configuration makes sense only for HTTPS endpoints. The TLS configuration will apply to all
+/// image pulls for this registry endpoint, by Talos or any Kubernetes workloads.
+name: String
+
+/// clientIdentity
+///
+/// Enable mutual TLS authentication with the registry. Client certificate and key should be PEM-encoded.
+clientIdentity: ClientIdentity?
+
+/// ca
+///
+/// CA registry certificate to add the list of trusted certificates. Certificate should be PEM-encoded.
+ca: String?
+
+/// insecureSkipVerify
+///
+/// Skip TLS server certificate verification (not recommended).
+insecureSkipVerify: Boolean?
+
+/// clientIdentity
+///
+/// Enable mutual TLS authentication with the registry. Client certificate and key should be PEM-encoded.
+class ClientIdentity {
+  cert: String?
+
+  key: String?
+}

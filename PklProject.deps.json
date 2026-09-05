@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "resolvedDependencies": {
+    "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.deepToTyped@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.deepToTyped@1.2.1",
+      "checksums": {
+        "sha256": "6e752d1e84aff24c3a1801658f27f12af70840c39b3fe7bac509c8178d566d25"
+      }
+    },
+    "package://pkg.pkl-lang.org/pkl-k8s/k8s@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-k8s/k8s@1.4.1",
+      "checksums": {
+        "sha256": "0520f82219c074d2f4b69ab9c57a4a1c1d0b3c4acc1e5d12749e72e0d567d9bf"
+      }
+    },
+    "package://local/homelab/packages/talos@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/talos@0.1.0",
+      "path": "packages/talos"
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.syntax@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.syntax@1.2.1",
+      "checksums": {
+        "sha256": "cf1b59a7abeece233736845643297aaea09da7bfb85e21d9377e62301050e178"
+      }
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.uri@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.uri@1.0.4",
+      "checksums": {
+        "sha256": "5fe81aa62c57285a570262a31c07e3525fe234f3f2c3db7caf1de8bd15e2f24f"
+      }
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema.contrib@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/org.json_schema.contrib@1.2.4",
+      "checksums": {
+        "sha256": "5b111c56a2d1a33844ece6e96f9277af3f8c7dab2c1aca38fbddf7cb5724eea8"
+      }
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/inflect@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/inflect@1.0.1",
+      "checksums": {
+        "sha256": "4ba370be1d8b424dff1b5a0597a2892af8c07a0c54f91373cd6cacb174494445"
+      }
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/org.json_schema@1.1.1",
+      "checksums": {
+        "sha256": "b2d4ca9f04918a47a5d53f5a744dbe8e8cd782e0a3726fbd26f85ccc6dbd1379"
+      }
+    },
+    "package://local/homelab/packages/manifest@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/manifest@0.1.0",
+      "path": "packages/manifest"
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib@2": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/k8s.contrib@2.0.0",
+      "checksums": {
+        "sha256": "69c34b9c34ee3d41d23f2888849e6a367634e889250fc78f9c17d686077dbf82"
+      }
+    },
+    "package://local/homelab/packages/argocd@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/argocd@0.1.0",
+      "path": "packages/argocd"
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6",
+      "checksums": {
+        "sha256": "eac7bd1d523c46335ab241d746c0c0a878f4d46d226815cb66d21dd83e480795"
+      }
+    }
+  }
+}

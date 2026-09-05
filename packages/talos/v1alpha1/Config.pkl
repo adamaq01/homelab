@@ -1,0 +1,33 @@
+/// Config defines the v1alpha1.Config Talos machine configuration document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.Config
+
+extends ".../TalosObject.pkl"
+
+import "MachineConfig.pkl"
+import "ClusterConfig.pkl"
+
+/// version
+///
+/// Indicates the schema used to decode the contents.
+version: "v1alpha1"?
+
+/// debug
+///
+/// Enable verbose logging to the console. All system containers logs will flow into serial console.
+///
+/// Note: To avoid breaking Talos bootstrap flow enable this option only if serial console can handle
+/// high message throughput.
+debug: Boolean?
+
+/// machine
+///
+/// Provides machine specific configuration options.
+machine: MachineConfig?
+
+/// cluster
+///
+/// Provides cluster specific configuration options.
+cluster: ClusterConfig?

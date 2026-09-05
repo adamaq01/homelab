@@ -1,0 +1,49 @@
+/// KubeSpanConfig is a config document to configure KubeSpan.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.KubeSpanConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "KubeSpanFiltersConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeSpanConfig"
+
+/// enabled
+///
+/// Enable the KubeSpan feature. Requires cluster discovery to be enabled through a
+/// DiscoveryServiceConfig document.
+enabled: Boolean?
+
+/// advertiseKubernetesNetworks
+///
+/// Control whether Kubernetes pod CIDRs are announced over KubeSpan from the node. If disabled, CNI
+/// handles pod-to-pod traffic encapsulation. If enabled, KubeSpan takes over pod-to-pod traffic
+/// directly.
+advertiseKubernetesNetworks: Boolean?
+
+/// allowDownPeerBypass
+///
+/// Skip sending traffic via KubeSpan if the peer connection state is not up. This provides configurable
+/// choice between connectivity and security.
+allowDownPeerBypass: Boolean?
+
+/// harvestExtraEndpoints
+///
+/// KubeSpan can collect and publish extra endpoints for each member of the cluster based on Wireguard
+/// endpoint information for each peer. Disabled by default. Do not enable with high peer counts
+/// (&gt;50).
+harvestExtraEndpoints: Boolean?
+
+/// mtu
+///
+/// KubeSpan link MTU size. Default value is 1420.
+mtu: Int?
+
+/// filters
+///
+/// KubeSpan advanced filtering of network addresses. Settings are optional and apply only to this node.
+filters: KubeSpanFiltersConfig?

@@ -1,0 +1,32 @@
+/// HCloudVIPConfig is a config document to configure virtual IP using Hetzner Cloud APIs for
+/// announcement.\nVirtual IP configuration should be used only on controlplane nodes to provide virtual
+/// IP for Kubernetes API server.\nAny other use cases are not supported and may lead to unexpected
+/// behavior.\nVirtual IP will be announced from only one node at a time using Hetzner Cloud APIs.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.HCloudVIPConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "HCloudVIPConfig"
+
+/// name
+///
+/// IP address to be advertised as a Layer 2 VIP.
+name: String
+
+/// link
+///
+/// Name of the link to assign the VIP to.
+///
+/// Selector must match exactly one link, otherwise an error is returned. If multiple selectors match the
+/// same link, the first one is used.
+link: String?
+
+/// apiToken
+///
+/// Specifies the Hetzner Cloud API Token.
+apiToken: String?

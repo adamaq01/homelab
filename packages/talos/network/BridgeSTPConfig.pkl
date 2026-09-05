@@ -1,0 +1,12 @@
+/// BridgeSTPConfig is a bridge STP (Spanning Tree Protocol) configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.BridgeSTPConfig
+
+extends ".../TalosObject.pkl"
+
+/// enabled
+///
+/// Enable or disable STP on the bridge.
+enabled: Boolean?

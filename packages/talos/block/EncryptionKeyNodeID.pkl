@@ -1,0 +1,7 @@
+/// EncryptionKeyNodeID represents deterministically generated key from the node UUID and PartitionLabel.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.EncryptionKeyNodeID
+
+extends ".../TalosObject.pkl"

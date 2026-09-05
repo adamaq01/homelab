@@ -1,0 +1,59 @@
+/// EtcdConfig represents the etcd configuration options.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.EtcdConfig
+
+extends ".../TalosObject.pkl"
+
+/// image
+///
+/// The container image used to create the etcd service.
+image: String?
+
+/// ca
+///
+/// The ca is the root certificate authority of the PKI. It is composed of a base64 encoded crt and key.
+ca: Ca?
+
+/// extraArgs
+///
+/// Extra arguments to supply to etcd. Note that the following args are not allowed:
+///
+/// name data-dir initial-cluster-state listen-peer-urls listen-client-urls cert-file key-file
+/// trusted-ca-file peer-client-cert-auth peer-cert-file peer-trusted-ca-file peer-key-file
+extraArgs: Mapping<String, String|Listing<String>>?
+
+/// advertisedSubnets
+///
+/// The advertisedSubnets field configures the networks to pick etcd advertised IP from.
+///
+/// IPs can be excluded from the list by using negative match with !, e.g !10.0.0.0/8. Negative subnet
+/// matches should be specified last to filter out IPs picked by positive matches. If not specified,
+/// advertised IP is selected as the first routable address of the node.
+advertisedSubnets: Listing<String>?
+
+/// listenSubnets
+///
+/// The listenSubnets field configures the networks for the etcd to listen for peer and client
+/// connections.
+///
+/// If listenSubnets is not set, but advertisedSubnets is set, listenSubnets defaults to
+/// advertisedSubnets.
+///
+/// If neither advertisedSubnets nor listenSubnets is set, listenSubnets defaults to listen on all
+/// addresses.
+///
+/// IPs can be excluded from the list by using negative match with !, e.g !10.0.0.0/8. Negative subnet
+/// matches should be specified last to filter out IPs picked by positive matches. If not specified,
+/// advertised IP is selected as the first routable address of the node.
+listenSubnets: Listing<String>?
+
+/// ca
+///
+/// The ca is the root certificate authority of the PKI. It is composed of a base64 encoded crt and key.
+class Ca {
+  crt: String?
+
+  key: String?
+}

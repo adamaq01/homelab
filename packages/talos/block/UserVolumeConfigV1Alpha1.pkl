@@ -1,0 +1,63 @@
+/// UserVolumeConfig is a user volume configuration document.\nUser volume is automatically allocated as
+/// a partition on the specified disk\nand mounted under `/var/mnt/<name>`.\nThe partition label is
+/// automatically generated as `u-<name>`.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.UserVolumeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ProvisioningSpec.pkl"
+import "FilesystemSpec.pkl"
+import "EncryptionSpec.pkl"
+import "UserMountSpec.pkl"
+import "TrimConfig.pkl"
+import "ScrubConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "UserVolumeConfig"
+
+/// name
+///
+/// Name of the volume.
+///
+/// Name might be between 1 and 34 characters long and can only contain: lowercase and uppercase ASCII
+/// letters, digits, and hyphens.
+name: String?
+
+/// volumeType
+///
+/// Volume type.
+volumeType: ("directory"|"disk"|"partition")?
+
+/// provisioning
+///
+/// The provisioning describes how the volume is provisioned.
+provisioning: ProvisioningSpec?
+
+/// filesystem
+///
+/// The filesystem describes how the volume is formatted.
+filesystem: FilesystemSpec?
+
+/// encryption
+///
+/// The encryption describes how the volume is encrypted.
+encryption: EncryptionSpec?
+
+/// mount
+///
+/// The mount describes additional mount options.
+mount: UserMountSpec?
+
+/// trim
+///
+/// The trim describes the per-volume filesystem trim (fstrim) configuration.
+trim: TrimConfig?
+
+/// scrub
+///
+/// The scrub describes the per-volume filesystem scrub configuration.
+scrub: ScrubConfig?

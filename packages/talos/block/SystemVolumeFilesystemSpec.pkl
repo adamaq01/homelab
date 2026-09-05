@@ -1,0 +1,16 @@
+/// SystemVolumeFilesystemSpec describes how the system volume is formatted.\n\nThe filesystem type is
+/// fixed for system volumes, and project quota support is configured via\nmachine features, so only the
+/// filesystem-specific tunables are exposed here.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.SystemVolumeFilesystemSpec
+
+extends ".../TalosObject.pkl"
+
+import "XFSSpec.pkl"
+
+/// xfs
+///
+/// XFS-specific filesystem options.
+xfs: XFSSpec?

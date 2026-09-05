@@ -1,0 +1,208 @@
+/// Shared logic for turning a raw, multi-document Kubernetes manifest into typed `K8sResource`s.
+///
+/// [source] is a URI, fetched once into [sourceContents] and parsed once into [resources]. An
+/// amending module usually only needs to set [source]. Overriding [sourceContents] or [resources]
+/// directly instead is also fine if an app already has the manifest text or its parsed documents
+/// from somewhere else.
+///
+/// [value] coerces [resources] into typed `K8sResource`s via `deepToTyped`, entirely in memory.
+/// It's a plain, overridable `Listing`, so on top of every resource it already derives from
+/// [resources], an amending module can append hand-written resources the raw manifest doesn't
+/// contain by amending it directly.
+/// [value] is the single source of truth for everything this module renders. Both the default
+/// `output` (one YAML stream) and `output.files` (one generated Pkl file per resource, selected by
+/// running with `-m` instead of the default single-output mode) render exactly [value], element for
+/// element, via [convertResource].
+///
+/// To patch an existing converted resource, rather than adding a new one, you can go through [patches]
+/// instead of amending [value] itself. It is a `Mapping<String, *Mixin<K8sResource> | Patch>` keyed by
+/// [fileNameFor]. An entry can be either a bare `Mixin` (handy for a one-off patch that doesn't
+/// warrant its own file) or a `Patch` module (one that `amends "Patch.pkl"` and sets `patch` to a
+/// `Mixin` for its specific resource type), resolved to the `Mixin` it wraps by [mixinFor].
+/// A whole directory of standalone patch files can be registered at once via a glob import
+/// (`import*("patches/*.pkl")`) with no further transformation needed, since `import*`'s
+/// `Mapping<String, Module>` result is already assignable to `Mapping<String, *Mixin<K8sResource> |
+/// Patch>` as long as every entry amends `Patch.pkl`. [patches]' keys are normalized (directory prefix
+/// and `.pkl` suffix stripped) before use, so a glob import's full relative path resolves to the same
+/// key a hand-written entry would use. [logPatchKeys] prints every key [patches] could be keyed on,
+/// useful when wiring up a new patch and you don't yet know a resource's exact [fileNameFor] key. A
+/// [patches] entry keyed to something no resource actually has is a bug, usually a typo, not a silent
+/// no-op: [value] fails fast on one instead.
+///
+/// [excludePatches] turns [patches] off entirely (default `false`). With it `true`, [value] renders
+/// [convertedResources] as-is and [patches] is never validated, for example to compare against the
+/// upstream manifest unpatched without having to touch [patches] itself.
+///
+/// [customResourceTemplates] registers a template for a `kind` `pkl-k8s` doesn't ship one for. It's
+/// only consulted while coercing [resources] into [value] (via [classFor]). [convertResource] itself
+/// never needs it, since it derives a resource's import URI straight from the already-typed value's
+/// own class, via `pkl:reflect`.
+module generate
+
+import "pkl:reflect"
+import "pkl:yaml"
+
+import "@deepToTyped/deepToTyped.pkl"
+import "@k8s/k8sSchema.pkl"
+import "@k8s/K8sResource.pkl"
+import "Patch.pkl"
+
+/// Where to find the raw manifest to convert.
+/// Ignored if [sourceContents] or [resources] is overridden directly.
+source: String
+
+sourceContents: String | Resource = read(source)
+
+/// Every resource document to convert, in order. Defaults to parsing [sourceContents] as a
+/// multi-document YAML stream.
+resources: List<Mapping> =
+  new yaml.Parser { useMapping = true }.parseAll(sourceContents).filterNonNull() as List<Mapping>
+
+/// `<kind>-<name>`, lowercased, with dots in the name turned into dashes.
+/// Amending modules may override this if the convention doesn't fit.
+function fileNameFor(resource: K8sResource): String =
+  "\(resource.kind.toLowerCase())-\(resource.metadata.name.toString().replaceAll(".", "-"))"
+
+/// Extra resource templates for a `kind` `pkl-k8s` doesn't ship its own template for. The first
+/// [String] key is the resource's `kind`, the second its `apiVersion`. Empty by default.
+customResourceTemplates: Mapping<String, Mapping<String, K8sResource>> = new {}
+
+local function lookupTemplate(kind: String, apiVersion: String, templatesByKindAndVersion: Mapping): K8sResource? =
+  let (templatesByVersion: Mapping? = templatesByKindAndVersion.getOrNull(kind))
+    if (templatesByVersion == null)
+      null
+    else
+      templatesByVersion.getOrNull(apiVersion)
+        ?? throw(
+          "Cannot find a template for version `\(apiVersion)` of resource `\(kind)`. "
+            + "Available versions: \(templatesByVersion.keys.join(", "))."
+        )
+
+/// The template module for [resource]'s `kind`/`apiVersion`, used to pick which type to coerce it
+/// into. Checks `pkl-k8s`'s own templates first, then [customResourceTemplates].
+local function templateFor(resource: Mapping): unknown =
+  let (kind = resource["kind"].toString())
+  let (apiVersion = resource["apiVersion"].toString())
+    lookupTemplate(kind, apiVersion, k8sSchema.resourceTemplates)
+      ?? lookupTemplate(kind, apiVersion, customResourceTemplates)
+      ?? throw(
+        "Cannot find a template for resource of kind `\(kind)`. Register one via "
+          + "`customResourceTemplates` if this is a custom resource."
+      )
+
+local function classFor(resource: Mapping): Class = (templateFor(resource) as Any).getClass()
+
+local function toTyped(resource: Mapping): K8sResource =
+  deepToTyped.apply(classFor(resource), resource) as K8sResource
+
+/// [resources], coerced directly into typed `K8sResource` instances, in order. Computed once and
+/// shared by [checkedPatches] (to know every valid [patches] key) and [value] (to apply them), instead
+/// of converting each resource twice.
+local convertedResources: List<K8sResource> = resources.map((resource) -> toTyped(resource))
+
+/// Per-resource fixups applied after conversion, keyed by [fileNameFor]. Empty by default. An amending
+/// module sets an entry (a bare `Mixin` or a `Patch` module) for each resource it needs to patch.
+patches: Mapping<String, *Mixin<K8sResource> | Patch> = new {}
+
+/// Whether to discard [patches]. Default `false`.
+excludePatches: Boolean = read?("prop:excludePatches")?.toBoolean() ?? false
+
+/// Whether to print every key [patches] could be keyed on, to aid in figuring out which key a given
+/// resource needs. Default `false`.
+logPatchKeys: Boolean = read?("prop:logPatchKeys")?.toBoolean() ?? false
+
+local function normalizePatchKey(key: String): String =
+  key.replaceAll(Regex(#"^.*/"#), "").replaceAll(Regex(#"\.pkl$"#), "")
+
+local normalizedPatches: Mapping<String, *Mixin<K8sResource> | Patch> = new Mapping {
+  for (key in patches.keys) {
+    [normalizePatchKey(key)] = patches[key]
+  }
+}
+
+/// [normalizedPatches], validated against [convertedResources]. Every key must match some [fileNameFor]
+/// or this throws immediately rather than letting a typo'd key silently never match anything.
+/// Short-circuits to empty, skipping validation entirely, when [excludePatches] is `true`.
+local checkedPatches: Mapping<String, *Mixin<K8sResource> | Patch> =
+  if (excludePatches)
+    new {}
+  else
+    let (validKeys = convertedResources.map((resource) -> fileNameFor(resource)))
+    let (unknownKeys = normalizedPatches.keys.toList().filter((key) -> !validKeys.contains(key)))
+      if (unknownKeys.isEmpty)
+        normalizedPatches
+      else
+        throw(
+          "`patches` has \(if (unknownKeys.length == 1) "an entry" else "entries") for unknown "
+            + "resource \(if (unknownKeys.length == 1) "key" else "keys") "
+            + "\(unknownKeys.join(", ")). Available keys: \(validKeys.join(", "))."
+        )
+
+/// [fileNameFor], tracing it first when [logPatchKeys] is set.
+local function patchKeyFor(resource: K8sResource): String =
+  let (key = fileNameFor(resource))
+    if (logPatchKeys) trace(key) else key
+
+/// Resolves a [patches] entry down to the `Mixin` it represents. A `Patch` module's own [Patch.patch],
+/// or the entry itself if it's already a bare `Mixin`.
+local function mixinFor(entry: Mixin<K8sResource> | Patch): Mixin<K8sResource> =
+  if (entry is Patch) entry.patch else entry
+
+/// [convertedResources], run through [patches]. The single source of truth rendered by both
+/// `output.value` and `output.files`.
+value: Listing<K8sResource> = new Listing {
+  for (resource in convertedResources) {
+    let (entry = checkedPatches.getOrNull(patchKeyFor(resource)))
+      if (entry == null) resource else mixinFor(entry).apply(resource)
+  }
+}
+
+/// Where `output.files` should point a generated file's `pkl-k8s` import at, instead of the resolved
+/// package URI `pkl:reflect` would otherwise write out. Default: `"@k8s/"`, this project's own
+/// dependency alias. Override if an amending module vendors `pkl-k8s` under a different alias or a
+/// plain relative path.
+k8sImportPath: String = "@k8s/"
+
+local function rewriteK8sImport(text: String): String =
+  text.replaceAll(Regex(#"(?:project)?package://pkg\.pkl-lang\.org/pkl-k8s/k8s@[\d.]+#/"#), k8sImportPath)
+
+/// Strips the leading `apiVersion = "..."` / `kind = "..."` pair `PcfRenderer` writes out for the
+/// outermost resource. `apiVersion`/`kind` are `fixed` (always equal to the enclosing class's own
+/// default, and redeclaring them is a Pkl error, not just redundant) but `PcfRenderer` doesn't know
+/// that, so they need to be dropped by hand. Only the very first `apiVersion`/`kind` pair is touched,
+/// guaranteed to be the outermost resource's own since every `pkl-k8s` resource class declares them
+/// first. A nested property that happens to also be named `kind` (for example an owner reference) is
+/// left alone.
+local function stripFixedApiVersionAndKind(body: String): String =
+  body.replaceFirst(Regex(#"\{\n\s*apiVersion = "[^"]*"\n\s*kind = "[^"]*"\n"#), "{\n")
+
+/// Un-wraps `PcfRenderer`'s outermost `{ ... }` object literal and dedents everything inside it by one
+/// level, turning the resource's own properties into bare top-level module members. That's the shape
+/// a module that `amends` the resource's own template class needs (see [convertResource]).
+local function unwrapAndDedent(body: String): String =
+  body
+    .replaceFirst(Regex(#"^\{\n"#), "")
+    .replaceFirst(Regex(#"\}\s*$"#), "")
+    .replaceAll(Regex(#"(?m)^  "#), "")
+
+/// Renders [resource], already fully converted and patched, as a standalone, human-readable typed Pkl
+/// file. Uses `pkl:reflect` to find the resource's own schema class and its import URI, and
+/// `PcfRenderer` with `omitNullProperties = true` to render only the properties actually set. The file
+/// `amends` the resource's own template class directly (for example `amends
+/// "@k8s/api/apps/v1/Deployment.pkl"`) rather than wrapping it in a generic manifest module, since
+/// `K8sObject.pkl`'s own `output` block already renders any module amending it as YAML.
+local function convertResource(resource: K8sResource): String =
+  let (importUri = rewriteK8sImport(reflect.Class(resource.getClass()).enclosingDeclaration.uri))
+  let (rendered = new PcfRenderer { omitNullProperties = true }.renderValue(resource))
+  let (body = unwrapAndDedent(stripFixedApiVersionAndKind(rendered)))
+    "amends \"\(importUri)\"\n\n\(body)"
+
+output {
+  value = outer.value
+  renderer = new YamlRenderer { isStream = true }
+  files {
+    for (resource in outer.value.toList()) {
+      ["\(fileNameFor(resource)).pkl"] { text = convertResource(resource) }
+    }
+  }
+}

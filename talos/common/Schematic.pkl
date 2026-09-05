@@ -1,0 +1,57 @@
+/// The image customization submitted to the Talos Image Factory (https://factory.talos.dev) to resolve
+/// a schematic ID, mirroring `github.com/siderolabs/image-factory/pkg/schematic.Schematic`.
+module common.Schematic
+
+/// Name (username) of the schematic owner. Enterprise-edition only; leave unset otherwise.
+owner: String?
+
+overlay: Overlay?
+
+customization: Customization
+
+class Overlay {
+  image: String
+
+  name: String
+
+  options: Mapping<String, Any>?
+}
+
+class Customization {
+  embeddedMachineConfiguration: String?
+
+  extraKernelArgs: Listing<String>?
+
+  meta: Listing<MetaValue>?
+
+  systemExtensions: SystemExtensions?
+
+  bootloader: BootloaderKind?
+
+  secureboot: SecureBootCustomization?
+
+  diskImage: DiskImageCustomization?
+}
+
+class MetaValue {
+  key: UInt8
+
+  value: String
+}
+
+class SystemExtensions {
+  officialExtensions: Listing<String>?
+}
+
+typealias BootloaderKind = "none"|"dual-boot"|"sd-boot"|"grub"
+
+class SecureBootCustomization {
+  enrollKeys: ("off"|"manual"|"if-safe"|"force")?
+
+  includeWellKnownCertificates: Boolean?
+}
+
+class DiskImageCustomization {
+  /// Disk image sector size in bytes. Defaults to 512 when unset.
+  sectorSize: UInt?
+}

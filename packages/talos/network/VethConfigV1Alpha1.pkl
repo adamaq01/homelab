@@ -1,0 +1,57 @@
+/// VethConfig is a config document to create a virtual Ethernet device pair.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.VethConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "VethPeerConfig.pkl"
+import "AddressConfig.pkl"
+import "RouteConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "VethConfig"
+
+/// name
+///
+/// Name of this end of the veth pair.
+///
+/// This is a literal kernel interface name. Link aliases are not supported here because the interface is
+/// created by this document rather than selected from existing physical links.
+name: String
+
+/// peer
+///
+/// Configuration for the peer end of the veth pair.
+peer: VethPeerConfig
+
+/// up
+///
+/// Bring the link up or down.
+///
+/// If not specified, the link will be brought up.
+up: Boolean?
+
+/// mtu
+///
+/// Configure LinkMTU (Maximum Transmission Unit) for the link.
+///
+/// If not specified, the system default LinkMTU will be used (usually 1500).
+mtu: Int?
+
+/// addresses
+///
+/// Configure addresses to be statically assigned to the link.
+addresses: Listing<AddressConfig>?
+
+/// routes
+///
+/// Configure routes to be statically created via the link.
+routes: Listing<RouteConfig>?
+
+/// multicast
+///
+/// Set the multicast capability of the link.
+multicast: Boolean?

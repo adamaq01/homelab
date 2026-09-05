@@ -1,0 +1,18 @@
+/// RulePortSelector is a port selector for the network rule.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.RulePortSelector
+
+extends ".../TalosObject.pkl"
+
+/// ports
+///
+/// Ports defines a list of port ranges or single ports. The port ranges are inclusive, and should not
+/// overlap.
+ports: Listing<Int|String>?
+
+/// protocol
+///
+/// Protocol defines traffic protocol (e.g. TCP or UDP).
+protocol: ("tcp"|"udp"|"icmp"|"icmpv6")?

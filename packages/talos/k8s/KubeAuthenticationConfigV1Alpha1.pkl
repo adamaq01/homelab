@@ -1,0 +1,17 @@
+/// KubeAuthenticationConfig configures kube-apiserver authentication.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeAuthenticationConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeAuthenticationConfig"
+
+/// configuration
+///
+/// Kubernetes API server authentication configuration. The value is the literal Kubernetes
+/// authentication configuration.
+configuration: Dynamic?

@@ -1,0 +1,29 @@
+import "@talos/TalosDocument.pkl"
+import "@talos/v1alpha1/Config.pkl"
+
+class DocumentUniqueness {
+  apiVersion: String
+  kind: String
+  name: String?
+}
+
+typealias Document = TalosDocument | Config
+
+/// [Config] has no `apiVersion`/`kind` of its own , so it's keyed by its declared `version`
+/// (defaulting the same way Talos does) and its Pkl class name standing in for `kind`.
+const function uniqueDocumentKey(document: Document): DocumentUniqueness = new {
+  when (document is TalosDocument) {
+    apiVersion = document.apiVersion
+    kind = document.kind
+    name = document.getPropertyOrNull("name")
+  }
+  when (document is Config) {
+    apiVersion = document.version ?? "v1alpha1"
+    kind = document.getClass().simpleName
+  }
+}
+
+const onlyHasUniqueDocuments = (documents: Listing<Document>) ->
+  documents.isDistinctBy((document) -> uniqueDocumentKey(document))
+
+typealias Documents = Listing<Document>(onlyHasUniqueDocuments)

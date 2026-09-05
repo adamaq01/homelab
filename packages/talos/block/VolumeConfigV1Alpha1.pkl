@@ -1,0 +1,60 @@
+/// VolumeConfig is a system volume configuration document.\nNote: at the moment, only `STATE`,
+/// `EPHEMERAL`, `IMAGECACHE`, `ETCD`, `CRI`, `KUBELET` and `LOG`\nsystem volumes are supported. The
+/// `ETCD`, `CRI`, `KUBELET` and `LOG` volumes default to a\ndirectory under `EPHEMERAL`, and can be
+/// placed on a dedicated partition by specifying\n`provisioning`. The backing of these volumes
+/// (directory vs. dedicated partition) can only be\nchosen at cluster creation time: changing it on an
+/// already-provisioned node is not supported.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.VolumeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ProvisioningSpec.pkl"
+import "SystemVolumeFilesystemSpec.pkl"
+import "EncryptionSpec.pkl"
+import "MountSpec.pkl"
+import "TrimConfig.pkl"
+import "ScrubConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "VolumeConfig"
+
+/// name
+///
+/// Name of the volume.
+name: String?
+
+/// provisioning
+///
+/// The provisioning describes how the volume is provisioned.
+provisioning: ProvisioningSpec?
+
+/// filesystem
+///
+/// The filesystem describes how the volume is formatted.
+///
+/// Note: this only takes effect at the time the volume is formatted.
+filesystem: SystemVolumeFilesystemSpec?
+
+/// encryption
+///
+/// The encryption describes how the volume is encrypted.
+encryption: EncryptionSpec?
+
+/// mount
+///
+/// The mount describes additional mount options.
+mount: MountSpec?
+
+/// trim
+///
+/// The trim describes the per-volume filesystem trim (fstrim) configuration.
+trim: TrimConfig?
+
+/// scrub
+///
+/// The scrub describes the per-volume filesystem scrub configuration.
+scrub: ScrubConfig?

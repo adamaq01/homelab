@@ -1,0 +1,42 @@
+/// DHCPv6Config is a config document to configure DHCPv6 on a network link.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.DHCPv6ConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "DHCPv6Config"
+
+/// name
+///
+/// Name of the link (interface).
+name: String
+
+/// routeMetric
+///
+/// An optional metric for the routes received from the DHCP server.
+///
+/// Lower values indicate higher priority. Default value is 1024.
+routeMetric: Int?
+
+/// ignoreHostname
+///
+/// Ignore hostname received from the DHCP server.
+ignoreHostname: Boolean?
+
+/// clientIdentifier
+///
+/// Client identifier to use when communicating with DHCP servers.
+///
+/// Defaults to ‘mac’ if not set.
+clientIdentifier: ("none"|"mac"|"duid")?
+
+/// duidRaw
+///
+/// Raw value of the DUID to use as client identifier.
+///
+/// This field is only used if ‘clientIdentifier’ is set to ‘duid’.
+duidRaw: String(matches(Regex("^([0-9a-fA-F]{2}(:[0-9a-fA-F]{2})+)$")))?

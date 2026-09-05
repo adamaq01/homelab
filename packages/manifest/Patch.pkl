@@ -1,0 +1,7 @@
+/// Base module for a patch to an existing, already-typed `K8sResource` registered in an app's
+/// `generate.patches`.
+/// A concrete patch file `amends` this module and overrides [patch] with a `Mixin` for its specific
+/// resource type (e.g. `Mixin<Deployment>`), using ordinary object-amendment syntax for its body directly.
+open module manifest.Patch
+
+patch: Mixin

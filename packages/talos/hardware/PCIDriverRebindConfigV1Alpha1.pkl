@@ -1,0 +1,21 @@
+/// PCIDriverRebindConfig allows to configure PCI driver rebinds.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module hardware.PCIDriverRebindConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "PCIDriverRebindConfig"
+
+/// name
+///
+/// PCI device id
+name: String
+
+/// targetDriver
+///
+/// Target driver to rebind the PCI device to.
+targetDriver: String

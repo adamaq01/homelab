@@ -1,0 +1,23 @@
+/// TrustedRootsConfig allows to configure additional trusted CA roots.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module security.TrustedRootsConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "TrustedRootsConfig"
+
+/// name
+///
+/// Name of the config document.
+name: String
+
+/// certificates
+///
+/// List of additional trusted certificate authorities (as PEM-encoded certificates).
+///
+/// Multiple certificates can be provided in a single config document, separated by newline characters.
+certificates: String?

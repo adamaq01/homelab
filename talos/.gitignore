@@ -1,0 +1,6 @@
+# Cluster secrets from `talosctl gen secrets`
+secrets.yaml
+
+# talosctl-generated files from the above secrets
+*talosconfig*
+*kubeconfig*

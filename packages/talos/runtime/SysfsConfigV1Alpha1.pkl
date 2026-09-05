@@ -1,0 +1,18 @@
+/// SysfsConfig configures Linux kernel sysfs values.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.SysfsConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "SysfsConfig"
+
+/// params
+///
+/// Used to configure the machine’s sysfs (kernel attributes under /sys). Values from this document are
+/// merged with the deprecated v1alpha1 machine.sysfs values (if set), with this document taking
+/// precedence on key conflicts.
+params: Mapping<String(contains(Regex(".*"))), String>?

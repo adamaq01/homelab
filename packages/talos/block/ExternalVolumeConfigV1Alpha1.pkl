@@ -1,0 +1,34 @@
+/// ExternalVolumeConfig is an external disk mount configuration document.\nExternal volumes allow to
+/// mount volumes that were created outside of Talos,\nover the network or API. Volume will be mounted
+/// under `/var/mnt/<name>`.\nThe external volume config name should not conflict with user volume
+/// names.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.ExternalVolumeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ExternalMountSpec.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "ExternalVolumeConfig"
+
+/// name
+///
+/// Name of the mount.
+///
+/// Name might be between 1 and 34 characters long and can only contain: lowercase and uppercase ASCII
+/// letters, digits, and hyphens.
+name: String?
+
+/// filesystemType
+///
+/// Filesystem type.
+filesystemType: "virtiofs"?
+
+/// mount
+///
+/// The mount describes additional mount options.
+mount: ExternalMountSpec?

@@ -1,0 +1,31 @@
+/// ExternalMountSpec describes how the external volume is mounted.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.ExternalMountSpec
+
+extends ".../TalosObject.pkl"
+
+import "VirtiofsMountSpec.pkl"
+
+/// readOnly
+///
+/// Mount the volume read-only.
+readOnly: Boolean?
+
+/// disableAccessTime
+///
+/// If true, disable file access time updates.
+disableAccessTime: Boolean?
+
+/// secure
+///
+/// Enable secure mount options (nosuid, nodev, noexec).
+///
+/// Defaults to true for better security.
+secure: Boolean?
+
+/// virtiofs
+///
+/// Virtiofs mount options.
+virtiofs: VirtiofsMountSpec?

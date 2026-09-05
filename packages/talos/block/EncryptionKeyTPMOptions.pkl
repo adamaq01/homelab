@@ -1,0 +1,13 @@
+/// EncryptionKeyTPMOptions represents the options for TPM-based key protection.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.EncryptionKeyTPMOptions
+
+extends ".../TalosObject.pkl"
+
+/// pcrs
+///
+/// List of PCRs to bind the key to. If not set, defaults to PCR 7, can be disabled by passing an empty
+/// list.
+pcrs: Listing<Int>?

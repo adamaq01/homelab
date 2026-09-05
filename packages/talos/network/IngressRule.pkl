@@ -1,0 +1,17 @@
+/// IngressRule is a ingress rule.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.IngressRule
+
+extends ".../TalosObject.pkl"
+
+/// subnet
+///
+/// Subnet defines a source subnet.
+subnet: String(matches(Regex(#"^[0-9a-f.:]+/\d{1,3}$"#)))?
+
+/// except
+///
+/// Except defines a source subnet to exclude from the rule, it gets excluded from the subnet.
+except: String(matches(Regex(#"^[0-9a-f.:]+/\d{1,3}$"#)))?

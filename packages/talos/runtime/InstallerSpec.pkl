@@ -1,0 +1,16 @@
+/// InstallerSpec describes the installer to perform the installation.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.InstallerSpec
+
+extends ".../TalosObject.pkl"
+
+/// image
+///
+/// Allows for supplying the image used to perform the installation. Image reference for each Talos
+/// release can be found on GitHub releases page.
+///
+/// If not set, it will run installer based on the current Talos version and current schematic (this
+/// requires booting asset built by Image Factory).
+image: String?

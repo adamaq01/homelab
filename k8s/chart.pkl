@@ -1,0 +1,24 @@
+import "@argocd/Application.pkl"
+import "app.pkl" as App
+
+local discoveredApps: List<Application> = import*("apps/**/app.pkl").toMap().values.map((mod) -> mod.application)
+
+local rootApp: Application = (new App {
+  name = "root"
+  namespace = "argocd"
+  source {
+    path = "k8s"
+  }
+}).application
+
+applications: Listing<Application>(
+  isDistinctBy((it) -> it.apiVersion + it.kind + it.metadata!!.name!! + (it.metadata!!.namespace ?? "")),
+) = new {
+  rootApp
+  ...discoveredApps
+}
+
+output {
+  value = applications
+  renderer = new YamlRenderer { isStream = true }
+}

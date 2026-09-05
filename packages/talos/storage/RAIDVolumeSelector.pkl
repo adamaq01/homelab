@@ -1,0 +1,16 @@
+/// RAIDVolumeSelector matches member disks with CEL.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.RAIDVolumeSelector
+
+extends ".../TalosObject.pkl"
+
+/// match
+///
+/// CEL expression matching the member volumes of the array.
+///
+/// Evaluated against each discovered volume with the volume variable; the disk variable is bound for
+/// whole disks (empty for partitions), so both whole disks and partitions can be selected. The system
+/// disk and its partitions are never eligible.
+match: String?

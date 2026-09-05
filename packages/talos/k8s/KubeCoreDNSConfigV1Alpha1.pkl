@@ -1,0 +1,23 @@
+/// KubeCoreDNSConfig configures CoreDNS deployment.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeCoreDNSConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeCoreDNSConfig"
+
+/// enabled
+///
+/// By default, CoreDNS deployment is enabled. Set to false to disable the CoreDNS deployment.
+enabled: Boolean?
+
+/// image
+///
+/// The container image used to run the CoreDNS.
+///
+/// If the value is not set, the default image will be used.
+image: String?

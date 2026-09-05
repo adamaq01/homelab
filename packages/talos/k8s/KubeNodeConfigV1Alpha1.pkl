@@ -1,0 +1,53 @@
+/// KubeNodeConfig configures Kubernetes node.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeNodeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "NodeIPConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeNodeConfig"
+
+/// skipNodeRegistration
+///
+/// The skipNodeRegistration is used to run the kubelet without registering with the apiserver. This runs
+/// kubelet as standalone and only runs static pods. When this is set to true, other fields in this
+/// document are ignored.
+skipNodeRegistration: Boolean?
+
+/// registerWithFQDN
+///
+/// The registerWithFQDN field is used to force kubelet to use the node FQDN for registration. This is
+/// required in clouds like AWS.
+registerWithFQDN: Boolean?
+
+/// nodeIP
+///
+/// The nodeIP field is used to configure --node-ip flag for the kubelet. This field should be set when a
+/// node has multiple addresses to choose from.
+nodeIP: NodeIPConfig?
+
+/// labels
+///
+/// Configures the node labels for the machine.
+///
+/// Note: In the default Kubernetes configuration, worker nodes are restricted to set labels with some
+/// prefixes (see NodeRestriction admission plugin).
+labels: Mapping<String(contains(Regex(".*"))), String>?
+
+/// annotations
+///
+/// Configures the node annotations for the machine.
+annotations: Mapping<String(contains(Regex(".*"))), String>?
+
+/// taints
+///
+/// Configures the node taints for the machine. Effect is optional.
+///
+/// Note: In the default Kubernetes configuration, worker nodes are not allowed to modify the taints (see
+/// NodeRestriction admission plugin).
+taints: Mapping<String(contains(Regex(".*"))), String>?

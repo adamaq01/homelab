@@ -1,0 +1,21 @@
+/// ContainerRunAs overrides the image's user and group.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerRunAs
+
+extends ".../TalosObject.pkl"
+
+/// uid
+///
+/// UID to run the container’s entrypoint as.
+///
+/// Unset means use the image’s own USER. There are no user namespaces, so uid 0 is host root.
+uid: Int?
+
+/// gid
+///
+/// GID to run the container’s entrypoint as.
+///
+/// Unset means use the image’s own USER.
+gid: Int?

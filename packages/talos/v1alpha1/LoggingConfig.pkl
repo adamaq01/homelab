@@ -1,0 +1,14 @@
+/// LoggingConfig struct configures Talos logging.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.LoggingConfig
+
+extends ".../TalosObject.pkl"
+
+import "LoggingDestination.pkl"
+
+/// destinations
+///
+/// Logging destination.
+destinations: Listing<LoggingDestination>?

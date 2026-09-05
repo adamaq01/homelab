@@ -1,0 +1,25 @@
+/// WatchdogTimerConfig is a watchdog timer config document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.WatchdogTimerV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "WatchdogTimerConfig"
+
+/// device
+///
+/// Path to the watchdog device.
+device: String?
+
+/// timeout
+///
+/// Timeout for the watchdog.
+///
+/// If Talos is unresponsive for this duration, the watchdog will reset the system.
+///
+/// Default value is 1 minute, minimum value is 10 seconds.
+timeout: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

@@ -1,0 +1,12 @@
+/// BridgeVLANConfig is a bridge VLAN configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.BridgeVLANConfig
+
+extends ".../TalosObject.pkl"
+
+/// filtering
+///
+/// Enable or disable VLAN filtering on the bridge.
+filtering: Boolean?

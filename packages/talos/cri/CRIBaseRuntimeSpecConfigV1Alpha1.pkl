@@ -1,0 +1,24 @@
+/// CRIBaseRuntimeSpecConfig configures the base OCI runtime specification for CRI containers.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.CRIBaseRuntimeSpecConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "CRIBaseRuntimeSpecConfig"
+
+/// overrides
+///
+/// Overrides for the default OCI runtime specification used by CRI containers.
+///
+/// This document is mutually exclusive with the deprecated .machine.baseRuntimeSpecOverrides field.
+///
+/// Strategic merge patches replace this overrides object as a whole, so reapplying the same document is
+/// idempotent.
+///
+/// Applying, updating, or removing these overrides restarts CRI automatically. A machine reboot is not
+/// required.
+overrides: Dynamic?

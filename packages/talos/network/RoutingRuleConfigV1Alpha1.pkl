@@ -1,0 +1,58 @@
+/// RoutingRuleConfig is a config document to configure Linux policy routing rules.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.RoutingRuleConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "RoutingRuleConfig"
+
+/// name
+///
+/// Priority of the routing rule. Lower values are matched first. Must be between 1 and 32765 (excluding
+/// reserved priorities [0 32500 32501 32766 32767]). Must be unique across all routing rules in the
+/// configuration.
+name: String
+
+/// src
+///
+/// Source address prefix to match. If empty, matches all sources.
+src: String?
+
+/// dst
+///
+/// Destination address prefix to match. If empty, matches all destinations.
+dst: String?
+
+/// table
+///
+/// The routing table to look up if the rule matches.
+table: String
+
+/// action
+///
+/// The action to perform when the rule matches. Defaults to “unicast” (table lookup).
+action: Int?
+
+/// iifName
+///
+/// Match packets arriving on this interface.
+iifName: String?
+
+/// oifName
+///
+/// Match packets going out on this interface.
+oifName: String?
+
+/// fwMark
+///
+/// Match packets with this firewall mark value.
+fwMark: Int?
+
+/// fwMask
+///
+/// Mask for the firewall mark comparison.
+fwMask: Int?

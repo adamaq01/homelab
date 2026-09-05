@@ -1,0 +1,162 @@
+open module cluster
+
+extends "common.pkl"
+
+import "pkl:reflect"
+import "../common/SecretsBundle.pkl"
+import "../documents.pkl" as documentsModule
+import "../secrets.pkl" as secretsModule
+import "@talos/block/FilesystemTrimConfigV1Alpha1.pkl" as FilesystemTrimConfig
+import "@talos/block/VolumeConfigV1Alpha1.pkl" as VolumeConfig
+import "@talos/cluster/DiscoveryIdentityConfigV1Alpha1.pkl" as DiscoveryIdentityConfig
+import "@talos/cluster/DiscoveryServiceConfigV1Alpha1.pkl" as DiscoveryServiceConfig
+import "@talos/k8s/KubeAPIServerCAConfigV1Alpha1.pkl" as KubeAPIServerCAConfig
+import "@talos/k8s/KubeClusterConfigV1Alpha1.pkl" as KubeClusterConfig
+import "@talos/k8s/KubeNetworkConfigV1Alpha1.pkl" as KubeNetworkConfig
+import "@talos/k8s/KubeNodeConfigV1Alpha1.pkl" as KubeNodeConfig
+import "@talos/k8s/KubePrismConfigV1Alpha1.pkl" as KubePrismConfig
+import "@talos/k8s/KubeletConfigV1Alpha1.pkl" as KubeletConfig
+import "@talos/network/HostnameConfigV1Alpha1.pkl" as HostnameConfig
+import "@talos/network/ResolverConfigV1Alpha1.pkl" as ResolverConfig
+import "@talos/runtime/SecurityProfileConfigV1Alpha1.pkl" as SecurityProfileConfig
+import "@talos/runtime/UnattendedInstallConfigV1Alpha1.pkl" as UnattendedInstallConfig
+import "@talos/v1alpha1/Config.pkl" as Config
+
+local function findRoot(mod: reflect.Module): Module =
+  if (mod.supermodule == null)
+    mod.reflectee
+  else
+    findRoot(mod.supermodule!!)
+
+local relativePath = findRoot(reflect.Module(module)).relativePathTo(module)
+hidden hostname: String = relativePath.last
+// noinspection TypeMismatch
+hidden nodeType: "controlplane" | "worker" = relativePath.dropLast(1).last
+
+hidden secrets: SecretsBundle = secretsModule.bundle
+
+documents: documentsModule.Documents = new {
+  (Config) {
+    version = "v1alpha1"
+    debug = false
+    machine {
+      type = nodeType
+      token = secrets.trustdinfo.token
+      ca {
+        crt = secrets.certs.os.crt
+        when (nodeType == "controlplane") {
+          key = secrets.certs.os.key
+        } else {
+          key = ""
+        }
+      }
+      certSANs {}
+      features {
+        diskQuotaSupport = true
+      }
+    }
+    cluster {
+      token = secrets.secrets.bootstraptoken
+      when (nodeType == "controlplane") {
+        etcd {
+          advertisedSubnets {
+            "192.168.2.0/24"
+          }
+          ca {
+            crt = secrets.certs.etcd.crt
+            key = secrets.certs.etcd.key
+          }
+        }
+      }
+    }
+  }
+  (DiscoveryServiceConfig) {
+    name = "default"
+    endpoint = "https://discovery.talos.dev/"
+  }
+  (DiscoveryIdentityConfig) {
+    clusterID = secrets.cluster.id
+    clusterSecret = secrets.cluster.secret
+  }
+  (UnattendedInstallConfig) {
+    kind = "UnattendedInstallConfig" // TODO: Fix
+    installer { // TODO: Derive schematic ID from a schematic definition
+      image =
+        "factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba:v1.14.0"
+    }
+    provisioning {
+      diskSelector {
+        match = throw("Override this placeholder with a real disk selector")
+      }
+      wipe = false
+    }
+  }
+  (ResolverConfig) {
+    hostDNS {
+      enabled = true
+      forwardKubeDNSToHost = true
+      resolveMemberNames = true
+    }
+  }
+  (VolumeConfig) {
+    name = "EPHEMERAL"
+    mount {
+      secure = true
+    }
+  }
+  (FilesystemTrimConfig) {
+    interval = "168h0m0s"
+  }
+  (SecurityProfileConfig) {
+    workloadIsolation = true
+  }
+  (HostnameConfig) {
+    hostname = module.hostname
+  }
+  (KubeClusterConfig) {
+    clusterName = module.clusterName
+    endpoint = module.controlPlaneEndpoint
+  }
+  (KubeNodeConfig) {
+    nodeIP {
+      validSubnets {
+        "192.168.2.0/24"
+      }
+    }
+  }
+  (KubeletConfig) {
+    image = "ghcr.io/siderolabs/kubelet:v1.37.0-rc.1"
+    config {}
+    defaultRuntimeSeccompProfileEnabled = true
+  }
+  (KubeNetworkConfig) {
+    dnsDomain = "cluster.local"
+    podSubnets {
+      "10.244.0.0/16"
+    }
+    serviceSubnets {
+      "10.96.0.0/12"
+    }
+  }
+  (KubeAPIServerCAConfig) {
+    when (nodeType == "controlplane") {
+      issuingCA {
+        cert = secrets.certs.k8s.crt.base64Decoded
+        key = secrets.certs.k8s.key.base64Decoded
+      }
+    }
+    when (nodeType == "worker") {
+      acceptedCAs {
+        secrets.certs.k8s.crt.base64Decoded
+      }
+    }
+  }
+  (KubePrismConfig) {
+    port = 7445
+  }
+}
+
+output {
+  renderer = new YamlRenderer { isStream = true; indentWidth = 4 }
+  value = documents
+}

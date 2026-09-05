@@ -1,0 +1,8 @@
+open module common
+
+/// Git repo ArgoCD pulls app sources from.
+repoURL: String = "https://github.com/adamaq01/homelab.git"
+targetRevision: String = "main"
+
+/// Namespace ArgoCD itself lives in.
+argoCDNamespace: String = "argocd"

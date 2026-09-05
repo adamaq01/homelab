@@ -1,0 +1,31 @@
+/// KubeAuthorizerConfig configures kube-apiserver authorization by configuring a specific authorization
+/// plugin.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeAuthorizerConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeAuthorizerConfig"
+
+/// name
+///
+/// Name of the authorizer, should be be DNS1123 labels like myauthorizername or subdomains like
+/// myauthorizer.example.domain.
+name: String?
+
+/// type
+///
+/// Type is the name of the authorizer.
+type: ("Node"|"RBAC"|"Webhook")?
+
+/// webhook
+///
+/// Webhook is the configuration for the webhook authorizer.
+///
+/// This field is required if the AuthorizerType is Webhook, should not be set for other authorizer
+/// types. The value is the literal Kubernetes webhook authorizer configuration.
+webhook: Dynamic?

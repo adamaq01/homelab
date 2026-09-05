@@ -1,0 +1,98 @@
+/// ContainerConfig is a container configuration document.\nContainerConfig declares a container to be
+/// run by Talos directly, without Kubernetes.\n\nThe container is started as soon as the configuration
+/// is applied, with no image rebuild\nand no reboot. It runs against the CRI containerd instance in the
+/// dedicated\n`taloscontainers` namespace, and is restarted automatically 5 seconds after it
+/// stops.\n\nContainers are not Talos services: they do not appear in `talosctl services`,
+/// and\n`talosctl service` does not apply to them. Status is reported via `ContainerStatus`.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ContainerRunAs.pkl"
+import "ContainerMount.pkl"
+import "ContainerSecurity.pkl"
+import "ContainerNetwork.pkl"
+import "ContainerResources.pkl"
+import "ContainerDependsOn.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "ContainerConfig"
+
+/// name
+///
+/// Name of the container.
+///
+/// Must be between 1 and 63 characters long, and can only contain lowercase ASCII letters, digits and
+/// hyphens. It is used as the containerd container ID and as the container’s log identifier, so it may
+/// not collide with a Talos service name.
+name: String?
+
+/// image
+///
+/// OCI image reference supplying the container’s root filesystem.
+///
+/// A digest-pinned reference (repo@sha256:...) is recommended: it is the only form that guarantees the
+/// same bytes on every pull. Short references are accepted and normalized, so nginx becomes
+/// index.docker.io/library/nginx:latest.
+image: String?
+
+/// entrypoint
+///
+/// Overrides the image’s ENTRYPOINT.
+///
+/// Unset means the image’s own entrypoint is used.
+entrypoint: Listing<String>?
+
+/// args
+///
+/// Overrides the image’s CMD.
+args: Listing<String>?
+
+/// workingDir
+///
+/// Overrides the image’s WORKDIR.
+workingDir: String?
+
+/// runAs
+///
+/// Overrides the image’s USER uid and/or gid.
+///
+/// There are no user namespaces, so a container running as uid 0 is root on the host.
+runAs: ContainerRunAs?
+
+/// environment
+///
+/// Environment variables, in KEY=value form, merged over the image’s own ENV.
+///
+/// Values are stored in the machine configuration verbatim, so treat anything put here as being as
+/// sensitive as the machine configuration itself.
+environment: Listing<String>?
+
+/// mounts
+///
+/// Filesystems to mount into the container.
+mounts: Listing<ContainerMount>?
+
+/// security
+///
+/// Security settings for the container.
+security: ContainerSecurity?
+
+/// network
+///
+/// Network settings for the container.
+network: ContainerNetwork?
+
+/// resources
+///
+/// Resource limits, applied as cgroup v2 settings.
+resources: ContainerResources?
+
+/// dependsOn
+///
+/// Conditions which must be satisfied before the container is started.
+dependsOn: ContainerDependsOn?

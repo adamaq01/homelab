@@ -1,0 +1,34 @@
+/// ContainerSecurity configures the container's security posture.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerSecurity
+
+extends ".../TalosObject.pkl"
+
+import "ContainerCapabilities.pkl"
+
+/// profile
+///
+/// Security profile.
+///
+/// restricted drops all capabilities, allows no device access, and mounts the rootfs and sysfs
+/// read-only. privileged grants all grantable capabilities and all devices, which is what extension
+/// services get implicitly.
+profile: String?
+
+/// capabilities
+///
+/// Linux capabilities to add or drop on top of the profile.
+capabilities: ContainerCapabilities?
+
+/// machinedAccess
+///
+/// Publishes the container’s PID so machined’s API can recognize it, and bind-mounts the machined API
+/// socket into the container.
+///
+/// This alone does not grant DAC access to the socket, which is owned by the apid user: reaching it in
+/// practice still requires profile: privileged or an equivalent capability/ runAs grant. Once connected,
+/// the container may request any role, same as extension services; the RPC’s own role requirements are
+/// what actually gate access.
+machinedAccess: Boolean?

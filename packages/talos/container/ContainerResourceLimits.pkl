@@ -1,0 +1,21 @@
+/// ContainerResourceLimits are hard ceilings.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerResourceLimits
+
+extends ".../TalosObject.pkl"
+
+/// cpu
+///
+/// CPU ceiling in millicores, mapped onto cgroup v2 cpu.max.
+///
+/// 1000m is one core.
+cpu: String?
+
+/// memory
+///
+/// Memory ceiling, mapped onto cgroup v2 memory.max.
+///
+/// Exceeding it OOM-kills the container.
+memory: String?

@@ -1,0 +1,46 @@
+/// LVMLogicalVolumeConfig is an LVM logical volume config document.\nDefines a logical volume
+/// provisioned inside a volume group.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.LVMLogicalVolumeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "LVMLogicalVolumeProvisioningSpec.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "LVMLogicalVolumeConfig"
+
+/// name
+///
+/// Logical volume name.
+///
+/// Must be 1-63 chars: ASCII letters, digits, hyphens, underscores.
+name: String?
+
+/// type
+///
+/// Logical volume layout.
+type: String?
+
+/// mirrors
+///
+/// Number of mirror copies for raid1 / raid10 layouts.
+///
+/// Defaults to 1 (a two-way mirror) when unset. Not valid for linear or raid0.
+mirrors: Int?
+
+/// stripes
+///
+/// Number of stripes for raid0 / raid10 layouts.
+///
+/// Defaults to all available physical volumes when unset. Must be at least 2. Not valid for linear or
+/// raid1.
+stripes: Int?
+
+/// provisioning
+///
+/// Describes how the logical volume is provisioned.
+provisioning: LVMLogicalVolumeProvisioningSpec?

@@ -1,0 +1,27 @@
+/// KubeExternalManifestConfig configures a Kubernetes manifest which is downloaded from a URL.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeExternalManifestConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeExternalManifestConfig"
+
+/// name
+///
+/// Name of manifest.
+name: String
+
+/// headers
+///
+/// Optional HTTP headers to use when downloading the manifest.
+headers: Mapping<String(contains(Regex(".*"))), String>?
+
+/// url
+///
+/// Kubernetes manifest definition, via the URL to download it from. Please note that Talos does not
+/// watch URL contents, and might download the manifest only once, during the boot.
+url: String(contains(Regex("^(http|https)://")))

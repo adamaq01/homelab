@@ -1,0 +1,18 @@
+/// SysctlConfig configures Linux kernel sysctl values.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.SysctlConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "SysctlConfig"
+
+/// params
+///
+/// Used to configure the machine’s sysctls (kernel parameters under /proc/sys). Values from this
+/// document are merged with the deprecated v1alpha1 machine.sysctls values (if set), with this document
+/// taking precedence on key conflicts.
+params: Mapping<String(contains(Regex(".*"))), String>?

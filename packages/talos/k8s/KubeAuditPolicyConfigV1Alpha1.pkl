@@ -1,0 +1,17 @@
+/// KubeAuditPolicyConfig configures kube-apiserver audit policy.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeAuditPolicyConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeAuditPolicyConfig"
+
+/// configuration
+///
+/// Kubernetes API server audit policy configuration. The value is the literal Kubernetes audit policy
+/// configuration.
+configuration: Dynamic?

@@ -1,0 +1,8 @@
+amends "@manifest/generate.pkl"
+
+// renovate: datasource=github-releases packageName=argoproj/argo-cd
+local version = "v3.5.2"
+
+source = "https://raw.githubusercontent.com/argoproj/argo-cd/\(version)/manifests/install.yaml"
+
+patches = import*("patches/*.pkl")

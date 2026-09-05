@@ -1,0 +1,17 @@
+/// RegistryEndpoint defines a registry mirror endpoint.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.RegistryEndpoint
+
+extends ".../TalosObject.pkl"
+
+/// url
+///
+/// The URL of the registry mirror endpoint.
+url: String(contains(Regex("^(http|https)://")))
+
+/// overridePath
+///
+/// Use endpoint path as supplied, without adding /v2/ suffix.
+overridePath: Boolean?

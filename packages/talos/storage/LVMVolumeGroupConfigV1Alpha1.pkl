@@ -1,0 +1,26 @@
+/// LVMVolumeGroupConfig is an LVM volume group config document.\nDefines volume group and selector for
+/// backing disks.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.LVMVolumeGroupConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ProvisioningSpec.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "LVMVolumeGroupConfig"
+
+/// name
+///
+/// Volume group name.
+///
+/// Must be 1-63 chars: ASCII letters, digits, hyphens, underscores.
+name: String?
+
+/// provisioning
+///
+/// The provisioning describes how the Physical Volumes are provisioned.
+provisioning: ProvisioningSpec?

@@ -1,0 +1,23 @@
+/// KubeClusterConfig configures Kubernetes cluster base settings.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeClusterConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeClusterConfig"
+
+/// clusterName
+///
+/// The cluster name. It is used mostly for informational purposes, and gets included into kubeconfig.
+clusterName: String
+
+/// endpoint
+///
+/// The Kubernetes API endpoint. For a single-node cluster, this can be the same as the node’s IP
+/// address. For a multi-node cluster, this should be the load balancer’s IP address or DNS name, or any
+/// other address (VIP, BGP, etc.) that can be used to reach the Kubernetes API server from the nodes.
+endpoint: String(contains(Regex("^https://")))

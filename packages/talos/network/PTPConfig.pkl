@@ -1,0 +1,17 @@
+/// PTPConfig represents a PTP (Precision Time Protocol) configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.PTPConfig
+
+extends ".../TalosObject.pkl"
+
+/// devices
+///
+/// description: | A list of PTP devices to sync with (e.g. provided by the hypervisor).
+///
+/// A PTP device is typically represented as a character device file in the /dev directory,
+///
+/// such as /dev/ptp0 or /dev/ptp_kvm. These devices are used to synchronize the system time with an
+/// external time source that supports the Precision Time Protocol.
+devices: Listing<String>?

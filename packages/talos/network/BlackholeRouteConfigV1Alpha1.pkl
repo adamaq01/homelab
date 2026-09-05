@@ -1,0 +1,21 @@
+/// BlackholeRouteConfig is a config document to configure blackhole routes.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.BlackholeRouteConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "BlackholeRouteConfig"
+
+/// name
+///
+/// Route destination as an address prefix.
+name: String
+
+/// metric
+///
+/// The optional metric for the route.
+metric: Int?

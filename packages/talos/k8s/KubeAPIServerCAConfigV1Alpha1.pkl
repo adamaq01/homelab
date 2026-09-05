@@ -1,0 +1,39 @@
+/// KubeAPIServerCAConfig configures Kubernetes API server CA.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeAPIServerCAConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeAPIServerCAConfig"
+
+/// issuingCA
+///
+/// The currently active issuing certificate authority for the Kubernetes API server.
+///
+/// This field should only be set for the controlplane machines. The value contains a private key and a
+/// certificate, PEM encoded.
+issuingCA: IssuingCA?
+
+/// acceptedCAs
+///
+/// The list of accepted CA certificates for the Kubernetes API server.
+///
+/// The value should be a PEM encoded certificate. The issuing CA certificate is automatically added to
+/// the list of accepted CAs.
+acceptedCAs: Listing<String>?
+
+/// issuingCA
+///
+/// The currently active issuing certificate authority for the Kubernetes API server.
+///
+/// This field should only be set for the controlplane machines. The value contains a private key and a
+/// certificate, PEM encoded.
+class IssuingCA {
+  cert: String?
+
+  key: String?
+}

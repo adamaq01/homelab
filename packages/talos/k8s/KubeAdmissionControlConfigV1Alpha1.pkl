@@ -1,0 +1,22 @@
+/// KubeAdmissionControlConfig configures kube-apiserver admission control plugins.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeAdmissionControlConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeAdmissionControlConfig"
+
+/// name
+///
+/// Admission control plugin name, should be a valid Kubernetes admission control plugin name.
+name: String?
+
+/// configuration
+///
+/// Kubernetes API server admission control plugins. The value is the literal Kubernetes admission
+/// control configuration.
+configuration: Dynamic?

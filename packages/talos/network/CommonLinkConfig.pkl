@@ -1,0 +1,39 @@
+/// CommonLinkConfig is common configuration for network links, and logical links.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.CommonLinkConfig
+
+extends ".../TalosObject.pkl"
+
+import "AddressConfig.pkl"
+import "RouteConfig.pkl"
+
+/// up
+///
+/// Bring the link up or down.
+///
+/// If not specified, the link will be brought up.
+up: Boolean?
+
+/// mtu
+///
+/// Configure LinkMTU (Maximum Transmission Unit) for the link.
+///
+/// If not specified, the system default LinkMTU will be used (usually 1500).
+mtu: Int?
+
+/// addresses
+///
+/// Configure addresses to be statically assigned to the link.
+addresses: Listing<AddressConfig>?
+
+/// routes
+///
+/// Configure routes to be statically created via the link.
+routes: Listing<RouteConfig>?
+
+/// multicast
+///
+/// Set the multicast capability of the link.
+multicast: Boolean?

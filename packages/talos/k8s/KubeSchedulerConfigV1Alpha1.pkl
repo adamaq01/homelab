@@ -1,0 +1,52 @@
+/// KubeSchedulerConfig configures kube-scheduler controlplane static pod.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeSchedulerConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeSchedulerConfig"
+
+/// enabled
+///
+/// By default, kube-scheduler static pod is enabled. Set to false to disable the kube-scheduler
+/// (assuming it runs on other controlplane node).
+enabled: Boolean?
+
+/// image
+///
+/// The container image used to run the kube-scheduler component.
+///
+/// The image reference should contain the tag, even if it is pinned by digest.
+image: String
+
+/// config
+///
+/// Provide configuration for the kube-scheduler static pod.
+///
+/// There is no need to specify kind and apiVersion fields (they will be set automatically), but the rest
+/// of the configuration should be provided as is.
+///
+/// See https://kubernetes.io/docs/reference/scheduling/config/ for the details of the configuration
+/// schema.
+config: Dynamic?
+
+/// extraArgs
+///
+/// Extra command line arguments to supply to the kube-scheduler.
+///
+/// It is preferable to use config field to provide configuration overrides.
+extraArgs: Mapping<String, String|Listing<String>>?
+
+/// env
+///
+/// The env field allows for the addition of environment variables for the kube-scheduler.
+env: Mapping<String(contains(Regex(".*"))), String>?
+
+/// resources
+///
+/// Configure the kube-scheduler resources.
+resources: Dynamic?

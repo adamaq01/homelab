@@ -1,0 +1,6 @@
+open module common
+
+clusterName = "pegasus"
+domain = "home.adamaq01.fr"
+controlPlaneEndpoint = "https://k8s.\(domain):6443"
+controlPlaneVIP = "192.168.2.251"

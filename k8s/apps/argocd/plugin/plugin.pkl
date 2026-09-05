@@ -1,0 +1,31 @@
+/// `ConfigManagementPlugin` descriptor for the `pkl` CMP sidecar.
+/// This is not a cluster resource, argocd-cmp-server just reads this file at a fixed
+/// path (`/home/argocd/cmp-server/config/plugin.yaml`) on container start.
+apiVersion = "argoproj.io/v1alpha1"
+kind = "ConfigManagementPlugin"
+
+metadata {
+  name = "pkl"
+}
+
+spec {
+  init {
+    command { "pkl" }
+    args { "project"; "resolve"; "--cache-dir"; "/tmp/pkl-cache" }
+  }
+  generate {
+    command { "sh"; "-c" }
+    args {
+      "exec pkl eval --cache-dir /tmp/pkl-cache chart.pkl"
+    }
+  }
+  discover {
+    find {
+      glob = "**/chart.pkl"
+    }
+  }
+}
+
+output {
+  renderer = new YamlRenderer {}
+}

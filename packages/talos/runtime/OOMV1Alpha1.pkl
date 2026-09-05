@@ -1,0 +1,53 @@
+/// OOMConfig is a Out of Memory handler config document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.OOMV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "OOMConfig"
+
+/// triggerExpression
+///
+/// This expression defines when to trigger OOM action.
+///
+/// The expression must evaluate to a boolean value. If the expression returns true, then OOM ranking and
+/// killing will be handled.
+///
+/// This expression receives the following parameters: - memory{some,full}{avg10,avg60,avg300,total} -
+/// double, representing PSI values - time_since_trigger - duration since the last OOM handler trigger
+/// event
+triggerExpression: String?
+
+/// cgroupRankingExpression
+///
+/// This expression defines how to rank cgroups for OOM handler.
+///
+/// The cgroup with the highest rank (score) will be evicted first. The expression must evaluate to a
+/// double value.
+///
+/// This expression receives the following parameters: - memory_max - Optional - in bytes -
+/// memory_current - Optional - in bytes - memory_peak - Optional - in bytes - path - string, path to the
+/// cgroup - class - int. This represents cgroup QoS class, and matches one of the constants, which are
+/// also provided: Besteffort, Burstable, Guaranteed, Podruntime, System
+cgroupRankingExpression: String?
+
+/// strictCgroupClassOrdering
+///
+/// Whether to enforce strict QoS class ordering when selecting an OOM victim.
+///
+/// When enabled (the default), cgroups in the lowest-importance QoS class are killed first, and the
+/// ranking score only breaks ties within a class. When disabled, the highest-scoring cgroup is killed
+/// regardless of class.
+strictCgroupClassOrdering: Boolean?
+
+/// sampleInterval
+///
+/// How often should the trigger expression be evaluated.
+///
+/// This interval determines how often should the OOM controller check for the OOM condition using the
+/// provided expression. Adjusting it can help tune the reactivity of the OOM handler.
+sampleInterval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

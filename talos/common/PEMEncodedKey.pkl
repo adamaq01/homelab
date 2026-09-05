@@ -1,0 +1,8 @@
+/// A PEM-encoded private key with no accompanying certificate. Mirrors
+/// `github.com/siderolabs/crypto/x509.PEMEncodedKey` — used for `SecretsBundle.certs.k8sserviceaccount`,
+/// the one [common.SecretsBundle] cert entry that has no certificate of its own. Also the return type of
+/// [PEMCertificateAndKey.toPEMEncodedKey()].
+module common.PEMEncodedKey
+
+/// Base64-encoded PEM private key.
+key: String

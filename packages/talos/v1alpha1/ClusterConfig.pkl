@@ -1,0 +1,31 @@
+/// ClusterConfig represents the cluster-wide config values.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.ClusterConfig
+
+extends ".../TalosObject.pkl"
+
+import "EtcdConfig.pkl"
+import "ExternalCloudProviderConfig.pkl"
+import "AdminKubeconfigConfig.pkl"
+
+/// token
+///
+/// The bootstrap token used to join the cluster.
+token: String?
+
+/// etcd
+///
+/// Etcd specific configuration options.
+etcd: EtcdConfig?
+
+/// externalCloudProvider
+///
+/// External cloud provider configuration.
+externalCloudProvider: ExternalCloudProviderConfig?
+
+/// adminKubeconfig
+///
+/// Settings for admin kubeconfig generation. Certificate lifetime can be configured.
+adminKubeconfig: AdminKubeconfigConfig?

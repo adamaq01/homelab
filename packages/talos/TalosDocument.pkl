@@ -1,0 +1,8 @@
+/// Base module for standalone Talos machine config *documents*
+abstract module talos.TalosDocument
+
+extends "TalosObject.pkl"
+
+apiVersion: String
+
+kind: String

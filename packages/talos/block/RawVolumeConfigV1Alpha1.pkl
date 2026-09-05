@@ -1,0 +1,35 @@
+/// RawVolumeConfig is a raw volume configuration document.\nRaw volumes allow to create partitions
+/// without formatting them.\n If you want to use local storage, user volumes is a better choice,\n raw
+/// volumes are intended to be used with CSI provisioners.\nThe partition label is automatically
+/// generated as `r-<name>`.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.RawVolumeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ProvisioningSpec.pkl"
+import "EncryptionSpec.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "RawVolumeConfig"
+
+/// name
+///
+/// Name of the volume.
+///
+/// Name might be between 1 and 34 characters long and can only contain: lowercase and uppercase ASCII
+/// letters, digits, and hyphens.
+name: String?
+
+/// provisioning
+///
+/// The provisioning describes how the volume is provisioned.
+provisioning: ProvisioningSpec?
+
+/// encryption
+///
+/// The encryption describes how the volume is encrypted.
+encryption: EncryptionSpec?

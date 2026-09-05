@@ -1,0 +1,21 @@
+/// NTPConfig represents a NTP server configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.NTPConfig
+
+extends ".../TalosObject.pkl"
+
+/// servers
+///
+/// Specifies time (NTP) servers to use for setting the system time. Defaults to time.cloudflare.com when
+/// configuration is not provided.
+servers: Listing<String>?
+
+/// useNTS
+///
+/// Enables NTS (Network Time Security) for NTP queries. NTS provides authenticated and encrypted time
+/// synchronization using TLS. When enabled, all NTP capable servers must be specified as hostnames (not
+/// IP addresses). Defaults to true when configuration is not provided, using the system default server
+/// (time.cloudflare.com).
+useNTS: Boolean?

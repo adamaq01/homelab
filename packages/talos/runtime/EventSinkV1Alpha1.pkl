@@ -1,0 +1,16 @@
+/// EventSinkConfig is a event sink config document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.EventSinkV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "EventSinkConfig"
+
+/// endpoint
+///
+/// The endpoint for the event sink as ‘host:port’.
+endpoint: String?

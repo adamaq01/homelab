@@ -1,0 +1,17 @@
+/// ContainerCapabilities adjusts the container's Linux capabilities.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerCapabilities
+
+extends ".../TalosObject.pkl"
+
+/// add
+///
+/// Capabilities to grant, without the CAP_ prefix.
+add: Listing<String>?
+
+/// drop
+///
+/// Capabilities to remove, without the CAP_ prefix. ALL removes every capability.
+drop: Listing<String>?

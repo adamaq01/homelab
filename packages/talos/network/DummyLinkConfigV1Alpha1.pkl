@@ -1,0 +1,53 @@
+/// DummyLinkConfig is a config document to create a dummy (virtual) network link.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.DummyLinkConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "AddressConfig.pkl"
+import "RouteConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "DummyLinkConfig"
+
+/// name
+///
+/// Name of the dummy link (interface).
+name: String
+
+/// hardwareAddr
+///
+/// Override the hardware (MAC) address of the link.
+hardwareAddr: String(matches(Regex("^[0-9a-f:]+$")))?
+
+/// up
+///
+/// Bring the link up or down.
+///
+/// If not specified, the link will be brought up.
+up: Boolean?
+
+/// mtu
+///
+/// Configure LinkMTU (Maximum Transmission Unit) for the link.
+///
+/// If not specified, the system default LinkMTU will be used (usually 1500).
+mtu: Int?
+
+/// addresses
+///
+/// Configure addresses to be statically assigned to the link.
+addresses: Listing<AddressConfig>?
+
+/// routes
+///
+/// Configure routes to be statically created via the link.
+routes: Listing<RouteConfig>?
+
+/// multicast
+///
+/// Set the multicast capability of the link.
+multicast: Boolean?

@@ -1,0 +1,15 @@
+/// A PEM-encoded certificate and its private key, as produced by `talosctl gen secrets` and consumed by
+/// `talosctl gen config`. Mirrors `github.com/siderolabs/crypto/x509.PEMEncodedCertificateAndKey`.
+module common.PEMCertificateAndKey
+
+import "PEMEncodedKey.pkl"
+
+/// Base64-encoded PEM certificate.
+crt: String
+
+/// Base64-encoded PEM private key.
+key: String
+
+/// Discards [crt], keeping only [key] — e.g. to satisfy `SecretsBundle.certs.k8sserviceaccount`, which
+/// upstream types as a bare [PEMEncodedKey] since it has no certificate of its own.
+function toPEMEncodedKey(): PEMEncodedKey = new PEMEncodedKey { key = this.key }

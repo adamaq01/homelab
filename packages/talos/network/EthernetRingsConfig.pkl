@@ -1,0 +1,57 @@
+/// EthernetRingsConfig is a configuration for Ethernet link rings.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.EthernetRingsConfig
+
+extends ".../TalosObject.pkl"
+
+/// rx
+///
+/// Number of RX rings.
+rx: Int?
+
+/// tx
+///
+/// Number of TX rings.
+tx: Int?
+
+/// rx-mini
+///
+/// Number of RX mini rings.
+`rx-mini`: Int?
+
+/// rx-jumbo
+///
+/// Number of RX jumbo rings.
+`rx-jumbo`: Int?
+
+/// rx-buf-len
+///
+/// RX buffer length.
+`rx-buf-len`: Int?
+
+/// cqe-size
+///
+/// CQE size.
+`cqe-size`: Int?
+
+/// tx-push
+///
+/// TX push enabled.
+`tx-push`: Boolean?
+
+/// rx-push
+///
+/// RX push enabled.
+`rx-push`: Boolean?
+
+/// tx-push-buf-len
+///
+/// TX push buffer length.
+`tx-push-buf-len`: Int?
+
+/// tcp-data-split
+///
+/// TCP data split enabled.
+`tcp-data-split`: Boolean?

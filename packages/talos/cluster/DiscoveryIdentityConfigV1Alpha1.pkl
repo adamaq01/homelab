@@ -1,0 +1,23 @@
+/// DiscoveryIdentityConfig is a config document to configure the cluster identity used by the discovery
+/// service.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cluster.DiscoveryIdentityConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "DiscoveryIdentityConfig"
+
+/// clusterID
+///
+/// Globally unique identifier for this cluster (base64 encoded random 32 bytes).
+clusterID: String
+
+/// clusterSecret
+///
+/// Shared secret of cluster (base64 encoded random 32 bytes). This secret is shared among cluster
+/// members but should never be sent over the network.
+clusterSecret: String

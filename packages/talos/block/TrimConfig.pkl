@@ -1,0 +1,20 @@
+/// TrimConfig describes per-volume filesystem trim (fstrim) configuration.\n\nIt overrides the global
+/// FilesystemTrimConfig for the volume.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.TrimConfig
+
+extends ".../TalosObject.pkl"
+
+/// enabled
+///
+/// Enable or disable trimming for this volume.
+///
+/// If not set, trimming is enabled when the global FilesystemTrimConfig is present.
+enabled: Boolean?
+
+/// interval
+///
+/// The interval at which the volume is trimmed, overriding the global trim interval.
+interval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

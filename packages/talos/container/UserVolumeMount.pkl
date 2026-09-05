@@ -1,0 +1,22 @@
+/// UserVolumeMount mounts a user volume by name.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.UserVolumeMount
+
+extends ".../TalosObject.pkl"
+
+/// name
+///
+/// Name of the UserVolumeConfig document to mount.
+name: String?
+
+/// destination
+///
+/// Absolute path inside the container’s mount namespace.
+destination: String?
+
+/// options
+///
+/// Mount options. User volume mounts are writable by default (rw).
+options: ("ro"|"rw"|"noexec"|"nosuid"|"nodev"|"noatime"|"rbind"|"rshared")?

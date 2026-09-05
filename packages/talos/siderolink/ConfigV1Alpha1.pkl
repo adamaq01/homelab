@@ -1,0 +1,23 @@
+/// SideroLinkConfig is a SideroLink connection machine configuration document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module siderolink.ConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "SideroLinkConfig"
+
+/// apiUrl
+///
+/// SideroLink API URL to connect to.
+apiUrl: String(contains(Regex("^(https|grpc)://")))?
+
+/// uniqueToken
+///
+/// SideroLink unique token to use for the connection (optional).
+///
+/// This value is overridden with META key UniqueMachineToken.
+uniqueToken: String?

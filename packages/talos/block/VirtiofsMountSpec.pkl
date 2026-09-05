@@ -1,0 +1,12 @@
+/// VirtiofsMountSpec describes Virtiofs mount options.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.VirtiofsMountSpec
+
+extends ".../TalosObject.pkl"
+
+/// tag
+///
+/// Selector tag for the Virtiofs mount.
+tag: String?

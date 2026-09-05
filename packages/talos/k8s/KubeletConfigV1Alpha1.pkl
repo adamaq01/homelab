@@ -1,0 +1,46 @@
+/// KubeletConfig configures kubelet component on the node.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeletConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeletConfig"
+
+/// image
+///
+/// The container image used to run the kubelet component.
+///
+/// The image reference should contain the tag, even if it is pinned by digest.
+image: String
+
+/// config
+///
+/// Provide extra configuration for the kubelet.
+///
+/// There is no need to specify kind and apiVersion fields (they will be set automatically), but the rest
+/// of the configuration should be provided as is.
+///
+/// See https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1/ for the details of the
+/// configuration schema.
+config: Dynamic?
+
+/// extraArgs
+///
+/// Extra command line arguments to supply to the kubelet.
+///
+/// It is preferable to use config field to provide configuration overrides.
+extraArgs: Mapping<String, String|Listing<String>>?
+
+/// clusterDNS
+///
+/// The ClusterDNS field is an optional reference to an alternative kubelet clusterDNS ip list.
+clusterDNS: Listing<String>?
+
+/// defaultRuntimeSeccompProfileEnabled
+///
+/// Enable container runtime default Seccomp profile.
+defaultRuntimeSeccompProfileEnabled: Boolean?

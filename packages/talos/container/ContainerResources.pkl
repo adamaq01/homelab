@@ -1,0 +1,14 @@
+/// ContainerResources configures cgroup v2 resource limits.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerResources
+
+extends ".../TalosObject.pkl"
+
+import "ContainerResourceLimits.pkl"
+
+/// limits
+///
+/// Hard ceilings the container cannot exceed.
+limits: ContainerResourceLimits?

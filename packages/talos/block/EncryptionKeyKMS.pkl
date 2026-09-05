@@ -1,0 +1,12 @@
+/// EncryptionKeyKMS represents a key that is generated and then sealed/unsealed by the KMS server.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.EncryptionKeyKMS
+
+extends ".../TalosObject.pkl"
+
+/// endpoint
+///
+/// KMS endpoint to Seal/Unseal the key.
+endpoint: String?

@@ -1,0 +1,23 @@
+/// FilesystemTrimConfig is a filesystem trim (fstrim) configuration document.\nFilesystem trim (the
+/// equivalent of the `fstrim` command) periodically discards unused blocks\nof mounted filesystems which
+/// support trimming.\n\nWhen this document is present, Talos builds a stable per-node, per-volume
+/// schedule and trims\neligible volumes at the configured interval. If the document is absent, no
+/// automatic trimming\nis performed (unless enabled explicitly on a per-volume basis).\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.FilesystemTrimConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "FilesystemTrimConfig"
+
+/// interval
+///
+/// The interval at which the filesystems are trimmed.
+///
+/// The trim is performed at a stable, hash-derived time within the interval, which is different for each
+/// volume and each node, so that trims are spread out over time.
+interval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

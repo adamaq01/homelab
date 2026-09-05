@@ -1,0 +1,22 @@
+/// BGPBFDConfig configures BFD for a BGP neighbor.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.BGPBFDConfig
+
+extends ".../TalosObject.pkl"
+
+/// transmitInterval
+///
+/// Desired minimum transmit interval. Zero uses the implementation default.
+transmitInterval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\.\d+|\d+)([nuµm]?s|m|h))|0)+$"#)))?
+
+/// receiveInterval
+///
+/// Required minimum receive interval. Zero uses the implementation default.
+receiveInterval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\.\d+|\d+)([nuµm]?s|m|h))|0)+$"#)))?
+
+/// detectMultiplier
+///
+/// BFD detection multiplier. Zero uses the implementation default.
+detectMultiplier: Int?

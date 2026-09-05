@@ -1,0 +1,22 @@
+/// HostPathMount bind-mounts a host path.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.HostPathMount
+
+extends ".../TalosObject.pkl"
+
+/// source
+///
+/// Absolute path on the host. Must already exist.
+source: String?
+
+/// destination
+///
+/// Absolute path inside the container’s mount namespace.
+destination: String?
+
+/// options
+///
+/// Mount options. Host path mounts are writable by default (rw).
+options: Listing<String>?

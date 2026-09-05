@@ -1,0 +1,32 @@
+/// HostDNSConfig represents host DNS configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.HostDNSConfig
+
+extends ".../TalosObject.pkl"
+
+/// enabled
+///
+/// Enable host DNS caching resolver.
+///
+/// When enabled, a local DNS caching resolver is deployed on the host to improve DNS resolution
+/// performance and reliability. Upstream DNS servers for the host resolver are configured using the
+/// nameservers field in this config document.
+enabled: Boolean?
+
+/// forwardKubeDNSToHost
+///
+/// Use the host DNS resolver as upstream for Kubernetes CoreDNS pods.
+///
+/// When enabled, CoreDNS pods use host DNS server as the upstream DNS (instead of using configured
+/// upstream DNS resolvers directly).
+forwardKubeDNSToHost: Boolean?
+
+/// resolveMemberNames
+///
+/// Resolve member hostnames using the host DNS resolver.
+///
+/// When enabled, cluster member hostnames and node names are resolved using the host DNS resolver. This
+/// requires service discovery to be enabled.
+resolveMemberNames: Boolean?

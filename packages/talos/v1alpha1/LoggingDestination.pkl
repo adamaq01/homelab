@@ -1,0 +1,22 @@
+/// LoggingDestination struct configures Talos logging destination.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.LoggingDestination
+
+extends ".../TalosObject.pkl"
+
+/// endpoint
+///
+/// Where to send logs. Supported protocols are “tcp” and “udp”.
+endpoint: String(contains(Regex("^(tcp|udp)://.+")))?
+
+/// format
+///
+/// Logs format.
+format: "json_lines"?
+
+/// extraTags
+///
+/// Extra tags (key-value) pairs to attach to every log message sent.
+extraTags: Mapping<String(contains(Regex(".*"))), String>?

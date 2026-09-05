@@ -1,0 +1,64 @@
+/// VLANConfig is a config document to create a VLAN (virtual LAN) over a parent link.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.VLANConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "AddressConfig.pkl"
+import "RouteConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "VLANConfig"
+
+/// name
+///
+/// Name of the VLAN link (interface) to be created.
+name: String
+
+/// vlanID
+///
+/// VLAN ID to be used for the VLAN link.
+vlanID: Int
+
+/// vlanMode
+///
+/// Set the VLAN mode to use. If not set, defaults to ‘802.1q’.
+vlanMode: ("802.1q"|"802.1ad")?
+
+/// parent
+///
+/// Name of the parent link (interface) on which the VLAN link will be created. Link aliases can be used
+/// here as well.
+parent: String
+
+/// up
+///
+/// Bring the link up or down.
+///
+/// If not specified, the link will be brought up.
+up: Boolean?
+
+/// mtu
+///
+/// Configure LinkMTU (Maximum Transmission Unit) for the link.
+///
+/// If not specified, the system default LinkMTU will be used (usually 1500).
+mtu: Int?
+
+/// addresses
+///
+/// Configure addresses to be statically assigned to the link.
+addresses: Listing<AddressConfig>?
+
+/// routes
+///
+/// Configure routes to be statically created via the link.
+routes: Listing<RouteConfig>?
+
+/// multicast
+///
+/// Set the multicast capability of the link.
+multicast: Boolean?

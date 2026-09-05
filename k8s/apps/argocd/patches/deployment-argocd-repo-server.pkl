@@ -1,0 +1,57 @@
+/// Patches in the `pkl` CMP sidecar into the `argocd-repo-server` Deployment.
+///
+/// Naming the class explicitly on the two brand new list elements (`new Volume { ... }`,
+/// `new PodSpec.Container { ... }`) is still required because `deepToTyped` builds `Listing` property
+/// values (like this Deployment's pre-existing `volumes`/`containers`) without the element-type
+/// parameter a literal `new Deployment { ... }` construction would carry, so *appending* to one of
+/// those listings via bare `new { ... }` has no type to infer from and silently produces `Dynamic`,
+/// which then fails Pkl's `Listing<Volume>`/`Listing<Container>` property check on read. Naming the
+/// class removes the need for that inference entirely. Nested `new { ... }`s that aren't appending to a
+/// pre-existing `deepToTyped` listing (e.g. this container's own brand new `volumeMounts`) don't need
+/// this.
+
+amends "@manifest/Patch.pkl"
+
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "@k8s/api/core/v1/PodSpec.pkl"
+import "@k8s/api/core/v1/Volume.pkl"
+
+patch = new Mixin<Deployment> {
+  spec {
+    template {
+      spec {
+        volumes {
+          new Volume {
+            name = "pkl-temp"
+            emptyDir {}
+          }
+        }
+        containers {
+          new PodSpec.Container {
+            name = "pkl"
+            image = "ghcr.io/adamaq01/homelab/pkl-plugin:0.32.1"
+            imagePullPolicy = "Always"
+            securityContext {
+              runAsNonRoot = true
+              runAsUser = 999
+            }
+            volumeMounts {
+              new {
+                name = "var-files"
+                mountPath = "/var/run/argocd"
+              }
+              new {
+                name = "plugins"
+                mountPath = "/home/argocd/cmp-server/plugins"
+              }
+              new {
+                name = "pkl-temp"
+                mountPath = "/tmp"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

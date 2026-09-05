@@ -1,0 +1,46 @@
+/// BGPNeighborConfig configures a concrete BGP neighbor.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.BGPNeighborConfig
+
+extends ".../TalosObject.pkl"
+
+import "BGPBFDConfig.pkl"
+
+/// address
+///
+/// Neighbor IP address for a numbered session. Mutually exclusive with link.
+address: String?
+
+/// link
+///
+/// Link name or alias for an unnumbered (IPv6 link-local) session. Mutually exclusive with address.
+link: String?
+
+/// peerASN
+///
+/// Expected peer ASN. Zero accepts any ASN advertised by the peer (eBGP “external”).
+peerASN: Int?
+
+/// localASN
+///
+/// Local ASN override for this neighbor. Zero uses the instance local ASN.
+localASN: Int?
+
+/// passive
+///
+/// Wait for the neighbor to establish the connection instead of initiating it.
+passive: Boolean?
+
+/// holdTime
+///
+/// BGP hold time for this neighbor. Zero uses the implementation default.
+holdTime: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\.\d+|\d+)([nuµm]?s|m|h))|0)+$"#)))?
+
+/// bfd
+///
+/// BFD (Bidirectional Forwarding Detection) settings for this neighbor. The presence of this block
+/// enables BFD; an empty block uses the implementation defaults. BFD is supported only when the BGP
+/// instance uses the default routing domain, not a VRF.
+bfd: BGPBFDConfig?

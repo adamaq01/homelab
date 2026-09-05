@@ -1,0 +1,13 @@
+amends "..."
+
+import "@talos/runtime/UnattendedInstallConfigV1Alpha1.pkl" as UnattendedInstallConfig
+
+documents {
+  [[this is UnattendedInstallConfig]] {
+    provisioning {
+      diskSelector {
+        match = "disk.dev_path == \"/dev/sda\""
+      }
+    }
+  }
+}

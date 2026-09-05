@@ -1,0 +1,24 @@
+/// MountSpec describes how the volume is mounted.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.MountSpec
+
+extends ".../TalosObject.pkl"
+
+/// secure
+///
+/// Enable secure mount options (nosuid, nodev).
+///
+/// For dedicated ETCD and LOG volumes, this also enables noexec.
+///
+/// Defaults to true for better security. Supported for EPHEMERAL and dedicated ETCD, CRI, KUBELET and
+/// LOG volumes.
+secure: Boolean?
+
+/// disableAccessTime
+///
+/// If true, disable file access time updates.
+///
+/// Supported only for EPHEMERAL volume.
+disableAccessTime: Boolean?

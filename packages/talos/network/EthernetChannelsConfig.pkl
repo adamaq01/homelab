@@ -1,0 +1,27 @@
+/// EthernetChannelsConfig is a configuration for Ethernet link channels.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.EthernetChannelsConfig
+
+extends ".../TalosObject.pkl"
+
+/// rx
+///
+/// Number of RX channels.
+rx: Int?
+
+/// tx
+///
+/// Number of TX channels.
+tx: Int?
+
+/// other
+///
+/// Number of other channels.
+other: Int?
+
+/// combined
+///
+/// Number of combined channels.
+combined: Int?

@@ -1,0 +1,14 @@
+/// VolumeDiscoverySpec describes how the volume is discovered.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.VolumeDiscoverySpec
+
+extends ".../TalosObject.pkl"
+
+import "VolumeSelector.pkl"
+
+/// volumeSelector
+///
+/// The volume selector expression.
+volumeSelector: VolumeSelector?

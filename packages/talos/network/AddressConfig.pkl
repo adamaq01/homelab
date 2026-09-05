@@ -1,0 +1,21 @@
+/// AddressConfig represents a network address configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.AddressConfig
+
+extends ".../TalosObject.pkl"
+
+/// address
+///
+/// IP address to be assigned to the link.
+///
+/// This field must include the network prefix length (e.g. /24 for IPv4, /64 for IPv6).
+address: String(matches(Regex(#"^[0-9a-f.:]+/\d{1,3}$"#)))
+
+/// routePriority
+///
+/// Configure the route priority (metric) for routes created for this address.
+///
+/// If not specified, the system default route priority will be used.
+routePriority: Int?

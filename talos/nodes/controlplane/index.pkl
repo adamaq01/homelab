@@ -1,0 +1,171 @@
+extends "..."
+
+import "@k8s/api/core/v1/Namespace.pkl"
+import "@talos/k8s/KubeAdmissionControlConfigV1Alpha1.pkl" as KubeAdmissionControlConfig
+import "@talos/k8s/KubeAggregatorCAConfigV1Alpha1.pkl" as KubeAggregatorCAConfig
+import "@talos/k8s/KubeAPIServerConfigV1Alpha1.pkl" as KubeAPIServerConfig
+import "@talos/k8s/KubeAuditPolicyConfigV1Alpha1.pkl" as KubeAuditPolicyConfig
+import "@talos/k8s/KubeAuthenticationConfigV1Alpha1.pkl" as KubeAuthenticationConfig
+import "@talos/k8s/KubeAuthorizerConfigV1Alpha1.pkl" as KubeAuthorizerConfig
+import "@talos/k8s/KubeControllerManagerConfigV1Alpha1.pkl" as KubeControllerManagerConfig
+import "@talos/k8s/KubeCoreDNSConfigV1Alpha1.pkl" as KubeCoreDNSConfig
+import "@talos/k8s/KubeEtcdEncryptionConfigV1Alpha1.pkl" as KubeEtcdEncryptionConfig
+import "@talos/k8s/KubeFlannelCNIConfigV1Alpha1.pkl" as KubeFlannelCNIConfig
+import "@talos/k8s/KubeInlineManifestConfigV1Alpha1.pkl" as KubeInlineManifestConfig
+import "@talos/k8s/KubeNodeConfigV1Alpha1.pkl" as KubeNodeConfig
+import "@talos/k8s/KubeProxyConfigV1Alpha1.pkl" as KubeProxyConfig
+import "@talos/k8s/KubeSchedulerConfigV1Alpha1.pkl" as KubeSchedulerConfig
+import "@talos/k8s/KubeServiceAccountConfigV1Alpha1.pkl" as KubeServiceAccountConfig
+import "@talos/network/Layer2VIPConfigV1Alpha1.pkl" as Layer2VIPConfig
+
+allowScheduling: Boolean = false
+
+documents {
+  [[this is KubeNodeConfig]] {
+    labels {
+      ["node-role.kubernetes.io/control-plane"] = ""
+      when (!allowScheduling) {
+        ["node.kubernetes.io/exclude-from-external-load-balancers"] = ""
+      }
+    }
+    when (!allowScheduling) {
+      taints {
+        ["node-role.kubernetes.io/control-plane"] = "NoSchedule"
+      }
+    }
+  }
+  (KubeAggregatorCAConfig) {
+    // Unlike `Config.machine.ca`/`cluster.etcd.ca` (base64), this document's `issuingCA`/`acceptedCAs`
+    // want the raw PEM text — see the field docstrings in the generated `@talos` schema.
+    issuingCA {
+      cert = module.secrets.certs.k8saggregator.crt.base64Decoded
+      key = module.secrets.certs.k8saggregator.key.base64Decoded
+    }
+  }
+  (KubeAdmissionControlConfig) {
+    name = "PodSecurity"
+    configuration {
+      apiVersion = "pod-security.admission.config.k8s.io/v1alpha1"
+      defaults {
+        audit = "restricted"
+        `audit-version` = "latest"
+        enforce = "baseline"
+        `enforce-version` = "latest"
+        warn = "restricted"
+        `warn-version` = "latest"
+      }
+      exemptions {
+        namespaces {
+          "kube-system"
+        }
+        runtimeClasses = new Listing {}
+        usernames = new Listing {}
+      }
+      kind = "PodSecurityConfiguration"
+    }
+  }
+  (KubeAuditPolicyConfig) {
+    configuration {
+      apiVersion = "audit.k8s.io/v1"
+      kind = "Policy"
+      rules {
+        new {
+          level = "Metadata"
+        }
+      }
+    }
+  }
+  (KubeAuthenticationConfig) {
+    configuration {
+      anonymous {
+        conditions {
+          new { path = "/livez" }
+          new { path = "/readyz" }
+          new { path = "/healthz" }
+        }
+        enabled = true
+      }
+      jwt = new Listing {}
+    }
+  }
+  (KubeAuthorizerConfig) {
+    name = "node"
+    type = "Node"
+  }
+  (KubeAuthorizerConfig) {
+    name = "rbac"
+    type = "RBAC"
+  }
+  (KubeEtcdEncryptionConfig) {
+    config {
+      resources {
+        new {
+          providers {
+            new {
+              secretbox {
+                keys {
+                  new {
+                    name = "key2"
+                    secret = module.secrets.secrets.secretboxencryptionsecret
+                  }
+                }
+              }
+            }
+          }
+          resources { "secrets" }
+        }
+      }
+    }
+  }
+  (KubeServiceAccountConfig) {
+    issuer {
+      privateKey = module.secrets.certs.k8sserviceaccount.key.base64Decoded
+      issuerURL = module.controlPlaneEndpoint
+    }
+  }
+  (KubeAPIServerConfig) {
+    image = "registry.k8s.io/kube-apiserver:v1.37.0-rc.1"
+  }
+  (KubeControllerManagerConfig) {
+    image = "registry.k8s.io/kube-controller-manager:v1.37.0-rc.1"
+  }
+  (KubeSchedulerConfig) {
+    image = "registry.k8s.io/kube-scheduler:v1.37.0-rc.1"
+    config {}
+  }
+  (KubeProxyConfig) {
+    image = "registry.k8s.io/kube-proxy:v1.37.0-rc.1"
+    config {}
+  }
+  (KubeFlannelCNIConfig) {
+    backendType = "vxlan"
+    backendPort = 4789
+  }
+  (KubeCoreDNSConfig) {
+    enabled = true
+  }
+  (Layer2VIPConfig) {
+    name = module.controlPlaneVIP
+    link = throw("Override this placeholder with the node's real network interface name")
+  }
+  // Bootstrap ArgoCD in the cluster
+  (KubeInlineManifestConfig) {
+    name = "argocd-namespace"
+    manifest =
+      new Namespace {
+        metadata {
+          name = "argocd"
+        }
+      }
+        .output
+        .text
+  }
+  (KubeInlineManifestConfig) {
+    name = "argocd"
+    manifest = import(".../k8s/apps/argocd/chart.pkl").output.text
+  }
+  (KubeInlineManifestConfig) {
+    name = "argocd-bootstrap"
+    manifest = import(".../k8s/chart.pkl").output.text
+  }
+}

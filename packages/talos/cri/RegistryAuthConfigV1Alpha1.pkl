@@ -1,0 +1,42 @@
+/// RegistryAuthConfig configures authentication for a registry endpoint.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.RegistryAuthConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "RegistryAuthConfig"
+
+/// name
+///
+/// Registry endpoint to apply the authentication configuration to.
+///
+/// Registry endpoint is the hostname part of the endpoint URL, e.g. ‘my-mirror.local:5000’ for
+/// ‘https://my-mirror.local:5000/v2/’.
+///
+/// The authentication configuration will apply to all image pulls for this registry endpoint, by Talos
+/// or any Kubernetes workloads.
+name: String
+
+/// username
+///
+/// Username/password authentication.
+username: String?
+
+/// password
+///
+/// Username/password authentication.
+password: String?
+
+/// auth
+///
+/// Raw authentication string.
+auth: String?
+
+/// identityToken
+///
+/// Identity token authentication.
+identityToken: String?

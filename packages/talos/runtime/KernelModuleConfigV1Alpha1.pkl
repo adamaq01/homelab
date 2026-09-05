@@ -1,0 +1,21 @@
+/// KernelModuleConfig is a config document to configure a Linux kernel module to load.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.KernelModuleConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KernelModuleConfig"
+
+/// name
+///
+/// Module name.
+name: String
+
+/// parameters
+///
+/// Module parameters, changes applied after reboot.
+parameters: Listing<String>?

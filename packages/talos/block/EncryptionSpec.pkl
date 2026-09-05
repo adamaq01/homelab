@@ -1,0 +1,45 @@
+/// EncryptionSpec represents volume encryption settings.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.EncryptionSpec
+
+extends ".../TalosObject.pkl"
+
+import "EncryptionKey.pkl"
+
+/// provider
+///
+/// Encryption provider to use for the encryption.
+provider: "luks2"?
+
+/// keys
+///
+/// Defines the encryption keys generation and storage method.
+keys: Listing<EncryptionKey>?
+
+/// cipher
+///
+/// Cipher to use for the encryption. Depends on the encryption provider.
+cipher: ("aes-xts-plain64"|"xchacha12,aes-adiantum-plain64"|"xchacha20,aes-adiantum-plain64")?
+
+/// keySize
+///
+/// Defines the encryption key length.
+keySize: Int?
+
+/// blockSize
+///
+/// Defines the encryption sector size.
+blockSize: Int?
+
+/// options
+///
+/// Additional –perf parameters for the LUKS2 encryption.
+options: Listing<String>?
+
+/// allowDiscards
+///
+/// Allow TRIM/discard requests to be passed through to the underlying device when the encrypted volume
+/// is opened. Defaults to false.
+allowDiscards: Boolean?

@@ -1,0 +1,26 @@
+/// FilesystemSpec configures the filesystem for the volume.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.FilesystemSpec
+
+extends ".../TalosObject.pkl"
+
+import "XFSSpec.pkl"
+
+/// type
+///
+/// Filesystem type. Default is xfs.
+type: ("ext4"|"xfs"|"btrfs")?
+
+/// projectQuotaSupport
+///
+/// Enables project quota support, valid only for ‘xfs’ filesystem.
+///
+/// Note: changing this value might require a full remount of the filesystem.
+projectQuotaSupport: Boolean?
+
+/// xfs
+///
+/// XFS-specific filesystem options, valid only for ‘xfs’ filesystem.
+xfs: XFSSpec?

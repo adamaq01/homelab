@@ -1,0 +1,17 @@
+/// ConfigFile is a config file for extension services.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module extensions.ConfigFile
+
+extends ".../TalosObject.pkl"
+
+/// content
+///
+/// The content of the extension service config file.
+content: String?
+
+/// mountPath
+///
+/// The mount path of the extension service config file.
+mountPath: String?

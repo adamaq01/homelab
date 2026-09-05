@@ -1,0 +1,19 @@
+/// ProvisioningSpec describes how the Physical Volumes are provisioned.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.ProvisioningSpec
+
+extends ".../TalosObject.pkl"
+
+import "DiskSelectorSpec.pkl"
+
+/// diskSelector
+///
+/// Matches disks to initialize as physical volumes.
+diskSelector: DiskSelectorSpec?
+
+/// wipe
+///
+/// Indicates if the installation disk should be wiped at installation time. Defaults to true.
+wipe: Boolean?

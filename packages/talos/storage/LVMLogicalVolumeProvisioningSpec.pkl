@@ -1,0 +1,27 @@
+/// LVMLogicalVolumeProvisioningSpec describes how an LV is provisioned.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.LVMLogicalVolumeProvisioningSpec
+
+extends ".../TalosObject.pkl"
+
+/// volumeGroup
+///
+/// Name of the volume group that backs the logical volume.
+volumeGroup: String?
+
+/// minSize
+///
+/// The minimum size of the volume.
+///
+/// Size is specified in bytes, but can be expressed in human readable format, e.g. 100MB.
+minSize: String?
+
+/// maxSize
+///
+/// The maximum size of the volume.
+///
+/// Size is specified in bytes or in percents of the volume group. It can be expressed in human readable
+/// format, e.g. 100MB or 80%.
+maxSize: String?

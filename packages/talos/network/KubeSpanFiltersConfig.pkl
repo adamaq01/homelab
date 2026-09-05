@@ -1,0 +1,31 @@
+/// KubeSpanFiltersConfig configures KubeSpan endpoint filters.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.KubeSpanFiltersConfig
+
+extends ".../TalosObject.pkl"
+
+/// endpoints
+///
+/// Filter node addresses which will be advertised as KubeSpan endpoints for peer-to-peer Wireguard
+/// connections.
+///
+/// By default, all addresses are advertised, and KubeSpan cycles through all endpoints until it finds
+/// one that works.
+///
+/// Default value: no filtering.
+endpoints: Listing<String>?
+
+/// excludeAdvertisedNetworks
+///
+/// Filter networks (e.g., host addresses, pod CIDRs if enabled) which will be advertised over KubeSpan.
+///
+/// By default, all networks are advertised. Use this filter to exclude some networks from being
+/// advertised.
+///
+/// Note: excluded networks will not be reachable over KubeSpan, so make sure these networks are still
+/// reachable via some other route (e.g., direct connection).
+///
+/// Default value: no filtering.
+excludeAdvertisedNetworks: Listing<String(matches(Regex(#"^[0-9a-f.:]+/\d{1,3}$"#)))>?

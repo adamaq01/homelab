@@ -1,0 +1,19 @@
+/// FeaturesConfig describes individual Talos features that can be switched on or off.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.FeaturesConfig
+
+extends ".../TalosObject.pkl"
+
+/// diskQuotaSupport
+///
+/// Enable XFS project quota support for EPHEMERAL partition and user disks. Also enables kubelet
+/// tracking of ephemeral disk usage in the kubelet via quota.
+diskQuotaSupport: Boolean?
+
+/// nodeAddressSortAlgorithm
+///
+/// Select the node address sort algorithm. The ‘v1’ algorithm sorts addresses by the address itself. The
+/// ‘v2’ algorithm prefers more specific prefixes. If unset, defaults to ‘v1’.
+nodeAddressSortAlgorithm: String?

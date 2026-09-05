@@ -1,0 +1,28 @@
+/// ExtensionServiceConfig is a extensionserviceconfig document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module extensions.ServiceConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "ConfigFile.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "ExtensionServiceConfig"
+
+/// name
+///
+/// Name of the extension service.
+name: String
+
+/// configFiles
+///
+/// The config files for the extension service.
+configFiles: Listing<ConfigFile>?
+
+/// environment
+///
+/// The environment for the extension service.
+environment: Listing<String>?

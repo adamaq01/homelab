@@ -1,0 +1,21 @@
+/// DiscoveryServiceConfig is a config document to configure a discovery service.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cluster.DiscoveryServiceConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "DiscoveryServiceConfig"
+
+/// name
+///
+/// Name of the discovery service configuration.
+name: String
+
+/// endpoint
+///
+/// Discovery service endpoint to use.
+endpoint: String(contains(Regex("^(http|https|grpc)://")))

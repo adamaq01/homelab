@@ -1,0 +1,37 @@
+/// TCPProbeConfig is a config document to configure network TCP connectivity probes.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.TCPProbeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "TCPProbeConfig"
+
+/// name
+///
+/// Name of the probe.
+name: String
+
+/// interval
+///
+/// Interval between probe attempts. Defaults to 1s.
+interval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?
+
+/// failureThreshold
+///
+/// Number of consecutive failures for the probe to be considered failed after having succeeded. Defaults
+/// to 0 (immediately fail on first failure).
+failureThreshold: Int?
+
+/// endpoint
+///
+/// Endpoint to probe in the format host:port.
+endpoint: String
+
+/// timeout
+///
+/// Timeout for the probe. Defaults to 10s.
+timeout: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

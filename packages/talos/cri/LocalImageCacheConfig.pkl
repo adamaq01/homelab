@@ -1,0 +1,12 @@
+/// LocalImageCacheConfig configures local image cache.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.LocalImageCacheConfig
+
+extends ".../TalosObject.pkl"
+
+/// enabled
+///
+/// Is the local image cache enabled.
+enabled: Boolean?

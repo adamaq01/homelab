@@ -1,0 +1,60 @@
+// Top-level module for defining an ArgoCD Application resource.
+// The actual root App for the App-of-Apps pattern is directly defined in `k8s/chart.pkl`.
+module App
+
+extends "common.pkl"
+
+import "pkl:reflect"
+import "@argocd/Application.pkl"
+
+local function findRoot(mod: reflect.Module): Module =
+  if (mod.supermodule == null)
+    mod.reflectee
+  else
+    findRoot(mod.supermodule!!)
+
+local relativePath = findRoot(reflect.Module(module)).relativePathTo(module)
+
+name: String = relativePath.last
+namespace: String = name
+autoSync: Boolean = true
+project: String = "default"
+source: Application.SpecSource = new {
+  repoURL = module.repoURL
+  targetRevision = module.targetRevision
+  path = "k8s/" + relativePath.join("/")
+}
+
+local app = this
+
+application: Application = new {
+  metadata {
+    name = app.name
+    namespace = module.argoCDNamespace
+    annotations {
+      // Reduces diff noise from server-defaulted fields.
+      ["argocd.argoproj.io/compare-options"] = "ServerSideDiff=true"
+    }
+  }
+  spec {
+    project = app.project
+    source = app.source
+    destination {
+      name = "in-cluster"
+      namespace = app.namespace
+    }
+    syncPolicy {
+      when (app.autoSync) {
+        automated {
+          prune = true
+          selfHeal = true
+        }
+      }
+      syncOptions {
+        "ApplyOutOfSyncOnly=true"
+        "CreateNamespace=true"
+        "ServerSideApply=true"
+      }
+    }
+  }
+}

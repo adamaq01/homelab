@@ -1,0 +1,22 @@
+/// XFSSpec configures XFS-specific filesystem options.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.XFSSpec
+
+extends ".../TalosObject.pkl"
+
+/// minAllocationGroupSize
+///
+/// The minimum size of an XFS allocation group.
+///
+/// On non-rotational devices mkfs.xfs sizes the allocation group count to the number of CPUs, which on
+/// machines with many cores and a modest disk yields hundreds of tiny allocation groups. Talos bounds
+/// the allocation group size from below to keep the geometry sane; this option overrides that bound.
+///
+/// Set to zero to use the mkfs.xfs defaults unchanged.
+///
+/// Note: this only affects volumes at the time they are formatted.
+///
+/// Size is specified in bytes, but can be expressed in human readable format, e.g. 100MB.
+minAllocationGroupSize: String?

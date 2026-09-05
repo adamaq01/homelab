@@ -1,0 +1,245 @@
+/// Generates one Pkl module per `$defs` entry in Talos's own JSON Schema, mirroring the schema's
+/// namespaces as directories. Each module's `rootSchema` is the `$defs` entry itself, so
+/// `ModuleGenerator` emits its fields as the module's own top-level properties instead of a wrapped
+/// class.
+///
+/// `org.json_schema.contrib`'s `generate.pkl` only emits one module per schema document and can't
+/// split a document into one module per `$defs` entry or nest output into namespace directories.
+///
+/// Every generated module extends a hand-written base at the package root, so default YAML rendering
+/// lives in one place. Nested/helper shapes extend `TalosObject.pkl`. Standalone document types extend
+/// `TalosDocument.pkl`, which declares `apiVersion`/`kind`. [isDocumentKey] detects these, [rootSchemaFor]
+/// strips the schema's own copies of those properties, and [documentMetaPropertyNodes] re-adds them as
+/// concrete overrides read from the schema's `enum`.
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/talos/_generate.pkl --project-dir packages/talos -m packages/talos
+/// ```
+module talos.generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@syntax/ModuleNode.pkl"
+import "@syntax/ClassOrModuleNode.pkl"
+import "@syntax/ExpressionNode.pkl"
+import "@syntax/IdentifierNode.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+import "@org.json_schema.contrib/internal/Type.pkl"
+import "@org.json_schema.contrib/internal/utils.pkl"
+
+// renovate: datasource=github-releases packageName=siderolabs/talos extractVersion=^v(?<version>.*)$
+version = "v1.14.0"
+
+sourceUri = "https://raw.githubusercontent.com/siderolabs/talos/\(version)/pkg/machinery/config/schemas/config.schema.json"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+local parsedRootSchema = Parser.parse(read(sourceUri)) as JsonSchema
+
+local allDefs: Map<String, JsonSchema.Schema> = parsedRootSchema.$defs!!.toMap()
+
+/// `$defs` keys are namespaced. The last dot-separated segment is the local name, everything before
+/// it becomes nested namespace directories.
+local function namespacePartsOf(key: String): List<String> = key.split(".").dropLast(1)
+
+local function localNameOf(key: String): String = utils.pascalCase(key.split(".").last)
+
+local function moduleNameOf(key: String): String = (namespacePartsOf(key) + List(localNameOf(key))).join(".")
+
+local function filePathFor(key: String): String = (namespacePartsOf(key) + List("\(localNameOf(key)).pkl")).join("/")
+
+/// A couple of `$defs` entries describe a custom-marshaled Go type as an empty JSON object, because the
+/// schema reflector can't see through the type's custom `UnmarshalYAML`. This has to be hand-supplied
+/// since it can't be derived from the schema. [scalarOverrides] maps such a key to the literal Pkl type
+/// its consumers should use instead of the generated module. That key is then skipped in [output], and
+/// [postProcess] substitutes the override type wherever the key would otherwise be referenced.
+local scalarOverrides: Map<String, String> = Map(
+  "v1alpha1.Endpoint", #"String(matches(Regex("^(tcp|udp)://.+")))"#
+)
+
+/// A `$defs` entry is a standalone document, as opposed to a nested/helper shape, exactly when its
+/// schema declares both `apiVersion` and `kind` as properties. Both are declared abstractly on
+/// `TalosDocument.pkl`, so document modules override them with a concrete value instead of redeclaring
+/// them from scratch.
+local function isDocumentKey(key: String): Boolean =
+  let (props = allDefs[key].properties)
+    props != null && props!!.toMap().containsKey("apiVersion") && props!!.toMap().containsKey("kind")
+
+local function literalEnumValue(schema: JsonSchema.Schema): String = (schema.enum!!.toList()[0]) as String
+
+/// [allDefs]\[[key]\] with `apiVersion`/`kind` filtered out of its `properties`, for document keys, so
+/// `ModuleGenerator` doesn't regenerate declarations `TalosObject.pkl` already provides. Non-document
+/// keys pass through unchanged.
+local function rootSchemaFor(key: String): JsonSchema.Schema =
+  if (isDocumentKey(key))
+    (allDefs[key]) {
+      properties = new Mapping {
+        for (propName, propSchema in allDefs[key].properties!!.toMap()) {
+          when (propName != "apiVersion" && propName != "kind") {
+            [propName] = propSchema
+          }
+        }
+      }
+    }
+  else
+    allDefs[key]
+
+// noinspection TypeMismatch
+/// Every `$defs` entry's `Type` identity, computed once up front so any module can resolve a `$ref` to
+/// any other by looking it up here, regardless of generation order.
+local globalTypes: Type.TypeNames =
+  allDefs.entries.fold(Map(), (acc: Type.TypeNames, entry) ->
+    acc.put(entry.second, new Type { name = localNameOf(entry.first); moduleName = moduleNameOf(entry.first) })
+  )
+
+// noinspection TypeMismatch
+/// `$defs` keys directly referenced (via `$ref`) anywhere within [schema]'s own structure. One level
+/// only, not transitive, since a reference two hops away belongs to whichever module the one-hop type
+/// ends up in, not to this one.
+local function directRefKeys(schema: JsonSchema.Schema): Set<String> =
+  if (schema is Boolean)
+    Set()
+  else
+    utils.findMatchingSubschemas(schema, (s) -> s.$ref != null)
+      .values
+      .toList()
+      .map((s) -> s.$ref!!.split("/").last)
+      .toSet()
+
+/// Relative import path from a module in [fromNamespaceParts] to a file named [targetFileName] living
+/// in [targetNamespaceParts]: walk up (`../`) past whatever part of [fromNamespaceParts] isn't shared
+/// with the target's namespace, then back down into whatever part of the target's namespace isn't
+/// shared with ours.
+local function relativePathTo(
+  targetNamespaceParts: List<String>,
+  targetFileName: String,
+  fromNamespaceParts: List<String>
+): String =
+  let (commonLen = fromNamespaceParts.zip(targetNamespaceParts).takeWhile((p) -> p.first == p.second).length)
+  let (upSegments = IntSeq(1, fromNamespaceParts.length - commonLen).toList().map((_) -> ".."))
+  let (downParts = targetNamespaceParts.drop(commonLen))
+    (upSegments + downParts + List(targetFileName)).join("/")
+
+local function importPathFor(targetKey: String, fromNamespaceParts: List<String>): String =
+  relativePathTo(namespacePartsOf(targetKey), "\(localNameOf(targetKey)).pkl", fromNamespaceParts)
+
+/// JSON Schema's `pattern` keyword is a search: a string is valid if the regex matches anywhere within
+/// it. Pkl's `matches()` requires the regex to match the entire string. `org.json_schema.contrib`
+/// always translates `pattern` to `matches(Regex(...))`, which is only correct when the pattern is
+/// already anchored at both ends. [relaxUnanchoredPatterns] downgrades unanchored patterns to
+/// `contains(Regex(...))`, matching JSON Schema's own semantics, and leaves anchored patterns untouched.
+///
+/// Two textual forms need handling because the generator emits either depending on whether the pattern
+/// needs backslash-escaping: a plain quoted string or a raw string, used whenever the pattern contains
+/// a backslash.
+local plainPatternRegex = Regex(#"matches\(Regex\("([^"]*)"\)\)"#)
+local rawPatternRegex = Regex(##"matches\(Regex\(#"([^"]*)"#\)\)"##)
+
+local function relaxUnanchoredPatterns(text: String): String =
+  let (afterPlain = text.replaceAllMapped(plainPatternRegex, (m) ->
+    let (pattern = m.groups[1]!!.value)
+      if (pattern.endsWith("$")) m.value else "contains(Regex(\"\(pattern)\"))"
+  ))
+    afterPlain.replaceAllMapped(rawPatternRegex, (m) ->
+      let (pattern = m.groups[1]!!.value)
+        if (pattern.endsWith("$")) m.value else "contains(Regex(#\"" + pattern + "\"#))"
+    )
+
+/// For a document key, the `apiVersion =`/`kind =` overrides that [rootSchemaFor] stripped out, read
+/// from the schema's own single-value `enum`s. Built as AST nodes, not text, so `ModuleNode` places
+/// them exactly where it places every other property, after any imports a module needs for its refs.
+local function documentMetaPropertyNodes(key: String): List<ClassOrModuleNode.PropertyDefinitionNode> =
+  if (!isDocumentKey(key))
+    List()
+  else
+    let (props = allDefs[key].properties!!.toMap())
+    let (apiVersionValue = literalEnumValue(props["apiVersion"]!!))
+    let (kindValue = literalEnumValue(props["kind"]!!))
+      List(
+        new ClassOrModuleNode.PropertyDefinitionNode {
+          name = new IdentifierNode { value = "apiVersion" }
+          defaultValue = new ExpressionNode.LiteralValueExpressionNode { value = apiVersionValue }
+        },
+        new ClassOrModuleNode.PropertyDefinitionNode {
+          name = new IdentifierNode { value = "kind" }
+          defaultValue = new ExpressionNode.LiteralValueExpressionNode { value = kindValue }
+        }
+      )
+
+/// Fix-ups applied to every generated module's rendered text.
+///
+/// 1. `org.json_schema.contrib` qualifies a cross-module reference as `<module>.<type>`. Every
+///    generated module exposes its type as its own top-level properties though, with no wrapping class
+///    to qualify into, so this renders the nonsensical `DiskSelector.DiskSelector` instead of the bare
+///    `DiskSelector` a module-as-class reference needs. Fixed as a literal substring replacement, safe
+///    because that doubled pattern only ever appears where this bug produces it.
+/// 2. For a ref key in [scalarOverrides], the de-qualified reference is replaced again with the
+///    hand-supplied override type.
+/// 3. [relaxUnanchoredPatterns], independent of refs.
+local function postProcess(text: String, key: String): String =
+  relaxUnanchoredPatterns(
+    directRefKeys(allDefs[key]).toList().fold(text, (acc, refKey) ->
+      let (name = localNameOf(refKey))
+      let (deQualified = acc.replaceAll("\(name).\(name)", name))
+        if (scalarOverrides.containsKey(refKey))
+          let (overrideType = scalarOverrides[refKey])
+            deQualified.replaceAll(": \(name)?", ": \(overrideType)?").replaceAll(": \(name)\n", ": \(overrideType)\n")
+        else
+          deQualified
+    )
+  )
+
+// noinspection TypeMismatch
+/// Every generated module extends either `TalosObject.pkl` or `TalosDocument.pkl` (see [isDocumentKey])
+/// for shared default rendering behavior. `.../` is Pkl's "search upward from this file's directory"
+/// import syntax, so the extends path needs no relative-path computation regardless of namespace depth,
+/// unlike [importPathFor]'s cross-module `$ref` imports, which target arbitrary files.
+local function generateModule(key: String): ModuleGenerator =
+  let (namespaceParts = namespacePartsOf(key))
+  let (refKeys = directRefKeys(allDefs[key]))
+  let (base = new ModuleGenerator {
+      rootSchema = rootSchemaFor(key)
+      baseUri = schemaBaseUri
+      moduleName = moduleNameOf(key)
+      existingTypes = refKeys.fold(Map(), (acc: Type.TypeNames, refKey) ->
+        acc.put(allDefs[refKey], globalTypes[allDefs[refKey]])
+      )
+    })
+    (base) {
+      moduleNode {
+        imports = new Listing {
+          for (refKey in refKeys) {
+            when (!scalarOverrides.containsKey(refKey)) {
+              new ModuleNode.ImportNode { value = importPathFor(refKey, namespaceParts) }
+            }
+          }
+        }
+        declaration {
+          moduleHeader {
+            moduleExtendsOrAmendsClause {
+              type = "extends"
+              extendedModule = if (isDocumentKey(key)) ".../TalosDocument.pkl" else ".../TalosObject.pkl"
+            }
+          }
+        }
+        // Document meta properties come first, then the generator's own properties, so a document
+        // module reads apiVersion/kind before the rest of the schema's fields.
+        properties = new Listing {
+          ...documentMetaPropertyNodes(key)
+          ...?base.moduleNode.properties
+        }
+      }
+    }
+
+output {
+  files {
+    for (key in allDefs.keys.filter((k) -> !scalarOverrides.containsKey(k))) {
+      [filePathFor(key)] {
+        text = postProcess(generateModule(key).moduleNode.output.text, key)
+      }
+    }
+  }
+}

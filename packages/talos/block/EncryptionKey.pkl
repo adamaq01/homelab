@@ -1,0 +1,44 @@
+/// EncryptionKey represents configuration for disk encryption key.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.EncryptionKey
+
+extends ".../TalosObject.pkl"
+
+import "EncryptionKeyStatic.pkl"
+import "EncryptionKeyNodeID.pkl"
+import "EncryptionKeyKMS.pkl"
+import "EncryptionKeyTPM.pkl"
+
+/// slot
+///
+/// Key slot number for LUKS2 encryption.
+slot: Int?
+
+/// static
+///
+/// Key which value is stored in the configuration file.
+static: EncryptionKeyStatic?
+
+/// nodeID
+///
+/// Deterministically generated key from the node UUID and PartitionLabel.
+nodeID: EncryptionKeyNodeID?
+
+/// kms
+///
+/// KMS managed encryption key.
+kms: EncryptionKeyKMS?
+
+/// tpm
+///
+/// Enable TPM based disk encryption.
+tpm: EncryptionKeyTPM?
+
+/// lockToState
+///
+/// Lock the disk encryption key to the random salt stored in the STATE partition. This is useful to
+/// prevent the volume from being unlocked if STATE partition is compromised or replaced. It is
+/// recommended to use this option with TPM disk encryption for non-STATE volumes.
+lockToState: Boolean?

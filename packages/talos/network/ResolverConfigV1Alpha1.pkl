@@ -1,0 +1,41 @@
+/// ResolverConfig is a config document to configure DNS resolving.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.ResolverConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "NameserverConfig.pkl"
+import "SearchDomainsConfig.pkl"
+import "HostDNSConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "ResolverConfig"
+
+/// nameservers
+///
+/// A list of nameservers (DNS servers) to use for resolving domain names.
+///
+/// Nameservers are used to resolve domain names on the host, and they are also propagated to Kubernetes
+/// DNS (CoreDNS) for use by pods running on the cluster.
+///
+/// This overrides any nameservers obtained via DHCP or platform configuration. Default configuration is
+/// to use 1.1.1.1 and 8.8.8.8 as nameservers.
+nameservers: Listing<NameserverConfig>?
+
+/// searchDomains
+///
+/// Configuration for search domains (in /etc/resolv.conf).
+///
+/// The default is to derive search domains from the hostname FQDN.
+searchDomains: SearchDomainsConfig?
+
+/// hostDNS
+///
+/// Configuration for host DNS resolver.
+///
+/// This configures a local DNS caching resolver on the host to improve DNS resolution performance and
+/// reliability.
+hostDNS: HostDNSConfig?

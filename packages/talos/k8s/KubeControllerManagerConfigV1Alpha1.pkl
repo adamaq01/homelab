@@ -1,0 +1,39 @@
+/// KubeControllerManagerConfig configures kube-controller-manager controlplane static pod.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeControllerManagerConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeControllerManagerConfig"
+
+/// enabled
+///
+/// By default, kube-controller-manager static pod is enabled. Set to false to disable the
+/// kube-controller-manager (assuming it runs on other controlplane node).
+enabled: Boolean?
+
+/// image
+///
+/// The container image used to run the kube-controller-manager component.
+///
+/// The image reference should contain the tag, even if it is pinned by digest.
+image: String
+
+/// extraArgs
+///
+/// Extra command line arguments to supply to the kube-controller-manager.
+extraArgs: Mapping<String, String|Listing<String>>?
+
+/// env
+///
+/// The env field allows for the addition of environment variables for the kube-controller-manager.
+env: Mapping<String(contains(Regex(".*"))), String>?
+
+/// resources
+///
+/// Configure the kube-controller-manager resources.
+resources: Dynamic?

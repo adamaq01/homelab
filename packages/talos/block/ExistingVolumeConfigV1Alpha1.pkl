@@ -1,0 +1,45 @@
+/// ExistingVolumeConfig is an existing volume configuration document.\nExisting volumes allow to mount
+/// partitions (or whole disks) that were created\noutside of Talos. Volume will be mounted under
+/// `/var/mnt/<name>`.\nThe existing volume config name should not conflict with user volume names.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.ExistingVolumeConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "VolumeDiscoverySpec.pkl"
+import "ExistingMountSpec.pkl"
+import "TrimConfig.pkl"
+import "ScrubConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "ExistingVolumeConfig"
+
+/// name
+///
+/// Name of the volume.
+///
+/// Name can only contain: lowercase and uppercase ASCII letters, digits, and hyphens.
+name: String?
+
+/// discovery
+///
+/// The discovery describes how to find a volume.
+discovery: VolumeDiscoverySpec?
+
+/// mount
+///
+/// The mount describes additional mount options.
+mount: ExistingMountSpec?
+
+/// trim
+///
+/// The trim describes the per-volume filesystem trim (fstrim) configuration.
+trim: TrimConfig?
+
+/// scrub
+///
+/// The scrub describes the per-volume filesystem scrub configuration.
+scrub: ScrubConfig?

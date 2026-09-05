@@ -1,0 +1,17 @@
+/// KubeEtcdEncryptionConfig configures kube-apiserver etcd encryption rules.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubeEtcdEncryptionConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeEtcdEncryptionConfig"
+
+/// config
+///
+/// Kubernetes API server encryption of secret data at rest. Key value should be exact contents of the
+/// configuration file, excluding the apiVersion and kind fields.
+config: Dynamic?

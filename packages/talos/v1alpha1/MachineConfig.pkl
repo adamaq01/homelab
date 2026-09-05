@@ -1,0 +1,84 @@
+/// MachineConfig represents the machine-specific config values.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.MachineConfig
+
+extends ".../TalosObject.pkl"
+
+import "FeaturesConfig.pkl"
+import "LoggingConfig.pkl"
+import "MachineSeccompProfile.pkl"
+
+/// type
+///
+/// Defines the role of the machine within the cluster.
+///
+/// Control Plane
+///
+/// Control Plane node type designates the node as a control plane member. This means it will host etcd
+/// along with the Kubernetes controlplane components such as API Server, Controller Manager, Scheduler.
+///
+/// Worker
+///
+/// Worker node type designates the node as a worker node. This means it will be an available compute
+/// node for scheduling workloads.
+///
+/// This node type was previously known as “join”; that value is still supported but deprecated.
+type: ("controlplane"|"worker")?
+
+/// token
+///
+/// The token is used by a machine to join the PKI of the cluster. Using this token, a machine will
+/// create a certificate signing request (CSR), and request a certificate that will be used as its’
+/// identity.
+token: String?
+
+/// ca
+///
+/// The root certificate authority of the PKI. It is composed of a base64 encoded crt and key.
+ca: Ca?
+
+/// acceptedCAs
+///
+/// The certificates issued by certificate authorities are accepted in addition to issuing ‘ca’. It is
+/// composed of a base64 encoded crt`.
+acceptedCAs: AcceptedCAs?
+
+/// certSANs
+///
+/// Extra certificate subject alternative names for the machine’s certificate. By default, all
+/// non-loopback interface IPs are automatically added to the certificate’s SANs.
+certSANs: Listing<String>?
+
+/// features
+///
+/// Features describe individual Talos features that can be switched on or off.
+features: FeaturesConfig?
+
+/// logging
+///
+/// Configures the logging system.
+logging: LoggingConfig?
+
+/// seccompProfiles
+///
+/// Configures the seccomp profiles for the machine.
+seccompProfiles: Listing<MachineSeccompProfile>?
+
+/// ca
+///
+/// The root certificate authority of the PKI. It is composed of a base64 encoded crt and key.
+class Ca {
+  crt: String?
+
+  key: String?
+}
+
+/// acceptedCAs
+///
+/// The certificates issued by certificate authorities are accepted in addition to issuing ‘ca’. It is
+/// composed of a base64 encoded crt`.
+class AcceptedCAs {
+  crt: String?
+}

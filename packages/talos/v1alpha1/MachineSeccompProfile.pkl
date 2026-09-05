@@ -1,0 +1,17 @@
+/// MachineSeccompProfile defines seccomp profiles for the machine.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.MachineSeccompProfile
+
+extends ".../TalosObject.pkl"
+
+/// name
+///
+/// The name field is used to provide the file name of the seccomp profile.
+name: String?
+
+/// value
+///
+/// The value field is used to provide the seccomp profile.
+value: Dynamic?

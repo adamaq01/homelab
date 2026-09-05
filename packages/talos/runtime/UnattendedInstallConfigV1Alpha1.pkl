@@ -1,0 +1,30 @@
+/// UnattendedInstallConfig is an UnattendedInstallConfig config document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.UnattendedInstallConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "InstallerSpec.pkl"
+import "ProvisioningSpec.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "UnattendedInstall"
+
+/// reboot
+///
+/// Reboot is a flag to indicate if the system should reboot after installation. If not set, Talos will
+/// reboot only if the installer.image is set.
+reboot: Boolean?
+
+/// installer
+///
+/// The installer describes the source of the installation.
+installer: InstallerSpec?
+
+/// provisioning
+///
+/// The provisioning describes how the installation disk should be provisioned.
+provisioning: ProvisioningSpec?

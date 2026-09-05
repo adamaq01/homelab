@@ -1,0 +1,42 @@
+/// RAIDArrayConfig provisions a Linux MD (software RAID) array.\nProvisions a Linux software RAID (MD)
+/// array from matching disks.\n\nThe array is exposed at `/dev/disk/by-id/md-name-<name>` and can back
+/// a\nuser volume. Provisioning is additive: the array and its members are\ncreated but never destroyed
+/// by this document. Use `talosctl wipe md <device>`\nto remove an array.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.RAIDArrayConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "RAIDProvisioningSpec.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "RAIDArrayConfig"
+
+/// name
+///
+/// Array name, stamped into the md metadata.
+///
+/// Must be 1-32 chars: ASCII letters, digits, hyphens, underscores. Exposed as
+/// /dev/disk/by-id/md-name-&lt;name&gt;.
+name: String?
+
+/// level
+///
+/// RAID level.
+level: "raid1"?
+
+/// metadata
+///
+/// MD on-disk metadata format.
+///
+/// Defaults to 1.0, which stores the superblock at the end of the member device so the array can back a
+/// bootable partition. Use 1.2 for data arrays that do not need to be bootable.
+metadata: ("1.0"|"1.2")?
+
+/// provisioning
+///
+/// The provisioning describes how the RAID arrays are provisioned.
+provisioning: RAIDProvisioningSpec?

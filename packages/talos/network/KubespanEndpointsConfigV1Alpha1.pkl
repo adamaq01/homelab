@@ -1,0 +1,19 @@
+/// KubeSpanEndpointsConfig is a config document to configure KubeSpan endpoints.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.KubespanEndpointsConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubeSpanEndpoints"
+
+/// extraAnnouncedEndpoints
+///
+/// A list of extra Wireguard endpoints to announce from this machine.
+///
+/// Talos automatically adds endpoints based on machine addresses, public IP, etc. This field allows to
+/// add extra endpoints which are managed outside of Talos, e.g. NAT mapping.
+extraAnnouncedEndpoints: Listing<String>?

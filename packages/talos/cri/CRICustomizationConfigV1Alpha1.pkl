@@ -1,0 +1,27 @@
+/// CRICustomizationConfig configures the CRI containerd instance.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.CRICustomizationConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "CRICustomizationConfig"
+
+/// name
+///
+/// Name of the CRI customization.
+///
+/// Customizations are merged with physical CRI configuration parts in lexicographical order by name. The
+/// legacy /etc/cri/conf.d/20-customization.part machine file is included under the reserved name
+/// customization.
+///
+/// Applying, updating, or removing a customization restarts CRI automatically.
+name: String
+
+/// content
+///
+/// CRI containerd configuration fragment in TOML format.
+content: String?

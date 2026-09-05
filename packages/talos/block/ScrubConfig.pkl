@@ -1,0 +1,20 @@
+/// ScrubConfig describes per-volume filesystem scrub configuration.\n\nIt overrides the global
+/// FilesystemScrubConfig for the volume.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.ScrubConfig
+
+extends ".../TalosObject.pkl"
+
+/// enabled
+///
+/// Enable or disable scrubbing for this volume.
+///
+/// If not set, scrubbing is enabled by default when scrub section is present.
+enabled: Boolean?
+
+/// interval
+///
+/// The interval at which the volume is scrubbed, overriding the global scrub interval.
+interval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

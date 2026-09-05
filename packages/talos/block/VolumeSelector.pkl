@@ -1,0 +1,12 @@
+/// VolumeSelector selects an existing volume.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.VolumeSelector
+
+extends ".../TalosObject.pkl"
+
+/// match
+///
+/// The Common Expression Language (CEL) expression to match the volume.
+match: String?

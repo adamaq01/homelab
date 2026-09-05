@@ -1,0 +1,56 @@
+amends "..."
+
+import "@talos/runtime/UnattendedInstallConfigV1Alpha1.pkl" as UnattendedInstallConfig
+import "@talos/network/LinkAliasConfigV1Alpha1.pkl" as LinkAliasConfig
+import "@talos/network/LinkConfigV1Alpha1.pkl" as LinkConfig
+import "@talos/network/StaticHostConfigV1Alpha1.pkl" as StaticHostConfig
+import "@talos/network/Layer2VIPConfigV1Alpha1.pkl" as Layer2VIPConfig
+import "@talos/network/DHCPv4ConfigV1Alpha1.pkl" as DHCPv4Config
+
+allowScheduling = true
+
+documents {
+  [[this is UnattendedInstallConfig]] {
+    provisioning {
+      diskSelector {
+        match = "disk.dev_path == \"/dev/sda\""
+      }
+    }
+  }
+  (LinkAliasConfig) {
+    name = "net0"
+    selector {
+      match = "mac(link.permanent_addr) == \"bc:24:11:4a:1e:41\""
+    }
+  }
+  (LinkConfig) {
+    name = "net0"
+  }
+  (DHCPv4Config) {
+    name = "net0"
+  }
+  [[this is Layer2VIPConfig]] {
+    link = "net0"
+  }
+  (LinkAliasConfig) {
+    name = "vnet0"
+    selector {
+      match = "mac(link.permanent_addr) == \"bc:24:11:8e:f2:8b\""
+    }
+  }
+  (LinkConfig) {
+    name = "vnet0"
+    mtu = 9000
+    addresses {
+      new {
+        address = "10.0.10.2/24"
+      }
+    }
+  }
+  (StaticHostConfig) {
+    name = "10.0.10.1"
+    hostnames {
+      "nas.\(module.domain)"
+    }
+  }
+}

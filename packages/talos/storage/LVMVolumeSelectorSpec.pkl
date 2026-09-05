@@ -1,0 +1,16 @@
+/// LVMVolumeSelectorSpec matches disks with CEL.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.LVMVolumeSelectorSpec
+
+extends ".../TalosObject.pkl"
+
+/// match
+///
+/// CEL expression matching a disk or partition to use as a physical volume.
+///
+/// The expression is evaluated against each discovered volume with the volume variable (the discovered
+/// volume) and, for whole disks, the disk variable. Partitions (e.g. raw volumes) can be matched by
+/// their partition label via volume.partition_label.
+match: String?

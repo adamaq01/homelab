@@ -1,0 +1,18 @@
+/// ExternalCloudProviderConfig contains external cloud provider configuration.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module v1alpha1.ExternalCloudProviderConfig
+
+extends ".../TalosObject.pkl"
+
+/// enabled
+///
+/// Enable external cloud provider.
+enabled: Boolean?
+
+/// manifests
+///
+/// A list of urls that point to additional manifests for an external cloud provider. These will get
+/// automatically deployed as part of the bootstrap.
+manifests: Listing<String>?

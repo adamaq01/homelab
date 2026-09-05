@@ -1,0 +1,24 @@
+/// FilesystemScrubConfig is a filesystem scrub configuration document.\nFilesystem scrub periodically
+/// checks mounted filesystems which support online scrubbing\n(currently XFS, via `xfs_scrub`) for
+/// metadata errors.\n\nScrubbing is disabled by default; this document can adjust the default\ninterval
+/// or enable scrubbing globally. Individual volumes can override the global settings\nvia the `scrub`
+/// section of the volume configuration.\n\nEach volume is scrubbed at a stable, hash-derived time within
+/// the interval, which is different\nfor each volume and each node, so that scrubs are spread out over
+/// time.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.FilesystemScrubConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "FilesystemScrubConfig"
+
+/// interval
+///
+/// The interval at which the filesystems are scrubbed.
+///
+/// Default value is 1 week, minimum value is 10 seconds.
+interval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?

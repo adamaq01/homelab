@@ -1,0 +1,12 @@
+/// EncryptionKeyStatic represents throw away key type.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.EncryptionKeyStatic
+
+extends ".../TalosObject.pkl"
+
+/// passphrase
+///
+/// Defines the static passphrase value.
+passphrase: String?

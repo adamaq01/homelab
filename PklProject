@@ -1,0 +1,13 @@
+amends "pkl:Project"
+
+dependencies {
+  ["k8s"] {
+    uri = "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.4.1"
+  }
+  ["deepToTyped"] {
+    uri = "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.deepToTyped@1.2.1"
+  }
+  ["argocd"] = import("packages/argocd/PklProject")
+  ["talos"] = import("packages/talos/PklProject")
+  ["manifest"] = import("packages/manifest/PklProject")
+}

@@ -1,0 +1,33 @@
+/// ProvisioningSpec describes how the volume is provisioned.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module block.ProvisioningSpec
+
+extends ".../TalosObject.pkl"
+
+import "DiskSelector.pkl"
+
+/// diskSelector
+///
+/// The disk selector expression.
+diskSelector: DiskSelector?
+
+/// grow
+///
+/// Should the volume grow to the size of the disk (if possible).
+grow: Boolean?
+
+/// minSize
+///
+/// The minimum size of the volume.
+///
+/// Size is specified in bytes, but can be expressed in human readable format, e.g. 100MB.
+minSize: String?
+
+/// maxSize
+///
+/// The maximum size of the volume, if not specified the volume can grow to the size of the disk.
+///
+/// Size is specified in bytes or in percents. It can be expressed in human readable format, e.g. 100MB.
+maxSize: String?

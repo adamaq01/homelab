@@ -1,0 +1,15 @@
+/// ContainerNetwork configures the container's network namespace.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerNetwork
+
+extends ".../TalosObject.pkl"
+
+/// mode
+///
+/// Network mode.
+///
+/// none gives the container its own empty network namespace with no host access. host shares the host
+/// network namespace, so the container sees every interface and can bind any port.
+mode: String?

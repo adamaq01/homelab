@@ -1,0 +1,14 @@
+/// RAIDProvisioningSpec describes how the RAID arrays are provisioned.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module storage.RAIDProvisioningSpec
+
+extends ".../TalosObject.pkl"
+
+import "RAIDVolumeSelector.pkl"
+
+/// volumeSelector
+///
+/// The volume selector describes how the members of RAID arrays are selected.
+volumeSelector: RAIDVolumeSelector?

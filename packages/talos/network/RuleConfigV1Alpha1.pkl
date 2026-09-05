@@ -1,0 +1,30 @@
+/// NetworkRuleConfig is a network firewall rule config document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.RuleConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "RulePortSelector.pkl"
+import "IngressRule.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "NetworkRuleConfig"
+
+/// name
+///
+/// Name of the config document.
+name: String
+
+/// portSelector
+///
+/// Port selector defines which ports and protocols on the host are affected by the rule.
+portSelector: RulePortSelector?
+
+/// ingress
+///
+/// Ingress defines which source subnets are allowed to access the host ports/protocols defined by the
+/// portSelector.
+ingress: Listing<IngressRule>?

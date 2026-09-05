@@ -1,0 +1,23 @@
+/// EnvironmentConfig is an environment config document.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module runtime.EnvironmentV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "EnvironmentConfig"
+
+/// variables
+///
+/// This field allows for the addition of environment variables. All environment variables are set on PID
+/// 1 in addition to every service. Propagation of environment variables to services is done only at
+/// initial service start time. To modify environment variables for services, the node must be restarted.
+/// Multiple values for the same environment variable (in multiple documents) will replace previous
+/// values, with the last one taking precedence. Fully removing an environment variable can only be
+/// achieved by removing it from the document and restarting the machine. Environment variable names are
+/// validated, and should: - start with an uppercase letter, lowercase letter, or an underscore ()
+/// character, and - contain only uppercase and lowercase letters, underscore () characters, and numbers.
+variables: Mapping<String(contains(Regex(".*"))), String>?

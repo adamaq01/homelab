@@ -1,0 +1,18 @@
+/// CommonProbeConfig holds fields common to all probe types.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module network.CommonProbeConfig
+
+extends ".../TalosObject.pkl"
+
+/// interval
+///
+/// Interval between probe attempts. Defaults to 1s.
+interval: String(matches(Regex(#"^[-+]?(((\d+(\.\d*)?|\d*(\.\d+)+)([nuµm]?s|m|h))|0)+$"#)))?
+
+/// failureThreshold
+///
+/// Number of consecutive failures for the probe to be considered failed after having succeeded. Defaults
+/// to 0 (immediately fail on first failure).
+failureThreshold: Int?

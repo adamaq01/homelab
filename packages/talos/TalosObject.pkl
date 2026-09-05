@@ -1,0 +1,10 @@
+/// Base module for generated Talos machine config objects.
+///
+/// Every module `_generate.pkl` produces `extends` this module (document-type ones by way of
+/// `TalosDocument.pkl`), so the default Talos YAML rendering lives in exactly one place instead of
+/// being repeated per generated module.
+open module talos.TalosObject
+
+output {
+  renderer = new YamlRenderer {}
+}

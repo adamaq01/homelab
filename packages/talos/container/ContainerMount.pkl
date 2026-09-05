@@ -1,0 +1,34 @@
+/// ContainerMount describes a single filesystem to mount into the container.\n\nExactly one source must
+/// be set. Raw OCI mounts are deliberately not exposed; every source is\ntyped so that Talos can reason
+/// about what a container is allowed to reach.\n
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerMount
+
+extends ".../TalosObject.pkl"
+
+import "UserVolumeMount.pkl"
+import "TmpfsMount.pkl"
+import "HostPathMount.pkl"
+
+/// userVolume
+///
+/// Mount a user volume, referenced by the name of its UserVolumeConfig document.
+///
+/// The volume is mounted from /var/mnt/&lt;name&gt; on the host. Declaring this mount also makes the
+/// container wait for the volume to be mounted before it starts.
+userVolume: UserVolumeMount?
+
+/// tmpfs
+///
+/// Mount a tmpfs for scratch space.
+tmpfs: TmpfsMount?
+
+/// hostPath
+///
+/// Bind-mount a path from the host.
+///
+/// The source must already exist; Talos will not create it. This is the widest of the three sources and
+/// the only one that can reach arbitrary host state.
+hostPath: HostPathMount?

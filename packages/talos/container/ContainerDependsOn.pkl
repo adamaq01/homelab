@@ -1,0 +1,31 @@
+/// ContainerDependsOn gates container startup on external conditions.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.ContainerDependsOn
+
+extends ".../TalosObject.pkl"
+
+/// paths
+///
+/// Host paths which must exist before the container starts.
+///
+/// Polled, so a path that never appears leaves the container waiting indefinitely.
+paths: Listing<String>?
+
+/// networks
+///
+/// Network readiness conditions which must be satisfied.
+networks: ("addresses"|"connectivity"|"hostname"|"etcfiles")?
+
+/// time
+///
+/// Whether the clock must be synchronized before the container starts.
+time: Boolean?
+
+/// containers
+///
+/// Other containers, by document name, which must be running first.
+///
+/// Cycles are rejected when the machine configuration is applied.
+containers: Listing<String>?

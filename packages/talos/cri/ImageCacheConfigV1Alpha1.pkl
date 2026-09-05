@@ -1,0 +1,18 @@
+/// ImageCacheConfig configures Image Cache feature.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module cri.ImageCacheConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+import "LocalImageCacheConfig.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "ImageCacheConfig"
+
+/// local
+///
+/// Local (to the machine) image cache configuration.
+`local`: LocalImageCacheConfig?

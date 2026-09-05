@@ -1,0 +1,22 @@
+/// TmpfsMount mounts a tmpfs.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module container.TmpfsMount
+
+extends ".../TalosObject.pkl"
+
+/// destination
+///
+/// Absolute path inside the container’s mount namespace.
+destination: String?
+
+/// size
+///
+/// Size of the tmpfs, e.g. 64MiB. Empty means the kernel default.
+size: String?
+
+/// options
+///
+/// Mount options. Tmpfs mounts are writable by default (rw).
+options: Listing<String>?

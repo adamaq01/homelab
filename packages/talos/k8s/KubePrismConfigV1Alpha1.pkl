@@ -1,0 +1,34 @@
+/// KubePrismConfig configures node-local Kubernetes API load balancer.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+module k8s.KubePrismConfigV1Alpha1
+
+extends ".../TalosDocument.pkl"
+
+apiVersion = "v1alpha1"
+
+kind = "KubePrismConfig"
+
+/// port
+///
+/// KubePrism port. The load balancer will be started on 127.0.0.1:&lt;port&gt; and it will automatically
+/// include a controlplane endpoint and direct addresses of all controlplane nodes in the cluster. The
+/// KubePrism will pick up the route(s) with the lowest RTT to the controlplane nodes, excluding the
+/// unavailable ones, and will automatically update the route list when the controlplane nodes change.
+port: Int
+
+/// tlsServerName
+///
+/// Override the TLS server name (SNI) used by the kubelet when connecting to the KubePrism endpoint.
+///
+/// KubePrism still listens on 127.0.0.1:&lt;port&gt; and the kubelet still dials that address, but the
+/// generated kubelet kubeconfig will carry clusters[0].cluster.tls-server-name set to this value, so the
+/// kubelet uses it for SNI and certificate hostname verification.
+///
+/// This is useful when KubePrism’s upstream apiserver is reached through an SNI-routing L4 proxy (for
+/// example nginx-ingress in ssl-passthrough mode in front of a Kamaji-hosted apiserver), where
+/// SNI=127.0.0.1 doesn’t match any route and the proxy serves a fallback certificate.
+///
+/// When empty (default), no tls-server-name is set and behavior is unchanged.
+tlsServerName: String?
