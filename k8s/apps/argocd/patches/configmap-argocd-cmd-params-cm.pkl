@@ -1,0 +1,11 @@
+/// Traefik terminates TLS at the Gateway and forwards plain HTTP to argocd-server, which by default
+/// expects TLS on its single listening port and would reject the connection without this.
+amends "@manifest/Patch.pkl"
+
+import "@k8s/api/core/v1/ConfigMap.pkl"
+
+patch = new Mixin<ConfigMap> {
+  data = new Mapping {
+    ["server.insecure"] = "true"
+  }
+}

@@ -1,8 +1,44 @@
 amends "@manifest/generate.pkl"
 
+import "@gateway-api/HTTPRoute.pkl"
+import "app.pkl"
+import "../traefik/app.pkl" as traefik
+
 // renovate: datasource=github-releases packageName=argoproj/argo-cd
 local version = "v3.5.2"
 
 source = "https://raw.githubusercontent.com/argoproj/argo-cd/\(version)/manifests/install.yaml"
 
 patches = import*("patches/*.pkl")
+
+local httpRoute: HTTPRoute = new {
+  metadata {
+    name = "argocd-server"
+  }
+  spec {
+    parentRefs {
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "websecure"
+      }
+    }
+    hostnames {
+      "argocd.\(app.domain)"
+    }
+    rules {
+      new {
+        backendRefs {
+          new {
+            name = "argocd-server"
+            port = 80
+          }
+        }
+      }
+    }
+  }
+}
+
+value {
+  httpRoute
+}
