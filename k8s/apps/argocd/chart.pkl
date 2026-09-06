@@ -22,6 +22,11 @@ local httpRoute: HTTPRoute = new {
         namespace = traefik.namespace
         sectionName = "websecure"
       }
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "websecure-alias"
+      }
     }
     hostnames {
       "argocd.\(app.ingressDomain)"
