@@ -67,10 +67,10 @@
         "sha256": "69c34b9c34ee3d41d23f2888849e6a367634e889250fc78f9c17d686077dbf82"
       }
     },
-    "package://local/homelab/packages/argocd@0": {
+    "package://local/homelab/packages/cert-manager@0": {
       "type": "local",
-      "uri": "projectpackage://local/homelab/packages/argocd@0.1.0",
-      "path": "packages/argocd"
+      "uri": "projectpackage://local/homelab/packages/cert-manager@0.1.0",
+      "path": "packages/cert-manager"
     },
     "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4": {
       "type": "remote",
@@ -78,6 +78,11 @@
       "checksums": {
         "sha256": "eac7bd1d523c46335ab241d746c0c0a878f4d46d226815cb66d21dd83e480795"
       }
+    },
+    "package://local/homelab/packages/argocd@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/argocd@0.1.0",
+      "path": "packages/argocd"
     },
     "package://local/homelab/packages/gateway-api@0": {
       "type": "local",

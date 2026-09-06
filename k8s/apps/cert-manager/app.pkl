@@ -1,0 +1,5 @@
+extends ".../app.pkl"
+
+/// Secret the wildcard Certificate (see chart.pkl) is stored in, referenced cross-app by
+/// Traefik's Gateway websecure listener.
+wildcardCertSecretName: String = "home-adamaq01-fr-tls"

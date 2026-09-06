@@ -7,3 +7,6 @@ targetRevision: String = "main"
 
 /// Namespace ArgoCD itself lives in.
 argoCDNamespace: String = "argocd"
+
+/// Email cert-manager's Let's Encrypt ACME account registers under.
+acmeEmail: String = "adamthibert01@gmail.com"

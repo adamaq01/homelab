@@ -1,6 +1,6 @@
 // Top-level module for defining an ArgoCD Application resource.
 // The actual root App for the App-of-Apps pattern is directly defined in `k8s/chart.pkl`.
-module App
+open module app
 
 extends "common.pkl"
 

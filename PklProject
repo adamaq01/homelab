@@ -12,4 +12,5 @@ dependencies {
   ["manifest"] = import("packages/manifest/PklProject")
   ["metallb"] = import("packages/metallb/PklProject")
   ["gateway-api"] = import("packages/gateway-api/PklProject")
+  ["cert-manager"] = import("packages/cert-manager/PklProject")
 }

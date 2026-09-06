@@ -1,0 +1,96 @@
+/// The Cloudflare API token backing the `cloudflare` ClusterIssuer's DNS01 solver is manually
+/// created for now (same precedent as tns-csi's `tns-csi-credentials`, since secrets-management
+/// tooling isn't decided for this repo yet). It needs Zone:DNS:Edit on the `adamaq01.fr` zone
+/// (which also covers the `home.adamaq01.fr` subdomain used below, since it isn't a separately
+/// delegated zone in Cloudflare):
+///
+/// kubectl create secret generic cloudflare-api-token-secret \
+///   --namespace cert-manager \
+///   --from-literal=api-token=<cloudflare-api-token>
+///
+/// Must live in the `cert-manager` namespace specifically: ClusterIssuer secret references resolve
+/// against cert-manager's "cluster resource namespace", which defaults to the controller's own
+/// namespace.
+amends "@manifest/generate.pkl"
+
+import "@cert-manager/ClusterIssuer.pkl"
+import "@cert-manager/Certificate.pkl"
+import "@gateway-api/ReferenceGrant.pkl"
+import "app.pkl"
+import "../traefik/app.pkl" as traefik
+
+// renovate: datasource=github-releases packageName=cert-manager/cert-manager
+local version = "v1.21.1"
+
+source = "https://github.com/cert-manager/cert-manager/releases/download/\(version)/cert-manager.yaml"
+
+value {
+  new ClusterIssuer {
+    metadata {
+      name = "cloudflare"
+    }
+    spec {
+      acme {
+        server = "https://acme-v02.api.letsencrypt.org/directory"
+        email = app.acmeEmail
+        privateKeySecretRef {
+          name = "cloudflare-issuer-account-key"
+        }
+        solvers {
+          new {
+            dns01 {
+              cloudflare {
+                apiTokenSecretRef {
+                  name = "cloudflare-api-token-secret"
+                  key = "api-token"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  // Reused manually on the TrueNAS box too, which isn't Kubernetes-managed.
+  new Certificate {
+    metadata {
+      name = "home-adamaq01-fr-wildcard"
+      namespace = app.namespace
+    }
+    spec {
+      secretName = app.wildcardCertSecretName
+      issuerRef {
+        name = "cloudflare"
+        kind = "ClusterIssuer"
+      }
+      dnsNames {
+        app.domain
+        "*.\(app.domain)"
+      }
+    }
+  }
+  // Grants Traefik's Gateway (which lives in its own namespace) permission to reference the
+  // Certificate's Secret above across namespaces.
+  new ReferenceGrant {
+    metadata {
+      name = "traefik-gateway-\(app.wildcardCertSecretName)"
+      namespace = app.namespace
+    }
+    spec {
+      from {
+        new {
+          group = "gateway.networking.k8s.io"
+          kind = "Gateway"
+          namespace = traefik.namespace
+        }
+      }
+      to {
+        new {
+          group = ""
+          kind = "Secret"
+          name = app.wildcardCertSecretName
+        }
+      }
+    }
+  }
+}
