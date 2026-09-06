@@ -7,7 +7,7 @@ clusterName: String = "pegasus"
 /// LAN domain for literal hosts (nodes, the NAS, ...), resolved via the router's own DNS.
 domain: String = "home.\(rootDomain)"
 nasDomain: String = "nas.\(domain)"
-k8sControlPlaneEndpoint: String = "https://k8s.\(domain):6443"
+k8sControlPlaneEndpoint: String = "https://pegasus.\(domain):6443"
 
 /// Wildcard domain for Kubernetes ingress, scoped separately from [domain] by cluster name so a
 /// wildcard DNS record for it can never collide with a literal LAN host's own hostname.
