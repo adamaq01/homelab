@@ -173,7 +173,7 @@ httpRoute: HTTPRoute = new {
       }
     }
     hostnames {
-      "dozzle.\(app.domain)"
+      "dozzle.\(app.ingressDomain)"
     }
     rules {
       new {

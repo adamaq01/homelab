@@ -51,7 +51,6 @@ value {
       }
     }
   }
-  // Reused manually on the TrueNAS box too, which isn't Kubernetes-managed.
   new Certificate {
     metadata {
       name = "home-adamaq01-fr-wildcard"
@@ -69,11 +68,28 @@ value {
       }
     }
   }
+  new Certificate {
+    metadata {
+      name = "pegasus-adamaq01-fr-wildcard"
+      namespace = app.namespace
+    }
+    spec {
+      secretName = app.ingressWildcardCertSecretName
+      issuerRef {
+        name = "cloudflare"
+        kind = "ClusterIssuer"
+      }
+      dnsNames {
+        app.ingressDomain
+        "*.\(app.ingressDomain)"
+      }
+    }
+  }
   // Grants Traefik's Gateway (which lives in its own namespace) permission to reference the
-  // Certificate's Secret above across namespaces.
+  // ingress wildcard Certificate's Secret above across namespaces.
   new ReferenceGrant {
     metadata {
-      name = "traefik-gateway-\(app.wildcardCertSecretName)"
+      name = "traefik-gateway-\(app.ingressWildcardCertSecretName)"
       namespace = app.namespace
     }
     spec {
@@ -88,7 +104,7 @@ value {
         new {
           group = ""
           kind = "Secret"
-          name = app.wildcardCertSecretName
+          name = app.ingressWildcardCertSecretName
         }
       }
     }

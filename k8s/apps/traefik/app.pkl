@@ -47,7 +47,7 @@ source {
             ["websecure"] {
               port = 8443
               protocol = "HTTPS"
-              hostname = "*.\(module.domain)"
+              hostname = "*.\(module.ingressDomain)"
               mode = "Terminate"
               // Gateway API restricts HTTPRoutes to the Gateway's own namespace by default, but
               // every app's HTTPRoute lives in that app's own namespace instead.
@@ -56,7 +56,7 @@ source {
               }
               certificateRefs {
                 new {
-                  name = cert_manager.wildcardCertSecretName
+                  name = cert_manager.ingressWildcardCertSecretName
                   namespace = cert_manager.namespace
                 }
               }

@@ -2,5 +2,4 @@ open module common
 
 extends ".../common.pkl"
 
-clusterName = "pegasus"
 controlPlaneVIP = "192.168.2.251"

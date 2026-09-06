@@ -1,5 +1,9 @@
 extends ".../app.pkl"
 
-/// Secret the wildcard Certificate (see chart.pkl) is stored in, referenced cross-app by
-/// Traefik's Gateway websecure listener.
+/// Secret the `domain` wildcard Certificate (see chart.pkl) is stored in. Covers the LAN's literal
+/// hosts, not Kubernetes ingress.
 wildcardCertSecretName: String = "home-adamaq01-fr-tls"
+
+/// Secret the `ingressDomain` wildcard Certificate (see chart.pkl) is stored in, referenced cross-app
+/// by Traefik's Gateway websecure listener.
+ingressWildcardCertSecretName: String = "pegasus-adamaq01-fr-tls"
