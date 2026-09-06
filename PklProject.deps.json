@@ -78,6 +78,11 @@
       "checksums": {
         "sha256": "eac7bd1d523c46335ab241d746c0c0a878f4d46d226815cb66d21dd83e480795"
       }
+    },
+    "package://local/homelab/packages/gateway-api@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/gateway-api@0.1.0",
+      "path": "packages/gateway-api"
     }
   }
 }

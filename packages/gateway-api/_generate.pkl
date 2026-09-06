@@ -1,0 +1,9 @@
+amends "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6#/generate.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/gateway-api
+local version = "v1.6.2"
+
+source = "https://github.com/kubernetes-sigs/gateway-api/releases/download/\(version)/standard-install.yaml"
+baseApiGroup = "v1.gateway.networking.k8s.io"
+
+k8sImportPath = "@k8s"

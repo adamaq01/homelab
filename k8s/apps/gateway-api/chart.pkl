@@ -1,0 +1,7 @@
+amends "@manifest/generate.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/gateway-api
+local version = "v1.6.2"
+
+// Standard channel only, skips the experimental channel's alpha-stability CRDs/fields.
+source = "https://github.com/kubernetes-sigs/gateway-api/releases/download/\(version)/standard-install.yaml"
