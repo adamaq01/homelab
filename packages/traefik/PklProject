@@ -1,0 +1,20 @@
+amends "pkl:Project"
+
+package {
+  name = "traefik"
+  baseUri = "package://local/homelab/packages/traefik"
+  version = "0.1.0"
+  packageZipUrl = "https://local/homelab/packages/traefik.zip"
+}
+
+dependencies {
+  ["org.json_schema.contrib"] {
+    uri = "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema.contrib@1.2.4"
+  }
+  ["jsonschema"] {
+    uri = "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema@1.1.1"
+  }
+  ["uri"] {
+    uri = "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.uri@1.0.4"
+  }
+}

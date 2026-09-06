@@ -84,6 +84,11 @@
       "uri": "projectpackage://local/homelab/packages/argocd@0.1.0",
       "path": "packages/argocd"
     },
+    "package://local/homelab/packages/traefik@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/traefik@0.1.0",
+      "path": "packages/traefik"
+    },
     "package://local/homelab/packages/gateway-api@0": {
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/gateway-api@0.1.0",

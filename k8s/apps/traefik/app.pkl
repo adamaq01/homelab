@@ -1,0 +1,73 @@
+extends ".../app.pkl"
+
+import "../cert-manager/app.pkl" as cert_manager
+import "@traefik/Values.pkl"
+
+// renovate: datasource=helm packageName=traefik registryUrl=https://traefik.github.io/charts
+local version = "41.4.0"
+
+// Chart default, left unset in `valuesObject` below. Referenced cross-app by HTTPRoutes'
+// `parentRefs` (e.g. `dozzle/chart.pkl`).
+gatewayName: String = "traefik-gateway"
+
+// The Gateway resource this chart creates (via `gateway.listeners`) ends up in this Application's
+// own destination namespace, while cert-manager's wildcard Certificate/Secret for the domain
+// lives in the `cert-manager` namespace. A ReferenceGrant there (see cert-manager's chart.pkl)
+// authorizes the `websecure` listener's `certificateRefs` to resolve it cross-namespace.
+source {
+  repoURL = "https://traefik.github.io/charts"
+  chart = "traefik"
+  targetRevision = version
+  path = null
+  helm {
+    valuesObject =
+      new Values {
+        // Redirects all plain HTTP traffic to HTTPS at the entrypoint level, so every app's
+        // HTTPRoute only needs to target the `websecure` listener to get HTTP covered for free.
+        ports {
+          ["web"] {
+            http {
+              redirections {
+                entryPoint {
+                  to = "websecure"
+                  scheme = "https"
+                  permanent = true
+                }
+              }
+            }
+          }
+        }
+        providers {
+          kubernetesGateway {
+            enabled = true
+          }
+        }
+        gateway {
+          listeners {
+            ["websecure"] {
+              port = 8443
+              protocol = "HTTPS"
+              hostname = "*.\(module.domain)"
+              mode = "Terminate"
+              // Gateway API restricts HTTPRoutes to the Gateway's own namespace by default, but
+              // every app's HTTPRoute lives in that app's own namespace instead.
+              namespacePolicy {
+                from = "All"
+              }
+              certificateRefs {
+                new {
+                  name = cert_manager.wildcardCertSecretName
+                  namespace = cert_manager.namespace
+                }
+              }
+            }
+          }
+        }
+        service {
+          annotations {
+            ["metallb.io/loadBalancerIPs"] = module.gatewayIP
+          }
+        }
+      }.toDynamic()
+  }
+}

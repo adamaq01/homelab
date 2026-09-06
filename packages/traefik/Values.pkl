@@ -1,0 +1,2249 @@
+/// Traefik Proxy Helm Chart
+///
+/// The Cloud Native Application Proxy
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/traefik/traefik-helm-chart/v41.4.0/traefik/values.schema.json>.
+module Values
+
+/// See [access logs
+/// reference](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/)
+accessLog: AccessLog?
+
+/// Additional arguments to be passed at Traefik's binary See [CLI
+/// Reference](https://docs.traefik.io/reference/static-configuration/cli/)
+additionalArguments: Listing?
+
+/// Additional volumeMounts to add to the Traefik container
+additionalVolumeMounts: Listing?
+
+/// This example pod anti-affinity forces the scheduler to put traefik pods It should be used when
+/// hostNetwork: true to prevent port conflicts
+affinity: Dynamic?
+
+api: Api?
+
+autoscaling: Autoscaling?
+
+/// Certificates resolvers configuration. Ref:
+/// https://doc.traefik.io/traefik/reference/install-configuration/tls/certificate-resolvers/acme/ See
+/// EXAMPLES.md for more details.
+certificatesResolvers: Dynamic?
+
+/// Add additional label to all resources
+commonLabels: Dynamic?
+
+core: Core?
+
+deployment: Deployment?
+
+/// Allow the Helm chart to be used as optional subchart.
+enabled: Boolean(this == true)?
+
+/// Additional Environment variables to be passed to Traefik's binary
+env: Listing?
+
+/// Environment variables to be passed to Traefik's binary from configMaps or secrets
+envFrom: Listing?
+
+experimental: Experimental?
+
+/// Extra objects to deploy (value evaluated as a template) In some cases, it can avoid the need for
+/// additional, extended or adhoc deployments. See #595 for more details and
+/// traefik/tests/values/extra.yaml for example.
+extraObjects: Listing?
+
+/// Overrides the resource name for templates (i.e deployment, service, etc..)
+fullnameOverride: String?
+
+gateway: Gateway?
+
+gatewayClass: GatewayClass?
+
+global: Global?
+
+/// If hostNetwork is true, runs traefik in the host network namespace To prevent unschedulable pods due
+/// to port collisions, if hostNetwork=true and replicas>1, a pod anti-affinity is recommended and will
+/// be set if the affinity is left as default.
+hostNetwork: Boolean?
+
+hub: Hub?
+
+image: Image?
+
+ingressClass: IngressClass?
+
+/// Only dashboard & healthcheck IngressRoute are supported. It's recommended to create workloads CR
+/// outside of this Chart.
+ingressRoute: IngressRoute?
+
+/// This field overrides the default app.kubernetes.io/instance label for all Objects.
+instanceLabelOverride: String?
+
+livenessProbe: ReadinessProbe?
+
+/// See [logs
+/// reference](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/)
+log: Log?
+
+metrics: Metrics?
+
+/// overrides the app.kubernetes.io/name label
+nameOverride: String?
+
+/// This field overrides the default Release Namespace for Helm. It will not affect optional CRDs such as
+/// `ServiceMonitor` and `PrometheusRules`
+namespaceOverride: String?
+
+/// nodeSelector is the simplest recommended form of node selection constraint.
+nodeSelector: Dynamic?
+
+/// Required for OCI Marketplace integration. See
+/// https://docs.public.content.oci.oraclecloud.com/en-us/iaas/Content/Marketplace/understanding-helm-charts.htm
+oci_meta: OciMeta?
+
+ocsp: Ocsp?
+
+/// Required for IBM Cloud Marketplace integration. Injected by IBM Cloud Catalog when deploying via IBM
+/// Cloud Schematics. This value is not used by the chart.
+offering_version: String?
+
+persistence: Persistence?
+
+/// [Pod Disruption
+/// Budget](https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/pod-disruption-budget-v1/)
+podDisruptionBudget: PodDisruptionBudget?
+
+/// [Pod Security
+/// Context](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context)
+podSecurityContext: PodSecurityContext?
+
+ports: Mapping<String, Ports>?
+
+/// [Pod Priority and
+/// Preemption](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/)
+priorityClassName: String?
+
+providers: ItemProviders?
+
+rbac: Rbac?
+
+readinessProbe: ReadinessProbe?
+
+/// [Resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for
+/// `traefik` container.
+resources: Dynamic?
+
+/// [SecurityContext](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1)
+securityContext: SecurityContext?
+
+service: ItemService?
+
+/// The service account the pods will use to interact with the Kubernetes API
+serviceAccount: ServiceAccount?
+
+/// Additional serviceAccount annotations (e.g. for oidc authentication)
+serviceAccountAnnotations: Dynamic?
+
+/// Define [Startup
+/// Probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes)
+startupProbe: Dynamic?
+
+/// TLS Options are created as [TLSOption
+/// CRDs](https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/crd/tls/tlsoption/)
+/// When using `labelSelector`, you'll need to set labels on tlsOption accordingly. See EXAMPLE.md for
+/// details.
+tlsOptions: Dynamic?
+
+/// TLS Store are created as [TLSStore
+/// CRDs](https://doc.traefik.io/traefik/reference/routing-configuration/kubernetes/crd/tls/tlsstore/).
+/// This is useful if you want to set a default certificate. See EXAMPLE.md for details.
+tlsStore: Dynamic?
+
+/// Tolerations allow the scheduler to schedule pods with matching taints.
+tolerations: Listing?
+
+/// You can use topology spread constraints to control how Pods are spread across your cluster among
+/// failure-domains.
+topologySpreadConstraints: Listing?
+
+/// https://doc.traefik.io/traefik/reference/install-configuration/observability/tracing/
+tracing: ItemTracing?
+
+updateStrategy: UpdateStrategy?
+
+/// This field overrides the default version extracted from image.tag. Required when pinning by
+/// `image.digest`, since the version cannot be derived from a digest.
+versionOverride: String?
+
+/// Add volumes to the traefik pod. The volume name will be passed to tpl. This can be used to mount a
+/// cert pair or a configmap that holds a config.toml file. After the volume has been mounted, add the
+/// configs into traefik by using the `additionalArguments` list below, eg: `additionalArguments:
+volumes: Listing?
+
+/// See [access logs
+/// reference](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/)
+class AccessLog {
+  /// Enables accessLogs for internal resources. Default: false.
+  addInternals: Boolean?
+
+  /// Set
+  /// [bufferingSize](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#opt-accesslog-bufferingSize)
+  bufferingSize: Number?
+
+  /// Enables access log output alongside OTLP (v3.7+).
+  dualOutput: Boolean?
+
+  /// To enable access logs
+  enabled: Boolean?
+
+  fields: Fields?
+
+  /// Set [filtering](https://doc.traefik.io/traefik/observe/logs-and-access-logs/#access-log-filters)
+  filters: Filters?
+
+  /// Set [access log
+  /// format](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#opt-accesslog-format)
+  ///
+  /// Default if undefined: `"common"`
+  format: String(this == "common" || this == "genericCLF" || this == "json" || this == null)?
+
+  otlp: Otlp?
+
+  /// Set
+  /// [timezone](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#time-zones)
+  timezone: String?
+}
+
+class Fields {
+  /// Set default mode for fields.names
+  ///
+  /// Default if undefined: `"keep"`
+  defaultMode: ("keep"|"drop"|"redact")?
+
+  headers: Headers?
+
+  /// Names of the fields to limit.
+  names: Dynamic?
+
+  queryParameters: QueryParameters?
+}
+
+class Headers {
+  /// [Limit logged fields or
+  /// headers](https://doc.traefik.io/traefik/observe/logs-and-access-logs/#log-fields-customization)
+  ///
+  /// Default if undefined: `"drop"`
+  defaultMode: ("keep"|"drop"|"redact")?
+
+  names: Dynamic?
+}
+
+class QueryParameters {
+  /// Keep or drop all query parameters in the RequestPath access log field (v3.7.3+).
+  defaultMode: String(this == "keep" || this == "drop" || this == null)?
+}
+
+/// Set [filtering](https://doc.traefik.io/traefik/observe/logs-and-access-logs/#access-log-filters)
+class Filters {
+  /// Set minDuration, to keep access logs when requests take longer than the specified duration
+  minDuration: String?
+
+  /// Set retryAttempts, to keep the access logs when at least one retry has happened
+  retryAttempts: Boolean?
+
+  /// Set statusCodes, to limit the access logs to requests with a status codes in the specified range
+  statusCodes: String?
+}
+
+class Otlp {
+  /// Set to true in order to enable OpenTelemetry on access logs. Note that experimental.otlpLogs needs
+  /// to be enabled.
+  enabled: Boolean?
+
+  grpc: Grpc?
+
+  http: Http?
+
+  /// Defines additional resource attributes to be sent to the collector.
+  resourceAttributes: Dynamic?
+
+  /// Service name used in OTLP backend. Default: traefik.
+  serviceName: String?
+}
+
+class Grpc {
+  /// Set to true in order to send access logs to the OpenTelemetry Collector using gRPC
+  enabled: Boolean?
+
+  /// Format: <host>:<port>. Default: "localhost:4317"
+  endpoint: String?
+
+  /// Allows reporter to send access logs to the OpenTelemetry Collector without using a secured
+  /// protocol.
+  insecure: Boolean?
+
+  tls: HttpTls?
+}
+
+class HttpTls {
+  /// The path to the certificate authority, it defaults to the system bundle.
+  ca: String?
+
+  /// The path to the public certificate. When using this option, setting the key option is required.
+  cert: String?
+
+  /// When set to true, the TLS connection accepts any certificate presented by the server regardless of
+  /// the hostnames it covers.
+  insecureSkipVerify: Boolean?
+
+  /// The path to the private key. When using this option, setting the cert option is required.
+  key: String?
+}
+
+class Http {
+  /// Set to true in order to send access logs to the OpenTelemetry Collector using HTTP.
+  enabled: Boolean?
+
+  /// Format: <scheme>://<host>:<port><path>. Default: https://localhost:4318/v1/logs
+  endpoint: String?
+
+  /// Additional headers sent with access logs by the reporter to the OpenTelemetry Collector.
+  headers: Dynamic?
+
+  tls: HttpTls?
+}
+
+class Api {
+  /// Configure API basePath
+  ///
+  /// Default if undefined: `"/"`
+  basePath: String?
+
+  /// Enable the dashboard
+  dashboard: Boolean?
+
+  /// Custom name for the dashboard (v3.7+).
+  dashboardName: String?
+
+  /// Enable the debug API
+  debug: Boolean?
+
+  /// Disable the advertisement from the dashboard.
+  disableDashboardAd: Boolean?
+
+  /// Enable the insecure API (HTTP)
+  insecure: Boolean?
+}
+
+class Autoscaling {
+  /// behavior configures the scaling behavior of the target in both Up and Down directions (scaleUp and
+  /// scaleDown fields respectively).
+  behavior: Dynamic?
+
+  /// Create HorizontalPodAutoscaler object. See EXAMPLES.md for more details.
+  enabled: Boolean?
+
+  /// maxReplicas is the upper limit for the number of pods that can be set by the autoscaler; cannot be
+  /// smaller than MinReplicas.
+  maxReplicas: Number(isPositive)?
+
+  /// metrics contains the specifications for which to use to calculate the desired replica count (the
+  /// maximum replica count across all metrics will be used).
+  metrics: Listing?
+
+  /// minReplicas is the lower limit for the number of replicas to which the autoscaler can scale down.
+  /// It defaults to 1 pod.
+  minReplicas: Number(isPositive)?
+
+  /// scaleTargetRef points to the target resource to scale, and is used for the pods for which metrics
+  /// should be collected, as well as to actually change the replica count.
+  scaleTargetRef: ScaleTargetRef?
+}
+
+/// scaleTargetRef points to the target resource to scale, and is used for the pods for which metrics
+/// should be collected, as well as to actually change the replica count.
+class ScaleTargetRef {
+  apiVersion: String?
+
+  kind: String?
+
+  name: String?
+}
+
+class Core {
+  /// Can be used to use globally v2 router syntax. Deprecated since v3.4 /!\. See
+  /// https://doc.traefik.io/traefik/v3.0/migration/v2-to-v3/#new-v3-syntax-notable-changes
+  defaultRuleSyntax: String?
+
+  /// Disables the unsafe fallback to default TLS options on conflict, mitigating
+  /// [GHSA-g55h-rg46-x9c5](https://github.com/traefik/traefik/security/advisories/GHSA-g55h-rg46-x9c5).
+  /// Requires traefik v3.7.11+.
+  strictTLSOptions: Boolean?
+}
+
+class Deployment {
+  /// Additional containers (e.g. for metric offloading sidecars)
+  additionalContainers: Listing?
+
+  /// Additional volumes available for use with initContainers and additionalContainers
+  additionalVolumes: Listing?
+
+  /// Additional deployment annotations (e.g. for jaeger-operator sidecar injection)
+  annotations: Dynamic?
+
+  /// Custom pod [DNS
+  /// config](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/#poddnsconfig-v1-core)
+  dnsConfig: Dynamic?
+
+  /// Custom pod DNS policy. Apply if `hostNetwork: true`
+  dnsPolicy: String?
+
+  /// Enable deployment
+  enabled: Boolean?
+
+  /// Percentage of memory limit to set for GOMEMLIMIT, set as decimal (0.9 = 90%, 0.95 = 95% etc). Only
+  /// takes effect when resources.limits.memory is set. Set to 0 to disable (e.g. when using VPA or
+  /// setting it via env)
+  goMemLimitPercentage: Number?
+
+  /// Override the liveness/readiness host. Useful for getting ping to respond on non-default entryPoint.
+  healthchecksHost: String?
+
+  /// Override the liveness/readiness port. This is useful to integrate traefik with an external Load
+  /// Balancer that performs healthchecks.
+  healthchecksPort: (String|Int(isPositive))?
+
+  /// Override the liveness/readiness scheme. Useful for getting ping to respond on websecure entryPoint.
+  ///
+  /// Default if undefined: `"HTTP"`
+  healthchecksScheme: String(this == "HTTP" || this == "HTTPS" || this == null)?
+
+  /// Custom [host aliases](https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/)
+  hostAliases: Listing?
+
+  /// Whether to use the host user namespace. Setting this to false enables user namespaces, which can
+  /// improve security by isolating the pod's users from the host. See
+  /// https://kubernetes.io/docs/concepts/workloads/pods/user-namespaces/
+  hostUsers: Boolean?
+
+  /// Pull secret for fetching traefik container image
+  imagePullSecrets: Listing?
+
+  /// Additional initContainers (e.g. for setting file permission as shown below)
+  initContainers: Listing?
+
+  /// Deployment or DaemonSet
+  kind: String?
+
+  /// Additional deployment labels (e.g. for filtering deployment by custom labels)
+  labels: Dynamic?
+
+  /// Pod lifecycle actions
+  lifecycle: Dynamic?
+
+  /// Override the liveness path.
+  livenessPath: String?
+
+  /// The minimum number of seconds Traefik needs to be up and running before the DaemonSet/Deployment
+  /// controller considers it available
+  minReadySeconds: Int?
+
+  /// Additional pod annotations (e.g. for mesh injection or prometheus scraping) It supports templating.
+  /// One can set it with values like traefik/name: '{{ template "traefik.name" . }}'
+  podAnnotations: Dynamic?
+
+  /// Additional Pod labels (e.g. for filtering Pod by custom labels) It supports templating. One can set
+  /// it with values like traefik/name: '{{ template "traefik.name" . }}'
+  podLabels: Dynamic?
+
+  /// Override the readiness path.
+  readinessPath: String?
+
+  /// Number of pods of the deployment (only applies when kind == Deployment). Set to null to omit
+  /// spec.replicas, e.g. when an external controller (HPA/KEDA) owns scaling.
+  replicas: Number(isPositive)?
+
+  /// Number of old history to retain to allow rollback (If not set, default Kubernetes value is set to
+  /// 10)
+  revisionHistoryLimit: Number(isPositive)?
+
+  /// Set a runtimeClassName on pod
+  runtimeClassName: String?
+
+  /// Use process namespace sharing
+  shareProcessNamespace: Boolean?
+
+  /// Amount of time (in seconds) before Kubernetes will send the SIGKILL signal if Traefik does not shut
+  /// down
+  terminationGracePeriodSeconds: Int?
+
+  tmpVolume: TmpVolume?
+}
+
+class TmpVolume {
+  /// [EmptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) options for the tmp
+  /// volume.
+  emptyDir: Dynamic?
+}
+
+class Experimental {
+  /// Defines whether all plugins must be loaded successfully for Traefik to start
+  abortOnPluginFailure: Boolean?
+
+  fastProxy: FastProxy?
+
+  /// Enable Knative provider experimental feature.
+  knative: Boolean?
+
+  kubernetesGateway: KubernetesGateway?
+
+  /// Enable experimental local plugins
+  localPlugins: Dynamic?
+
+  /// Enable OTLP logging experimental feature.
+  otlpLogs: Boolean?
+
+  /// Enable experimental plugins
+  plugins: Dynamic?
+}
+
+class FastProxy {
+  /// Enable debug mode for the FastProxy implementation.
+  debug: Boolean?
+
+  /// Enables the FastProxy implementation.
+  enabled: Boolean?
+}
+
+class KubernetesGateway {
+  /// Enable traefik experimental GatewayClass CRD
+  enabled: Boolean?
+}
+
+class Gateway {
+  /// Additional gateway annotations (e.g. for cert-manager.io/issuer)
+  annotations: Dynamic?
+
+  /// Configure this Gateway as a [Default
+  /// Gateway](https://kubernetes.io/blog/2025/11/06/gateway-api-v1-4/#introducing-default-gateways) by
+  /// setting the `defaultScope` field (e.g. `All` or `Namespace`).
+  defaultScope: String(this == "All" || this == "None" || this == null)?
+
+  /// When providers.kubernetesGateway.enabled, deploy a default gateway
+  enabled: Boolean?
+
+  /// [Infrastructure](https://kubernetes.io/blog/2023/11/28/gateway-api-ga/#gateway-infrastructure-labels)
+  infrastructure: Dynamic?
+
+  listeners: Mapping<String, Dynamic>?
+
+  /// Set a custom name to gateway
+  name: String?
+
+  /// By default, Gateway is created in the same `Namespace` as Traefik.
+  namespace: String?
+}
+
+class Listeners {
+  web: Web?
+}
+
+class Web {
+  /// Optional hostname. See
+  /// [Hostname](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.Hostname)
+  hostname: String?
+
+  /// Routes are restricted to namespace of the gateway [by
+  /// default](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.FromNamespaces
+  namespacePolicy: Dynamic?
+
+  /// Port is the network port. Multiple listeners may use the same port, subject to the Listener
+  /// compatibility rules. The port must match a port declared in ports section.
+  port: Int?
+
+  protocol: String?
+}
+
+class GatewayClass {
+  /// When providers.kubernetesGateway.enabled and gateway.enabled, deploy a default gatewayClass
+  enabled: Boolean?
+
+  /// Additional gatewayClass labels (e.g. for filtering gateway objects by custom labels)
+  labels: Dynamic?
+
+  /// Set a custom name to GatewayClass
+  name: String?
+}
+
+class Global {
+  /// Required for Azure Marketplace integration. See
+  /// https://learn.microsoft.com/en-us/partner-center/marketplace-offers/azure-container-technical-assets-kubernetes?tabs=linux,linux2#update-the-helm-chart
+  azure: Azure?
+
+  checkNewVersion: Boolean?
+
+  /// Disable appending RemoteAddr to X-Forwarded-For header globally (v3.7+).
+  notAppendXForwardedFor: Boolean?
+
+  /// Please take time to consider whether or not you wish to share anonymous data with us See
+  /// https://doc.traefik.io/traefik/contributing/data-collection/
+  sendAnonymousUsage: Boolean?
+}
+
+/// Required for Azure Marketplace integration. See
+/// https://learn.microsoft.com/en-us/partner-center/marketplace-offers/azure-container-technical-assets-kubernetes?tabs=linux,linux2#update-the-helm-chart
+class Azure {
+  enabled: Boolean?
+
+  images: Images?
+}
+
+class Images {
+  hub: Proxy?
+
+  proxy: Proxy?
+}
+
+class Proxy {
+  image: String?
+
+  registry: String?
+
+  tag: String?
+}
+
+class Hub {
+  aigateway: Aigateway?
+
+  apimanagement: Apimanagement?
+
+  /// Install Traefik Hub. Without `hub.token`, it runs in proxy mode: a drop-in Traefik Proxy, which
+  /// requires Traefik Hub >= v3.21.0-ea.
+  enabled: Boolean?
+
+  /// Use the hardened image variant. It appends `-hardened` to the tag and defaults the image to
+  /// `registry.traefik.io/traefik-hub`. Requires `hub.enabled` and Traefik Hub >= v3.21.0-ea.
+  hardened: Boolean?
+
+  mcpgateway: Mcpgateway?
+
+  /// By default, Traefik Hub provider watches all namespaces. When using `rbac.namespaced`, it will
+  /// watch helm release namespace and namespaces listed in this array.
+  namespaces: Listing
+
+  /// Disables all external network connections.
+  offline: Boolean?
+
+  pluginRegistry: PluginRegistry?
+
+  providers: Providers?
+
+  redis: Redis?
+
+  /// Enable export of error logs to the platform. Default: true.
+  sendlogs: Boolean?
+
+  /// Name of `Secret` with key 'token' set to a valid license token. It enables API Gateway.
+  token: String?
+
+  /// Mount path for token secret.
+  tokenMountPath: String?
+
+  tracing: Tracing?
+}
+
+class Aigateway {
+  /// Set to true in order to enable AI Gateway. Requires a valid license token.
+  enabled: Boolean?
+
+  /// Hard limit for the size of request bodies inspected by the gateway. Accepts a plain integer
+  /// representing **bytes**. The default value is `1048576` (1 MiB).
+  maxRequestBodySize: Number(isPositive)?
+}
+
+class Apimanagement {
+  admission: Admission?
+
+  /// Set to true in order to enable API Management. Requires a valid license token.
+  enabled: Boolean?
+
+  openApi: OpenApi?
+}
+
+class Admission {
+  /// Set custom annotations.
+  annotations: Dynamic?
+
+  /// Set custom certificate for the WebHook admission server. The certificate should be specified with
+  /// _tls.crt_ and _tls.key_ in base64 encoding.
+  customWebhookCertificate: Dynamic?
+
+  /// WebHook admission server listen address. Default: "0.0.0.0:9943".
+  listenAddr: String?
+
+  /// Set it to false if you need to disable Traefik Hub pod restart when mutating webhook certificate is
+  /// updated. It's done with a label update.
+  restartOnCertificateChange: Boolean?
+
+  /// Certificate name of the WebHook admission server. Default: "hub-agent-cert".
+  secretName: String?
+
+  /// By default, this chart handles directly the tls certificate required for the admission webhook.
+  /// It's possible to disable this behavior and handle it outside of the chart. See EXAMPLES.md for more
+  /// details.
+  selfManagedCertificate: Boolean?
+}
+
+class OpenApi {
+  /// Interval to refresh the OpenAPI specification, as a Go duration. Must be at least `1m`.
+  refreshInterval: String?
+
+  /// When set to true, it will only accept paths and methods that are explicitly defined in its OpenAPI
+  /// specification
+  validateRequestMethodAndPath: Boolean?
+}
+
+class Mcpgateway {
+  /// Set to true in order to enable AI MCP Gateway. Requires a valid license token.
+  enabled: Boolean?
+
+  /// Hard limit for the size of request bodies inspected by the gateway. Accepts a plain integer
+  /// representing **bytes**. The default value is `1048576` (1 MiB).
+  maxRequestBodySize: Number(isPositive)?
+}
+
+class PluginRegistry {
+  sources: Dynamic?
+}
+
+class Providers {
+  consulCatalogEnterprise: ConsulCatalogEnterprise?
+
+  ec2: Ec2?
+
+  microcks: Microcks?
+
+  multicluster: Multicluster?
+
+  nutanixPrismCentral: NutanixPrismCentral?
+}
+
+class ConsulCatalogEnterprise {
+  /// Use local agent caching for catalog reads.
+  cache: Boolean?
+
+  /// Enable Consul Connect support.
+  connectAware: Boolean?
+
+  /// Consider every service as Connect capable by default.
+  connectByDefault: Boolean?
+
+  /// Constraints is an expression that Traefik matches against the container's labels
+  constraints: String?
+
+  /// Default rule.
+  defaultRule: String?
+
+  /// Enable Consul Catalog Enterprise backend with default settings.
+  enabled: Boolean?
+
+  endpoint: Endpoint?
+
+  /// Expose containers by default.
+  exposedByDefault: Boolean?
+
+  /// Sets the namespaces used to discover services (Consul Enterprise only).
+  namespaces: String?
+
+  /// Sets the partition used to discover services (Consul Enterprise only).
+  partition: String?
+
+  /// Prefix for consul service tags.
+  prefix: String?
+
+  /// Interval for checking Consul API.
+  refreshInterval: Int?
+
+  /// Forces the read to be fully consistent.
+  requireConsistent: Boolean?
+
+  /// Name of the Traefik service in Consul Catalog (needs to be registered via the
+  serviceName: String?
+
+  /// Use stale consistency for catalog reads.
+  stale: Boolean?
+
+  /// A list of service health statuses to allow taking traffic.
+  strictChecks: String?
+
+  /// Watch Consul API events.
+  watch: Boolean?
+}
+
+class Endpoint {
+  /// The address of the Consul server
+  address: String?
+
+  /// Data center to use. If not provided, the default agent data center is used
+  datacenter: String?
+
+  /// WaitTime limits how long a Watch will block. If not provided, the agent default
+  endpointWaitTime: Number?
+
+  httpauth: Httpauth?
+
+  /// The URI scheme for the Consul server
+  scheme: String?
+
+  tls: Tls?
+
+  /// Token is used to provide a per-request ACL token which overrides the agent's
+  token: String?
+}
+
+class Httpauth {
+  /// Basic Auth password
+  password: String?
+
+  /// Basic Auth username
+  username: String?
+}
+
+class Tls {
+  /// TLS CA
+  ca: String?
+
+  /// TLS cert
+  cert: String?
+
+  /// TLS insecure skip verify
+  insecureSkipVerify: Boolean?
+
+  /// TLS key
+  key: String?
+}
+
+class Ec2 {
+  /// AWS access key ID, set together with secretAccessKey. Readable from the Pod spec: prefer IRSA, the
+  /// instance role or `env`.
+  accessKeyID: String?
+
+  /// Expression matched against instance tags to determine whether to create routes for an instance.
+  constraints: String?
+
+  /// Default rule applied to instances that do not define a router rule tag.
+  defaultRule: String?
+
+  /// Enable AWS EC2 provider.
+  enabled: Boolean?
+
+  /// Expose instances by default. When false, only instances with the `traefik.enable=true` tag are
+  /// exposed.
+  exposedByDefault: Boolean?
+
+  /// EC2 API filters used to scope instance discovery. List of `{ name: "<filter>", values: ["<value>"]
+  /// }` entries.
+  filters: Listing<Dynamic>?
+
+  /// Default backend IP mode: private, public or ipv6. Overridable per instance with the
+  /// `traefik.ec2.ipmode` tag.
+  ipMode: (""|"private"|"public"|"ipv6")?
+
+  /// Polling interval, in seconds, for the EC2 API.
+  refreshSeconds: Int?
+
+  /// AWS region used for EC2 API requests. When empty, the region is retrieved from the EC2 Instance
+  /// Metadata Service.
+  region: String?
+
+  /// AWS secret access key, set together with accessKeyID. Readable from the Pod spec: prefer IRSA, the
+  /// instance role or `env`.
+  secretAccessKey: String?
+
+  securityGroupPortDiscovery: SecurityGroupPortDiscovery?
+}
+
+class SecurityGroupPortDiscovery {
+  /// Derive the backend port from the instance security-group rules when no port tag is set.
+  enabled: Boolean?
+
+  /// Ports excluded from security-group port discovery. When empty, the provider excludes privileged
+  /// ports except 80 and 443.
+  excludedPorts: Listing?
+}
+
+class Microcks {
+  auth: Auth?
+
+  /// Enable Microcks provider.
+  enabled: Boolean?
+
+  /// Microcks API endpoint.
+  endpoint: String?
+
+  /// Polling interval for Microcks API.
+  pollInterval: Int?
+
+  /// Polling timeout for Microcks API.
+  pollTimeout: Int?
+
+  tls: Tls?
+}
+
+class Auth {
+  /// Microcks API client ID.
+  clientId: String?
+
+  /// Microcks API client secret.
+  clientSecret: String?
+
+  /// Microcks API endpoint.
+  endpoint: String?
+
+  /// Microcks API token.
+  token: String?
+}
+
+class Multicluster {
+  /// Child cluster configurations, keyed by a unique name.
+  children: Mapping<String, Children>?
+
+  /// Enable Multi-cluster provider.
+  enabled: Boolean?
+
+  /// Polling interval for Multi-cluster.
+  pollInterval: Int?
+
+  /// Polling timeout for Multi-cluster.
+  pollTimeout: Int?
+}
+
+class Children {
+  /// URL of the child cluster's uplink entrypoint.
+  address: String?
+
+  /// TLS and transport configuration for connecting to this child.
+  serversTransport: ServersTransport?
+}
+
+/// TLS and transport configuration for connecting to this child.
+class ServersTransport {
+  certificates: Listing?
+
+  /// List of supported cipher suites for TLS versions up to 1.2.
+  cipherSuites: Listing?
+
+  /// Disable HTTP/2 for connections to this child.
+  disableHTTP2: Boolean?
+
+  forwardingTimeouts: ForwardingTimeouts?
+
+  /// Disable TLS certificate verification. **Not recommended for production.**
+  insecureSkipVerify: Boolean?
+
+  /// Maximum idle connections per host.
+  maxIdleConnsPerHost: Number?
+
+  /// Maximum TLS version (e.g. `VersionTLS12`, `VersionTLS13`).
+  maxVersion: String?
+
+  /// Minimum TLS version (e.g. `VersionTLS12`, `VersionTLS13`).
+  minVersion: String?
+
+  /// URI used to match against SAN URIs during the server's certificate verification.
+  peerCertURI: String?
+
+  rootCAs: Listing?
+
+  /// Server name used for SNI and certificate verification.
+  serverName: String?
+
+  spiffe: Spiffe?
+}
+
+class ForwardingTimeouts {
+  /// Timeout for establishing connections.
+  dialTimeout: (String|Int)?
+
+  /// Timeout for idle connections.
+  idleConnTimeout: (String|Int)?
+
+  /// Timeout for HTTP/2 server ping frames.
+  pingTimeout: (String|Int)?
+
+  /// Timeout for HTTP/2 connection idle reads.
+  readIdleTimeout: (String|Int)?
+
+  /// Timeout for reading the request body.
+  readTimeout: (String|Int)?
+
+  /// Timeout for reading response headers.
+  responseHeaderTimeout: (String|Int)?
+
+  /// Timeout for writing the response.
+  writeTimeout: (String|Int)?
+}
+
+class Spiffe {
+  ids: Listing?
+
+  /// SPIFFE trust domain.
+  trustDomain: (String|Int)?
+}
+
+class NutanixPrismCentral {
+  /// Filter VMs by VPCs. List of `{ uuid: "<vpc-uuid>" }` entries.
+  allowedVpcs: Listing?
+
+  /// Prism Central API key.
+  apiKey: String?
+
+  /// Enable Nutanix Prism Central provider.
+  enabled: Boolean?
+
+  /// Prism Central endpoint.
+  endpoint: String?
+
+  /// Base configuration file path.
+  filename: String?
+
+  /// Prism Central password.
+  password: String?
+
+  /// Polling interval for Nutanix Prism Central API.
+  pollInterval: Int?
+
+  /// Polling timeout for Nutanix Prism Central API.
+  pollTimeout: Int?
+
+  /// Category key used to derive the service name.
+  serviceNameCategoryKey: String?
+
+  tls: Tls?
+
+  /// Prism Central username.
+  username: String?
+}
+
+class Redis {
+  /// Enable Redis Cluster. Default: true.
+  cluster: Boolean?
+
+  /// Database used to store information. Default: 0.
+  database: Number?
+
+  /// Endpoints of the Redis instances to connect to. Default: "".
+  endpoints: String?
+
+  /// The password to use when connecting to Redis endpoints. Default: "".
+  password: String?
+
+  sentinel: Sentinel?
+
+  /// Timeout applied on connection with redis. Default: "0s".
+  timeout: String?
+
+  tls: RedisTls?
+
+  /// The username to use when connecting to Redis endpoints. Default: "".
+  username: String?
+}
+
+class Sentinel {
+  /// Name of the set of main nodes to use for main selection. Required when using Sentinel. Default: "".
+  masterset: String?
+
+  /// Password to use for sentinel authentication (can be different from endpoint password). Default: "".
+  password: String?
+
+  /// Username to use for sentinel authentication (can be different from endpoint username). Default: "".
+  username: String?
+}
+
+class RedisTls {
+  /// Path to the certificate authority used for the secured connection.
+  ca: String?
+
+  /// Path to the public certificate used for the secure connection.
+  cert: String?
+
+  /// When insecureSkipVerify is set to true, the TLS connection accepts any certificate presented by the
+  /// server. Default: false.
+  insecureSkipVerify: Boolean?
+
+  /// Path to the private key used for the secure connection.
+  key: String?
+}
+
+class Tracing {
+  additionalTraceHeaders: AdditionalTraceHeaders?
+}
+
+class AdditionalTraceHeaders {
+  /// Tracing headers to duplicate. To configure the following, tracing.otlp.enabled needs to be set to
+  /// true.
+  enabled: Boolean?
+
+  traceContext: TraceContext?
+}
+
+class TraceContext {
+  /// Name of the header that will contain the parent-id header copy.
+  parentId: String?
+
+  /// Name of the header that will contain the trace-id copy.
+  traceId: String?
+
+  /// Name of the header that will contain the traceparent copy.
+  traceParent: String?
+
+  /// Name of the header that will contain the tracestate copy.
+  traceState: String?
+}
+
+class Image {
+  /// Traefik image digest (e.g. `sha256:abc...`). When set, takes precedence over `tag`. Set
+  /// `versionOverride` alongside it so the chart's version-checking logic knows the version (it cannot
+  /// be derived from the digest).
+  digest: String(matches(Regex("^sha256:[a-f0-9]{64}$")))?
+
+  /// Traefik image pull policy
+  pullPolicy: String?
+
+  /// Traefik image host registry. Defaults to `docker.io` for Traefik Proxy and `ghcr.io` for Traefik
+  /// Hub (when `hub.enabled` is true).
+  registry: String?
+
+  /// Traefik image repository. Defaults to `traefik` for Traefik Proxy and `traefik/traefik-hub` for
+  /// Traefik Hub (when `hub.enabled` is true).
+  repository: String?
+
+  /// defaults to appVersion. It's used for version checking, even prefixed with experimental- or
+  /// latest-. To pin by digest, prefer `image.digest`. A `<version>@<digest>` combo is also accepted
+  /// here; in that case the digest is what Kubernetes verifies and the version is informational (and can
+  /// drift from the underlying image).
+  tag: String?
+}
+
+class IngressClass {
+  /// Create a default IngressClass for Traefik
+  enabled: Boolean?
+
+  isDefaultClass: Boolean?
+
+  name: String?
+}
+
+/// Only dashboard & healthcheck IngressRoute are supported. It's recommended to create workloads CR
+/// outside of this Chart.
+class IngressRoute {
+  dashboard: Dashboard?
+
+  healthcheck: Healthcheck?
+}
+
+class Dashboard {
+  /// Additional ingressRoute annotations (e.g. for kubernetes.io/ingress.class)
+  annotations: Dynamic?
+
+  /// Create an IngressRoute for the dashboard
+  enabled: Boolean?
+
+  /// Specify the allowed entrypoints to use for the dashboard ingress route, (e.g. traefik, web,
+  /// websecure). By default, it's using traefik entrypoint, which is not exposed. /!\ Do not expose your
+  /// dashboard without any protection over the internet /!\
+  entryPoints: Listing<String>?
+
+  /// Additional ingressRoute labels (e.g. for filtering IngressRoute by custom labels)
+  labels: Dynamic?
+
+  /// The router match rule used for the dashboard ingressRoute
+  matchRule: String?
+
+  /// Additional ingressRoute middlewares (e.g. for authentication)
+  middlewares: Listing?
+
+  /// The internal service used for the dashboard ingressRoute
+  services: Listing<HealthcheckService>?
+
+  /// TLS options (e.g. secret containing certificate)
+  tls: Dynamic?
+}
+
+class HealthcheckService {
+  kind: String?
+
+  name: String?
+}
+
+class Healthcheck {
+  /// Additional ingressRoute annotations (e.g. for kubernetes.io/ingress.class)
+  annotations: Dynamic?
+
+  /// Create an IngressRoute for the healthcheck probe
+  enabled: Boolean?
+
+  /// Specify the allowed entrypoints to use for the healthcheck ingress route, (e.g. traefik, web,
+  /// websecure). By default, it's using traefik entrypoint, which is not exposed.
+  entryPoints: Listing<String>?
+
+  /// Additional ingressRoute labels (e.g. for filtering IngressRoute by custom labels)
+  labels: Dynamic?
+
+  /// The router match rule used for the healthcheck ingressRoute
+  matchRule: String?
+
+  /// Additional ingressRoute middlewares (e.g. for authentication)
+  middlewares: Listing?
+
+  /// The internal service used for the healthcheck ingressRoute
+  services: Listing<HealthcheckService>?
+
+  /// TLS options (e.g. secret containing certificate)
+  tls: Dynamic?
+}
+
+class ReadinessProbe {
+  /// The number of consecutive failures allowed before considering the probe as failed.
+  failureThreshold: Int?
+
+  /// The number of seconds to wait before starting the first probe.
+  initialDelaySeconds: Int?
+
+  /// The number of seconds to wait between consecutive probes.
+  periodSeconds: Int?
+
+  /// The minimum consecutive successes required to consider the probe successful.
+  successThreshold: Int?
+
+  /// The number of seconds to wait for a probe response before considering it as failed.
+  timeoutSeconds: Int?
+}
+
+/// See [logs
+/// reference](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/)
+class Log {
+  /// To write the logs into a log file, use the filePath option.
+  filePath: String?
+
+  /// Set [logs
+  /// format](https://doc.traefik.io/traefik/reference/install-configuration/observability/logs-and-accesslogs/#opt-log-format)
+  ///
+  /// Default if undefined: `"common"`
+  format: String(this == "common" || this == "json" || this == null)?
+
+  /// Alternative logging levels are TRACE, DEBUG, INFO, WARN, ERROR, FATAL, and PANIC.
+  ///
+  /// Default if undefined: `"INFO"`
+  level: ("TRACE"|"DEBUG"|"INFO"|"WARN"|"ERROR"|"FATAL"|"PANIC")?
+
+  /// When set to true and format is common, it disables the colorized output.
+  noColor: Boolean?
+
+  otlp: LogOtlp?
+}
+
+class LogOtlp {
+  /// Set to true in order to enable OpenTelemetry on logs. Note that experimental.otlpLogs needs to be
+  /// enabled.
+  enabled: Boolean?
+
+  grpc: OtlpGrpc?
+
+  http: OtlpHttp?
+
+  /// Defines additional resource attributes to be sent to the collector.
+  resourceAttributes: Dynamic?
+
+  /// Service name used in OTLP backend. Default: traefik.
+  serviceName: String?
+}
+
+class OtlpGrpc {
+  /// Set to true in order to send logs to the OpenTelemetry Collector using gRPC
+  enabled: Boolean?
+
+  /// Format: <host>:<port>. Default: "localhost:4317"
+  endpoint: String?
+
+  /// Allows reporter to send logs to the OpenTelemetry Collector without using a secured protocol.
+  insecure: Boolean?
+
+  tls: HttpTls?
+}
+
+class OtlpHttp {
+  /// Set to true in order to send logs to the OpenTelemetry Collector using HTTP.
+  enabled: Boolean?
+
+  /// Format: <scheme>://<host>:<port><path>. Default: https://localhost:4318/v1/logs
+  endpoint: String?
+
+  /// Additional headers sent with logs by the reporter to the OpenTelemetry Collector.
+  headers: Dynamic?
+
+  tls: HttpTls?
+}
+
+class Metrics {
+  /// Enable metrics for internal resources. Default: false
+  addInternals: Boolean?
+
+  otlp: MetricsOtlp?
+
+  prometheus: Prometheus?
+}
+
+class MetricsOtlp {
+  /// Enable metrics on entry points. Default: true
+  addEntryPointsLabels: Boolean?
+
+  /// Enable metrics on routers. Default: false
+  addRoutersLabels: Boolean?
+
+  /// Enable metrics on services. Default: true
+  addServicesLabels: Boolean?
+
+  /// Set to true in order to enable the OpenTelemetry metrics
+  enabled: Boolean?
+
+  /// Explicit boundaries for Histogram data points. Default: [.005, .01, .025, .05, .1, .25, .5, 1, 2.5,
+  /// 5, 10]
+  explicitBoundaries: Listing?
+
+  grpc: TracingOtlpGrpc?
+
+  http: MetricsOtlpHttp?
+
+  /// Interval at which metrics are sent to the OpenTelemetry Collector. Default: 10s
+  pushInterval: String?
+
+  /// Defines additional resource attributes to be sent to the collector.
+  resourceAttributes: Dynamic?
+
+  /// Service name used in OTLP backend. Default: traefik.
+  serviceName: String?
+}
+
+class TracingOtlpGrpc {
+  /// Set to true in order to send metrics to the OpenTelemetry Collector using gRPC
+  enabled: Boolean?
+
+  /// Format: <host>:<port>. Default: "localhost:4317"
+  endpoint: String?
+
+  /// Allows reporter to send metrics to the OpenTelemetry Collector without using a secured protocol.
+  insecure: Boolean?
+
+  tls: HttpTls?
+}
+
+class MetricsOtlpHttp {
+  /// Set to true in order to send metrics to the OpenTelemetry Collector using HTTP.
+  enabled: Boolean?
+
+  /// Format: <scheme>://<host>:<port><path>. Default: https://localhost:4318/v1/metrics
+  endpoint: String?
+
+  /// Additional headers sent with metrics by the reporter to the OpenTelemetry Collector.
+  headers: Dynamic?
+
+  tls: HttpTls?
+}
+
+class Prometheus {
+  /// Enable metrics on entry points. Default: true
+  addEntryPointsLabels: Boolean?
+
+  /// Enable metrics on routers. Default: false
+  addRoutersLabels: Boolean?
+
+  /// Enable metrics on services. Default: true
+  addServicesLabels: Boolean?
+
+  /// Buckets for latency metrics. Default="0.1,0.3,1.2,5.0"
+  buckets: String?
+
+  /// When set to true, it won't check if Prometheus Operator CRDs are deployed
+  disableAPICheck: Boolean?
+
+  /// Entry point used to expose metrics.
+  entryPoint: String?
+
+  /// Add HTTP header labels to metrics. See EXAMPLES.md or upstream doc for usage.
+  headerLabels: Dynamic?
+
+  /// When manualRouting is true, it disables the default internal router in # order to allow creating a
+  /// custom router for prometheus@internal service.
+  manualRouting: Boolean?
+
+  prometheusRule: PrometheusRule?
+
+  service: Service?
+
+  serviceMonitor: ServiceMonitor?
+}
+
+class PrometheusRule {
+  additionalLabels: Dynamic?
+
+  apiVersion: String?
+
+  /// Enable optional CR for Prometheus Operator. See EXAMPLES.md for more details.
+  enabled: Boolean?
+
+  namespace: String?
+}
+
+class Service {
+  annotations: Dynamic?
+
+  /// Create a dedicated metrics service to use with ServiceMonitor
+  enabled: Boolean?
+
+  labels: Dynamic?
+}
+
+class ServiceMonitor {
+  additionalLabels: Dynamic?
+
+  apiVersion: String?
+
+  enableHttp2: Boolean?
+
+  /// Enable optional CR for Prometheus Operator. See EXAMPLES.md for more details.
+  enabled: Boolean?
+
+  followRedirects: Boolean?
+
+  honorLabels: Boolean?
+
+  honorTimestamps: Boolean?
+
+  interval: String?
+
+  jobLabel: String?
+
+  metricRelabelings: Listing?
+
+  namespace: String?
+
+  namespaceSelector: Dynamic?
+
+  relabelings: Listing?
+
+  scrapeTimeout: String?
+}
+
+/// Required for OCI Marketplace integration. See
+/// https://docs.public.content.oci.oraclecloud.com/en-us/iaas/Content/Marketplace/understanding-helm-charts.htm
+class OciMeta {
+  /// Enable specific values for Oracle Cloud Infrastructure
+  enabled: Boolean?
+
+  images: OciMetaImages?
+
+  /// It needs to be an ocir repo
+  repo: String?
+}
+
+class OciMetaImages {
+  hub: ImagesProxy?
+
+  proxy: ImagesProxy?
+}
+
+class ImagesProxy {
+  image: String?
+
+  tag: String?
+}
+
+class Ocsp {
+  /// Enable OCSP stapling support. See
+  /// https://doc.traefik.io/traefik/reference/install-configuration/tls/ocsp/
+  enabled: Boolean?
+
+  /// Defines the OCSP responder URLs to use instead of the one provided by the certificate.
+  responderOverrides: Dynamic?
+}
+
+class Persistence {
+  accessMode: String?
+
+  annotations: Dynamic?
+
+  /// [EmptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) options when persistence
+  /// is disabled
+  emptyDir: Dynamic?
+
+  /// Enable persistence using Persistent Volume Claims ref:
+  /// http://kubernetes.io/docs/user-guide/persistent-volumes/. It can be used to store TLS certificates
+  /// along with `certificatesResolvers.<name>.acme.storage` option
+  enabled: Boolean?
+
+  existingClaim: String?
+
+  name: String?
+
+  path: String?
+
+  size: String?
+
+  storageClass: String?
+
+  /// Only mount a subpath of the Volume into the pod
+  subPath: String?
+
+  volumeName: String?
+}
+
+/// [Pod Disruption
+/// Budget](https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/pod-disruption-budget-v1/)
+class PodDisruptionBudget {
+  enabled: Boolean?
+
+  maxUnavailable: (String|Int(isPositive))?
+
+  minAvailable: (String|Int(isPositive))?
+}
+
+/// [Pod Security
+/// Context](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context)
+class PodSecurityContext {
+  runAsGroup: Int?
+
+  runAsNonRoot: Boolean?
+
+  runAsUser: Int?
+
+  seccompProfile: SeccompProfile?
+}
+
+class SeccompProfile {
+  type: String?
+}
+
+class Ports {
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#allowacmebypass)
+  allowACMEByPass: Boolean?
+
+  /// See [upstream
+  /// documentation](https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol)
+  appProtocol: String?
+
+  /// Enable this entrypoint as a default entrypoint. When a service doesn't explicitly set an entrypoint
+  /// it will only use this entrypoint.
+  asDefault: Boolean?
+
+  /// Use containerPort if set.
+  containerPort: Number(isPositive)?
+
+  /// You may not want to expose the metrics port on production deployments. If you want to access it
+  /// from outside your cluster, use `kubectl port-forward` or create a secure ingress
+  expose: Expose?
+
+  /// The exposed port for this service
+  exposedPort: Int?
+
+  forwardedHeaders: ForwardedHeaders?
+
+  /// Use hostIP if set. If not set, Kubernetes will default to 0.0.0.0, which means it's listening on
+  /// all your interfaces and all your IPs. You may want to set this value if you need traefik to listen
+  /// on specific interface only.
+  hostIP: String?
+
+  /// Use hostPort if set.
+  hostPort: Number(isPositive)?
+
+  http: PortsHttp?
+
+  http3: Http3?
+
+  /// See [upstream
+  /// documentation](https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport)
+  nodePort: Number(isPositive)?
+
+  observability: Observability?
+
+  /// When using hostNetwork, use another port to avoid conflict with node exporter:
+  /// https://github.com/prometheus/prometheus/wiki/Default-port-allocations
+  port: Int?
+
+  /// The port protocol (TCP/UDP)
+  protocol: String?
+
+  proxyProtocol: ProxyProtocol?
+
+  /// Different target traefik port on the cluster, useful for IP type LB
+  targetPort: (String|Int(isPositive))?
+
+  /// Set transport settings for the entrypoint
+  transport: Transport?
+
+  /// Enable this port as an uplink for multi cluster. ⚠️ This feature is experimental and requires
+  /// Traefik Hub with a specific subscription.
+  uplink: Boolean?
+}
+
+/// You may not want to expose the metrics port on production deployments. If you want to access it from
+/// outside your cluster, use `kubectl port-forward` or create a secure ingress
+class Expose {
+  default: Boolean?
+}
+
+class ForwardedHeaders {
+  insecure: Boolean?
+
+  /// Disable appending RemoteAddr to X-Forwarded-For header (v3.7+).
+  notAppendXForwardedFor: Boolean?
+
+  /// Trust forwarded headers information (X-Forwarded-*).
+  trustedIPs: Listing?
+}
+
+class PortsHttp {
+  /// Defines how request headers with non-alphanumeric characters in their names are handled (v3.7.12+).
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#aliasheadersstrategy)
+  aliasHeadersStrategy: String(this == "keep" || this == "delete" || this == "reject" || this == null)?
+
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/security/request-path/#encoded-character-filtering)
+  encodedCharacters: EncodedCharacters?
+
+  /// Maximum size of request headers in bytes. Default: 1048576 (1 MB)
+  maxHeaderBytes: Number(isPositive)?
+
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#httpmiddlewares)
+  middlewares: Listing?
+
+  redirections: Redirections?
+
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/security/request-path/#path-sanitization)
+  sanitizePath: Boolean?
+
+  tls: PortsHttpTls?
+
+  /// Defines how request headers with underscores in their names are handled (v3.7.6-v3.7.11). Replaced
+  /// by the aliasHeadersStrategy option for Traefik v3.7.12+. See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#underscoreheadersstrategy)
+  @Deprecated
+  underscoreHeadersStrategy: String(this == "keep" || this == "delete" || this == "reject" || this == null)?
+}
+
+/// See [upstream
+/// documentation](https://doc.traefik.io/traefik/security/request-path/#encoded-character-filtering)
+class EncodedCharacters {
+  allowEncodedBackSlash: Boolean?
+
+  allowEncodedHash: Boolean?
+
+  allowEncodedNullCharacter: Boolean?
+
+  allowEncodedPercent: Boolean?
+
+  allowEncodedQuestionMark: Boolean?
+
+  allowEncodedSemicolon: Boolean?
+
+  allowEncodedSlash: Boolean?
+}
+
+class Redirections {
+  /// Port Redirections Added in 2.2, one can make permanent redirects via entrypoints. Same sets of
+  /// parameters: to, scheme, permanent and priority.
+  /// https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#configuration-example
+  entryPoint: Dynamic?
+}
+
+class PortsHttpTls {
+  certResolver: String?
+
+  domains: Listing?
+
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#opt-http-tls)
+  enabled: Boolean?
+
+  options: String?
+}
+
+class Http3 {
+  /// Defines the UDP port to advertise as the HTTP/3 authority.
+  advertisedPort: Number(isPositive)?
+
+  /// Enable HTTP/3 on the entrypoint. It also enables the http3 experimental feature. See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/entrypoints/#opt-http3).
+  /// There are known limitations when trying to listen on same ports for TCP & UDP
+  /// ([kubernetes#47249](https://github.com/kubernetes/kubernetes/issues/47249#issuecomment-587960741)):
+  /// this chart works around it using a dual Service.
+  enabled: Boolean?
+}
+
+class Observability {
+  /// Enables access-logs for this entryPoint.
+  ///
+  /// Default if undefined: `true`
+  accessLogs: Boolean?
+
+  /// Enables metrics for this entryPoint.
+  ///
+  /// Default if undefined: `true`
+  metrics: Boolean?
+
+  /// Defines the tracing verbosity level for this entryPoint.
+  ///
+  /// Default if undefined: `"minimal"`
+  traceVerbosity: String(this == "minimal" || this == "detailed" || this == null)?
+
+  /// Enables tracing for this entryPoint.
+  ///
+  /// Default if undefined: `true`
+  tracing: Boolean?
+}
+
+class ProxyProtocol {
+  insecure: Boolean?
+
+  /// Enable the Proxy Protocol header parsing for the entry point
+  trustedIPs: Listing?
+}
+
+/// Set transport settings for the entrypoint
+class Transport {
+  keepAliveMaxRequests: Number(isPositive)?
+
+  keepAliveMaxTime: (String|Int)?
+
+  lifeCycle: LifeCycle?
+
+  respondingTimeouts: RespondingTimeouts?
+}
+
+class LifeCycle {
+  graceTimeOut: (String|Int)?
+
+  requestAcceptGraceTimeout: (String|Int)?
+}
+
+class RespondingTimeouts {
+  idleTimeout: (String|Int)?
+
+  readTimeout: (String|Int)?
+
+  writeTimeout: (String|Int)?
+}
+
+class ItemProviders {
+  file: File?
+
+  knative: Knative?
+
+  kubernetesCRD: KubernetesCRD?
+
+  kubernetesGateway: ProvidersKubernetesGateway?
+
+  kubernetesIngress: KubernetesIngress?
+
+  kubernetesIngressNGINX: KubernetesIngressNGINX?
+
+  /// Defines the routing precedence between providers. See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/providers/overview/#routing-precedence)
+  /// for the default order.
+  precedence: Listing?
+}
+
+class File {
+  /// File content as an object (will be YAML-formatted, go template supported) (see
+  /// https://doc.traefik.io/traefik/reference/install-configuration/providers/others/file/)
+  content: Dynamic?
+
+  /// Create a file provider
+  enabled: Boolean?
+
+  /// Allows Traefik to automatically watch for file changes
+  watch: Boolean?
+}
+
+class Knative {
+  /// Enable Knative provider
+  enabled: Boolean?
+
+  /// Allow filtering Knative Ingress objects
+  labelSelector: String?
+
+  /// Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using
+  /// `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
+  namespaces: Listing?
+}
+
+class KubernetesCRD {
+  /// Allows IngressRoute to reference resources in namespace other than theirs
+  allowCrossNamespace: Boolean?
+
+  /// Allows to return 503 when there are no endpoints available
+  allowEmptyServices: Boolean?
+
+  /// Allows to reference ExternalName services in IngressRoute
+  allowExternalNameServices: Boolean?
+
+  /// List of namespaces from which IngressRoute, IngressRouteTCP, IngressRouteUDP, and TraefikService
+  /// are allowed to declare cross-provider references. Requires traefik v3.7.1+.
+  crossProviderNamespaces: Listing?
+
+  /// Restricts the namespace where the cluster-wide TLSOption and TLSStore named `default` can be
+  /// defined. When empty, any namespace is allowed. Requires traefik v3.7.11+.
+  defaultTLSResourcesNamespace: String?
+
+  /// Load Kubernetes IngressRoute provider
+  enabled: Boolean?
+
+  /// When the parameter is set, only resources containing an annotation with the same value are
+  /// processed. Otherwise, resources missing the annotation, having an empty value, or the value traefik
+  /// are processed. It will also set required annotation on Dashboard and Healthcheck IngressRoute when
+  /// enabled.
+  ingressClass: String?
+
+  /// See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/#opt-providers-kubernetesIngress-labelselector)
+  labelSelector: String?
+
+  /// Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using
+  /// `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
+  namespaces: Listing?
+
+  /// Defines whether to use Native Kubernetes load-balancing mode by default.
+  nativeLBByDefault: Boolean?
+
+  /// Enables collision-safe naming. ⚠️ It can be breaking, see [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-crd/#safenaming).
+  /// Requires traefik v3.7.11+.
+  safeNaming: Boolean?
+}
+
+class ProvidersKubernetesGateway {
+  /// Maximum burst of requests to the Kubernetes API server (v3.7.3+). Defaults to 100.
+  burst: Number?
+
+  /// List of namespaces from which Gateway API routes are allowed to declare TraefikService backendRef
+  /// references. Requires traefik v3.7.1+.
+  crossProviderNamespaces: Listing?
+
+  /// Enable Traefik Gateway provider for Gateway API
+  enabled: Boolean?
+
+  /// Toggles support for the Experimental Channel resources (Gateway API release channels
+  /// documentation). This option currently enables support for TCPRoute and TLSRoute.
+  experimentalChannel: Boolean?
+
+  /// A label selector can be defined to filter on specific GatewayClass objects only.
+  labelSelector: String?
+
+  /// Array of namespaces to watch. If left empty, Traefik watches all namespaces. kubernetesGateway
+  /// provider requires ClusterRole and as a consequence `rbac.namespaced` is not supported.
+  namespaces: Listing?
+
+  /// Defines whether to use Native Kubernetes load-balancing mode by default.
+  nativeLBByDefault: Boolean?
+
+  /// Maximum QPS to the Kubernetes API server. A negative value disables client-side ratelimiting
+  /// (v3.7.3+). Defaults to 50.
+  qps: Number?
+
+  statusAddress: StatusAddress?
+}
+
+class StatusAddress {
+  /// This Hostname will get copied to the Gateway status.addresses.
+  hostname: String?
+
+  /// This IP will get copied to the Gateway status.addresses, and currently only supports one IP value
+  /// (IPv4 or IPv6).
+  ip: String?
+
+  service: StatusAddressService?
+}
+
+class StatusAddressService {
+  /// The Kubernetes service to copy status addresses from. When using third parties tools like
+  /// External-DNS, this option can be used to copy the service loadbalancer.status (containing the
+  /// service's endpoints IPs) to the gateways. Default to Service of this Chart.
+  enabled: Boolean?
+
+  name: String?
+
+  namespace: String?
+}
+
+class KubernetesIngress {
+  /// Allows to return 503 when there are no endpoints available
+  allowEmptyServices: Boolean?
+
+  /// Allows to reference ExternalName services in Ingress
+  allowExternalNameServices: Boolean?
+
+  /// List of namespaces from which Ingresses or Services are allowed to declare Middlewares, TLSOptions,
+  /// or ServersTransport references. Requires traefik v3.7.1+.
+  crossProviderNamespaces: Listing?
+
+  /// Only for Traefik v3.0, Deprecated since v3.1. See [upstream
+  /// documentation](https://doc.traefik.io/traefik/v3.0/providers/kubernetes-ingress/#disableingressclasslookup)
+  disableIngressClassLookup: Boolean?
+
+  /// Load Kubernetes Ingress provider
+  enabled: Boolean?
+
+  /// When ingressClass is set, only Ingresses containing an annotation with the same value are
+  /// processed. Otherwise, Ingresses missing the annotation, having an empty value, or the value traefik
+  /// are processed.
+  ingressClass: String?
+
+  ingressEndpoint: IngressEndpoint?
+
+  labelSelector: String?
+
+  /// Array of namespaces to watch. If left empty, Traefik watches all namespaces. . When using
+  /// `rbac.namespaced`, it will watch helm release namespace and namespaces listed in this array.
+  namespaces: Listing?
+
+  /// Defines whether to use Native Kubernetes load-balancing mode by default.
+  nativeLBByDefault: Boolean?
+
+  publishedService: PublishedService?
+
+  /// Defines whether to make prefix matching strictly comply with the Kubernetes Ingress specification.
+  strictPrefixMatching: Boolean?
+}
+
+class IngressEndpoint {
+  /// Hostname used for Kubernetes Ingress endpoints
+  hostname: String?
+
+  /// IP used for Kubernetes Ingress endpoints
+  ip: String?
+}
+
+class PublishedService {
+  /// Enable
+  /// [publishedService](https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/#ingressendpointpublishedservice),
+  /// usually with the Service provided by this Chart. It's possible to use it with an external Service
+  /// using pathOverride.
+  enabled: Boolean?
+
+  /// Override path of Kubernetes Service used to copy status from. Format: namespace/servicename.
+  /// Default to Service deployed with this Chart.
+  pathOverride: String?
+}
+
+class KubernetesIngressNGINX {
+  /// Allow Ingress to reference resources (e.g. ConfigMaps, Secrets) in different namespaces (default:
+  /// false)
+  allowCrossNamespaceResources: Boolean?
+
+  /// Enables parsing and adding -snippet annotations/directives (default: false)
+  allowSnippetAnnotations: Boolean?
+
+  /// Kubernetes certificate authority file path (not needed for in-cluster client)
+  certAuthFilePath: String?
+
+  /// Default buffer size for reading client request body in bytes (default: 16384)
+  clientBodyBufferSize: Number?
+
+  /// Ingress Class Controller value this controller satisfies
+  controllerClass: String?
+
+  /// Defines which HTTP status codes should result in calling the default backend to return an error
+  /// page
+  customHTTPErrors: Listing?
+
+  /// Service used to serve HTTP requests not matching any known server name (catch-all). Takes the form
+  /// 'namespace/name'
+  defaultBackendService: String?
+
+  /// Disable support for Services of type ExternalName
+  disableSvcExternalName: Boolean?
+
+  /// Enable Kubernetes Ingress NGINX provider
+  enabled: Boolean?
+
+  /// Kubernetes server endpoint (required for external cluster client)
+  endpoint: String?
+
+  /// List of allowed response headers inside the custom headers annotations
+  globalAllowedResponseHeaders: Listing?
+
+  /// URL to the service that provides authentication for all the locations. Per ingress auth-url
+  /// annotation has precedence over this option.
+  globalAuthUrl: String?
+
+  /// Defines the EntryPoint to use for HTTP requests
+  httpEntryPoint: String?
+
+  /// Defines the EntryPoint to use for HTTPS requests
+  httpsEntryPoint: String?
+
+  /// Name of the ingress class this controller satisfies
+  ingressClass: String?
+
+  /// Define if Ingress Controller should watch for Ingress Class by Name together with Controller Class
+  ingressClassByName: Boolean?
+
+  /// When set, the strategy is applied to every generated IPAllowList middleware.
+  ipAllowListStrategy: IpAllowListStrategy?
+
+  modsec: Modsec?
+
+  /// Default maximum size of a client request body in bytes (default: 1048576)
+  proxyBodySize: Number?
+
+  /// Default buffer size for reading the response body in bytes (default: 8192)
+  proxyBufferSize: Number?
+
+  /// Defines whether to enable response buffering (default: false)
+  proxyBuffering: Boolean?
+
+  /// Default number of buffers for reading a response (default: 4)
+  proxyBuffersNumber: Number?
+
+  /// Amount of time to wait until a connection to a server can be established. Unitless, in seconds
+  /// (default: 60)
+  proxyConnectTimeout: Number?
+
+  /// Defines in which cases a request should be retried (default: "error timeout")
+  proxyNextUpstream: String?
+
+  /// Limits the total elapsed time to retry the request. Unitless, in seconds (default: 0)
+  proxyNextUpstreamTimeout: Number?
+
+  /// Limits the number of possible tries if the backend server does not reply (default: 3)
+  proxyNextUpstreamTries: Number?
+
+  /// Amount of time between two successive read operations. Unitless, in seconds (default: 60)
+  proxyReadTimeout: Number?
+
+  /// Defines whether to enable request buffering (default: false)
+  proxyRequestBuffering: Boolean?
+
+  /// Amount of time between two successive write operations. Unitless, in seconds (default: 60)
+  proxySendTimeout: Number?
+
+  publishService: PublishService?
+
+  /// Customized address (or addresses, separated by comma) to set as the load-balancer status of Ingress
+  /// objects this controller satisfies
+  publishStatusAddress: String?
+
+  /// Defines whether to reject the entire ingress when any path contains regex characters and pathType
+  /// is Prefix or Exact (default: true)
+  strictValidatePathType: Boolean?
+
+  /// Ingress refresh throttle duration
+  throttleDuration: String?
+
+  /// Kubernetes bearer token (not needed for in-cluster client). It accepts either a token value or a
+  /// file path to the token
+  token: String?
+
+  /// Defines the idle timeout for keep-alive connections to upstream servers. Unitless, in seconds
+  /// (default: 60)
+  upstreamKeepaliveTimeout: Number?
+
+  /// Define if Ingress Controller should also watch for Ingresses without an IngressClass or the
+  /// annotation specified
+  watchIngressWithoutClass: Boolean?
+
+  /// Single namespace the controller watches for updates to Kubernetes objects. Mutually exclusive with
+  /// watchNamespaceSelector.
+  watchNamespace: String?
+
+  /// Select namespaces the controller watches for updates to Kubernetes objects. Mutually exclusive with
+  /// watchNamespace. It requires a ClusterRole to list and watch namespaces, and is therefore
+  /// incompatible with `rbac.namespaced`.
+  watchNamespaceSelector: String?
+}
+
+/// When set, the strategy is applied to every generated IPAllowList middleware.
+class IpAllowListStrategy {
+  /// Number of trusted proxy hops to skip when extracting the client IP from the X-Forwarded-For header.
+  /// 0 disables depth-based extraction. (default: 0)
+  depth: Int?
+
+  /// List of IPs to exclude when scanning the X-Forwarded-For header to find the client IP.
+  excludedIPS: Listing?
+
+  /// IPv6 subnet size used to group IPv6 addresses when checking the allow list. 0 disables subnet
+  /// grouping.
+  ipv6Subnet: Int?
+}
+
+class Modsec {
+  /// Enable ModSec engine. Requires Traefik Hub >= v3.20.0-ea.8.
+  enabled: Boolean?
+
+  /// Enable OWASP Core Rules.
+  owaspCoreRules: Boolean?
+
+  /// Custom ModSec rules snippet.
+  snippet: String?
+}
+
+class PublishService {
+  /// Enable publishService. Service fronting the Ingress controller, used to set the load-balancer
+  /// status of Ingress objects. Usually the Service provided by this Chart. It's possible to use it with
+  /// an external Service using pathOverride.
+  enabled: Boolean?
+
+  /// Override path of Kubernetes Service used to copy status from. Format: namespace/servicename.
+  /// Default to Service deployed with this Chart.
+  pathOverride: String?
+}
+
+class Rbac {
+  /// Enable user-facing roles
+  /// https://kubernetes.io/docs/reference/access-authn-authz/rbac/#user-facing-roles
+  aggregateTo: Listing?
+
+  /// Whether Role Based Access Control objects like roles and rolebindings should be created
+  enabled: Boolean?
+
+  /// When set to true: <br /> 1. It switches respectively the use of `ClusterRole` and
+  /// `ClusterRoleBinding` to `Role` and `RoleBinding`.<br /> 2. It adds `disableClusterScopeResources`
+  /// on Ingress and CRD (Kubernetes) providers<br /> **NOTE**: `IngressClass`, `NodePortLB` and
+  /// **Gateway** provider cannot be used with namespaced RBAC. <br /> See [upstream
+  /// documentation](https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-ingress/#opt-providers-kubernetesIngress-disableClusterScopeResources)
+  /// for more details.
+  namespaced: Boolean?
+
+  /// List of Kubernetes secrets that are accessible for Traefik when `rbac.namespaced` is true. If
+  /// empty, then access is granted to every secret. Ignored when `rbac.namespaced` is false
+  /// (ClusterRole), since Kubernetes RBAC does not support `resourceNames` on cluster-scoped list/watch
+  /// rules.
+  secretResourceNames: Listing?
+}
+
+/// [SecurityContext](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#security-context-1)
+class SecurityContext {
+  allowPrivilegeEscalation: Boolean?
+
+  capabilities: Capabilities?
+
+  readOnlyRootFilesystem: Boolean?
+}
+
+class Capabilities {
+  drop: Listing<String>?
+}
+
+class ItemService {
+  /// Can be used to create multiple Service. See EXAMPLES.md for more details.
+  additionalServices: Dynamic?
+
+  /// Additional annotations applied to both TCP and UDP services (e.g. for cloud provider specific
+  /// config)
+  annotations: Dynamic?
+
+  /// Additional annotations for TCP service only
+  annotationsTCP: Dynamic?
+
+  /// Additional annotations for UDP service only
+  annotationsUDP: Dynamic?
+
+  enabled: Boolean?
+
+  /// Additional service labels (e.g. for filtering Service by custom labels)
+  labels: Dynamic?
+
+  /// Override the default Service name. Useful for adopting an existing Service (e.g., during migration
+  /// from another ingress controller).
+  nameOverride: String?
+
+  /// Single service is using `MixedProtocolLBService` feature gate. When set to false, it will create
+  /// two Service, one for TCP and one for UDP.
+  single: Boolean?
+
+  /// Additional entries here will be added to the Service
+  /// [spec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#servicespec-v1-core).
+  /// Cannot contain selector or ports entries.
+  spec: Spec?
+}
+
+/// Additional entries here will be added to the Service
+/// [spec](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.35/#servicespec-v1-core).
+/// Cannot contain selector or ports entries.
+class Spec {
+  type: String?
+}
+
+/// The service account the pods will use to interact with the Kubernetes API
+class ServiceAccount {
+  name: String?
+}
+
+/// https://doc.traefik.io/traefik/reference/install-configuration/observability/tracing/
+class ItemTracing {
+  /// Enables tracing for internal resources. Default: false.
+  addInternals: Boolean?
+
+  /// Defines the list of request headers to add as attributes. It applies to client and server kind
+  /// spans.
+  capturedRequestHeaders: Listing?
+
+  /// Defines the list of response headers to add as attributes. It applies to client and server kind
+  /// spans.
+  capturedResponseHeaders: Listing?
+
+  otlp: TracingOtlp?
+
+  /// Defines additional resource attributes to be sent to the collector.
+  resourceAttributes: Dynamic?
+
+  /// By default, all query parameters are redacted. Defines the list of query parameters to not redact.
+  safeQueryParams: Listing?
+
+  /// The proportion of requests to trace, specified between 0.0 and 1.0. Default: 1.0.
+  sampleRate: Number(isBetween(0, 1))?
+
+  /// Service name used in selected backend. Default: traefik.
+  serviceName: String?
+}
+
+class TracingOtlp {
+  /// See
+  /// https://doc.traefik.io/traefik/reference/install-configuration/observability/tracing/#configuration-options
+  enabled: Boolean?
+
+  grpc: TracingOtlpGrpc?
+
+  http: TracingOtlpHttp?
+}
+
+class TracingOtlpHttp {
+  /// Set to true in order to send metrics to the OpenTelemetry Collector using HTTP.
+  enabled: Boolean?
+
+  /// Format: <scheme>://<host>:<port><path>. Default: https://localhost:4318/v1/tracing
+  endpoint: String?
+
+  /// Additional headers sent with metrics by the reporter to the OpenTelemetry Collector.
+  headers: Dynamic?
+
+  tls: HttpTls?
+}
+
+class UpdateStrategy {
+  rollingUpdate: RollingUpdate?
+
+  /// Customize updateStrategy of Deployment or DaemonSet
+  type: String?
+}
+
+class RollingUpdate {
+  maxSurge: (Int|String)?
+
+  maxUnavailable: (Int|String)?
+}

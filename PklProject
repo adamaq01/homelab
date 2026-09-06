@@ -13,4 +13,5 @@ dependencies {
   ["metallb"] = import("packages/metallb/PklProject")
   ["gateway-api"] = import("packages/gateway-api/PklProject")
   ["cert-manager"] = import("packages/cert-manager/PklProject")
+  ["traefik"] = import("packages/traefik/PklProject")
 }

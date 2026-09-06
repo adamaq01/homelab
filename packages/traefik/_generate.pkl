@@ -1,0 +1,73 @@
+/// Generates a single Pkl module from the Traefik Helm chart's `values.schema.json`, exposing its
+/// properties as the module's own top-level properties (matching how `k8s/apps/traefik/app.pkl`
+/// constructs `helm.valuesObject` by amending an imported module, the same way generated Talos config
+/// modules get amended under `talos/nodes/`).
+///
+/// Unlike `packages/talos/_generate.pkl`, this schema has no `$defs`/`$ref` to split across modules or
+/// resolve across them: `ModuleGenerator` already walks the whole schema tree on its own and emits a
+/// class per nested object shape within this one module, so a single `ModuleGenerator` call is enough.
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/traefik/_generate.pkl --project-dir packages/traefik -m packages/traefik
+/// ```
+module traefik.generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+
+// renovate: datasource=github-releases packageName=traefik/traefik-helm-chart extractVersion=^v(?<version>.*)$
+version = "v41.4.0"
+
+sourceUri = "https://raw.githubusercontent.com/traefik/traefik-helm-chart/\(version)/traefik/values.schema.json"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+local parsedRootSchema = Parser.parse(read(sourceUri)) as JsonSchema
+
+/// JSON Schema's `pattern` keyword is a search: a string is valid if the regex matches anywhere within
+/// it. Pkl's `matches()` requires the regex to match the entire string. `org.json_schema.contrib`
+/// always translates `pattern` to `matches(Regex(...))`, which is only correct when the pattern is
+/// already anchored at both ends. [relaxUnanchoredPatterns] downgrades unanchored patterns to
+/// `contains(Regex(...))`, matching JSON Schema's own semantics, and leaves anchored patterns untouched.
+///
+/// Two textual forms need handling because the generator emits either depending on whether the pattern
+/// needs backslash-escaping: a plain quoted string or a raw string, used whenever the pattern contains
+/// a backslash.
+local plainPatternRegex = Regex(#"matches\(Regex\("([^"]*)"\)\)"#)
+local rawPatternRegex = Regex(##"matches\(Regex\(#"([^"]*)"#\)\)"##)
+
+local function relaxUnanchoredPatterns(text: String): String =
+  let (afterPlain = text.replaceAllMapped(plainPatternRegex, (m) ->
+    let (pattern = m.groups[1]!!.value)
+      if (pattern.endsWith("$")) m.value else "contains(Regex(\"\(pattern)\"))"
+  ))
+    afterPlain.replaceAllMapped(rawPatternRegex, (m) ->
+      let (pattern = m.groups[1]!!.value)
+        if (pattern.endsWith("$")) m.value else "contains(Regex(#\"" + pattern + "\"#))"
+    )
+
+/// `gateway.listeners`'s schema only documents the chart's default `web` listener, so the generator
+/// types it as a class exposing just that one key. In reality the chart passes every key under
+/// `gateway.listeners` straight through as an arbitrary named Gateway API listener (e.g. `websecure`,
+/// used by `k8s/apps/traefik/app.pkl` for the wildcard certificate's listener), each accepting fields
+/// (`mode`, `certificateRefs`, ...) this schema doesn't model at all. An open map is the honest type
+/// here, not the schema's narrower generated class.
+local function widenGatewayListenersType(text: String): String =
+  text.replaceAll("  listeners: Listeners?\n", "  listeners: Mapping<String, Dynamic>?\n")
+
+output {
+  files {
+    ["Values.pkl"] {
+      text = widenGatewayListenersType(relaxUnanchoredPatterns((new ModuleGenerator {
+        rootSchema = parsedRootSchema
+        baseUri = schemaBaseUri
+        moduleName = "Values"
+        existingTypes = Map()
+      }).moduleNode.output.text))
+    }
+  }
+}
