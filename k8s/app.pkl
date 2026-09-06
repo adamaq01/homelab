@@ -22,7 +22,7 @@ project: String = "default"
 source: Application.SpecSource = new {
   repoURL = module.repoURL
   targetRevision = module.targetRevision
-  path = "k8s/" + relativePath.join("/")
+  path = relativePath.join("/")
 }
 
 local app = this
