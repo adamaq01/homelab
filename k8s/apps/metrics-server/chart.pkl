@@ -4,3 +4,5 @@ amends "@manifest/generate.pkl"
 local version = "v0.9.0"
 
 source = "https://github.com/kubernetes-sigs/metrics-server/releases/download/\(version)/components.yaml"
+
+patches = import*("patches/*.pkl")
