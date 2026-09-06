@@ -11,7 +11,9 @@ import "@k8s/api/core/v1/Service.pkl"
 import "@k8s/api/apps/v1/Deployment.pkl"
 import "@k8s/api/rbac/v1/ClusterRole.pkl"
 import "@k8s/api/rbac/v1/ClusterRoleBinding.pkl"
+import "@gateway-api/HTTPRoute.pkl"
 import "app.pkl"
+import "../traefik/app.pkl" as traefik
 
 local saName = "pod-viewer"
 local roleName = "pod-viewer-role"
@@ -158,6 +160,34 @@ service: Service = new {
   }
 }
 
+httpRoute: HTTPRoute = new {
+  metadata {
+    name = "dozzle"
+  }
+  spec {
+    parentRefs {
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "websecure"
+      }
+    }
+    hostnames {
+      "dozzle.\(app.domain)"
+    }
+    rules {
+      new {
+        backendRefs {
+          new {
+            name = service.metadata.name!!
+            port = 8080
+          }
+        }
+      }
+    }
+  }
+}
+
 output {
   value = new Listing {
     serviceAccount
@@ -166,6 +196,7 @@ output {
     pvc
     deployment
     service
+    httpRoute
   }
   renderer = new YamlRenderer { isStream = true }
 }
