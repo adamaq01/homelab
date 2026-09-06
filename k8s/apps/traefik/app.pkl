@@ -44,6 +44,9 @@ source {
         }
         gateway {
           listeners {
+            // Two listeners on the same port/protocol, disambiguated by hostname, so both the
+            // default and the shorter alias ingress domain terminate TLS here (same cert covers
+            // both, see cert-manager's chart.pkl).
             ["websecure"] {
               port = 8443
               protocol = "HTTPS"
@@ -51,6 +54,21 @@ source {
               mode = "Terminate"
               // Gateway API restricts HTTPRoutes to the Gateway's own namespace by default, but
               // every app's HTTPRoute lives in that app's own namespace instead.
+              namespacePolicy {
+                from = "All"
+              }
+              certificateRefs {
+                new {
+                  name = cert_manager.ingressWildcardCertSecretName
+                  namespace = cert_manager.namespace
+                }
+              }
+            }
+            ["websecure-alias"] {
+              port = 8443
+              protocol = "HTTPS"
+              hostname = "*.\(module.ingressAliasDomain)"
+              mode = "Terminate"
               namespacePolicy {
                 from = "All"
               }

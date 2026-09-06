@@ -10,5 +10,11 @@ nasDomain: String = "nas.\(domain)"
 k8sControlPlaneEndpoint: String = "https://pegasus.\(domain):6443"
 
 /// Wildcard domain for Kubernetes ingress, scoped separately from [domain] by cluster name so a
-/// wildcard DNS record for it can never collide with a literal LAN host's own hostname.
-ingressDomain: String = "\(clusterName).\(rootDomain)"
+/// wildcard DNS record for it can never collide with a literal LAN host's own hostname. Default/
+/// canonical ingress domain — every ingress-facing hostname should also be reachable under
+/// [ingressAliasDomain].
+ingressDomain: String = "\(clusterName).\(domain)"
+
+/// Shorter alias for [ingressDomain], kept purely for convenience since no global service collides
+/// with it today.
+ingressAliasDomain: String = "\(clusterName).\(rootDomain)"

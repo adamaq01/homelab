@@ -25,6 +25,7 @@ local httpRoute: HTTPRoute = new {
     }
     hostnames {
       "argocd.\(app.ingressDomain)"
+      "argocd.\(app.ingressAliasDomain)"
     }
     rules {
       new {
