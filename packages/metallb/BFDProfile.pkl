@@ -1,0 +1,55 @@
+/// BFDProfile represents the settings of the bfd session that can be optionally associated with a BGP
+/// session.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/metallb/metallb/v0.16.0/config/manifests/metallb-native.yaml>.
+module io.metallb.v1beta1.BFDProfile
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "metallb.io/v1beta1"
+
+fixed kind: "BFDProfile"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// BFDProfileSpec defines the desired state of BFDProfile.
+spec: Spec?
+
+/// BFDProfileStatus defines the observed state of BFDProfile.
+status: Dynamic?
+
+/// BFDProfileSpec defines the desired state of BFDProfile.
+class Spec {
+  /// Configures the detection multiplier to determine packet loss. The remote transmission interval will
+  /// be multiplied by this value to determine the connection loss detection timer.
+  detectMultiplier: Int(isBetween(2, 255))?
+
+  /// Configures the minimal echo receive transmission interval that this system is capable of handling
+  /// in milliseconds. Defaults to 50ms
+  echoInterval: Int(isBetween(10, 60000))?
+
+  /// Enables or disables the echo transmission mode. This mode is disabled by default, and not supported
+  /// on multi hops setups.
+  echoMode: Boolean?
+
+  /// For multi hop sessions only: configure the minimum expected TTL for an incoming BFD control packet.
+  minimumTtl: Int(isBetween(1, 254))?
+
+  /// Mark session as passive: a passive session will not attempt to start the connection and will wait
+  /// for control packets from peer before it begins replying.
+  passiveMode: Boolean?
+
+  /// The minimum interval that this system is capable of receiving control packets in milliseconds.
+  /// Defaults to 300ms.
+  receiveInterval: Int(isBetween(10, 60000))?
+
+  /// The minimum transmission interval (less jitter) that this system wants to use to send BFD control
+  /// packets in milliseconds. Defaults to 300ms
+  transmitInterval: Int(isBetween(10, 60000))?
+}

@@ -1,0 +1,39 @@
+/// Community is a collection of aliases for communities. Users can define named aliases to be used in
+/// the BGPPeer CRD.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/metallb/metallb/v0.16.0/config/manifests/metallb-native.yaml>.
+module io.metallb.v1beta1.Community
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "metallb.io/v1beta1"
+
+fixed kind: "Community"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// CommunitySpec defines the desired state of Community.
+spec: Spec?
+
+/// CommunityStatus defines the observed state of Community.
+status: Dynamic?
+
+/// CommunitySpec defines the desired state of Community.
+class Spec {
+  communities: Listing<Community>?
+}
+
+class Community {
+  /// The name of the alias for the community.
+  name: String?
+
+  /// The BGP community value corresponding to the given name. Can be a standard community of the form
+  /// 1234:1234 or a large community of the form large:1234:1234:1234.
+  value: String?
+}

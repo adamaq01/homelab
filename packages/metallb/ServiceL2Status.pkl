@@ -1,0 +1,45 @@
+/// ServiceL2Status reveals the actual traffic status of loadbalancer services in layer2 mode.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/metallb/metallb/v0.16.0/config/manifests/metallb-native.yaml>.
+module io.metallb.v1beta1.ServiceL2Status
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "metallb.io/v1beta1"
+
+fixed kind: "ServiceL2Status"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// ServiceL2StatusSpec defines the desired state of ServiceL2Status.
+spec: Dynamic?
+
+/// MetalLBServiceL2Status defines the observed state of ServiceL2Status.
+status: Status?
+
+/// MetalLBServiceL2Status defines the observed state of ServiceL2Status.
+class Status {
+  /// Interfaces indicates the interfaces that receive the directed traffic
+  interfaces: Listing<Interface>?
+
+  /// Node indicates the node that receives the directed traffic
+  node: String?
+
+  /// ServiceName indicates the service this status represents
+  serviceName: String?
+
+  /// ServiceNamespace indicates the namespace of the service
+  serviceNamespace: String?
+}
+
+/// InterfaceInfo defines interface info of layer2 announcement.
+class Interface {
+  /// Name the name of network interface card
+  name: String?
+}

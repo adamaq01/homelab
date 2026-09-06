@@ -1,0 +1,41 @@
+/// ServiceBGPStatus exposes the BGP peers a service is configured to be advertised to, per relevant
+/// node.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/metallb/metallb/v0.16.0/config/manifests/metallb-native.yaml>.
+module io.metallb.v1beta1.ServiceBGPStatus
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "metallb.io/v1beta1"
+
+fixed kind: "ServiceBGPStatus"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// ServiceBGPStatusSpec defines the desired state of ServiceBGPStatus.
+spec: Dynamic?
+
+/// MetalLBServiceBGPStatus defines the observed state of ServiceBGPStatus.
+status: Status?
+
+/// MetalLBServiceBGPStatus defines the observed state of ServiceBGPStatus.
+class Status {
+  /// Node indicates the node announcing the service.
+  node: String?
+
+  /// Peers indicate the BGP peers for which the service is configured to be advertised to. The service
+  /// being actually advertised to a given peer depends on the session state and is not indicated here.
+  peers: Listing<String>?
+
+  /// ServiceName indicates the service this status represents.
+  serviceName: String?
+
+  /// ServiceNamespace indicates the namespace of the service.
+  serviceNamespace: String?
+}

@@ -1,0 +1,35 @@
+amends "@manifest/generate.pkl"
+
+import "@metallb/IPAddressPool.pkl"
+import "@metallb/L2Advertisement.pkl"
+
+// renovate: datasource=github-releases packageName=metallb/metallb
+local version = "v0.16.0"
+
+source = "https://raw.githubusercontent.com/metallb/metallb/\(version)/config/manifests/metallb-native.yaml"
+
+// Reserved out of the 192.168.2.0/24 LAN for MetalLB to hand out to LoadBalancer Services.
+value {
+  new IPAddressPool {
+    metadata {
+      name = "default"
+      namespace = "metallb-system"
+    }
+    spec {
+      addresses {
+        "192.168.2.240-192.168.2.250"
+      }
+    }
+  }
+  new L2Advertisement {
+    metadata {
+      name = "default"
+      namespace = "metallb-system"
+    }
+    spec {
+      ipAddressPools {
+        "default"
+      }
+    }
+  }
+}

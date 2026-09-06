@@ -1,0 +1,116 @@
+/// IPAddressPool represents a pool of IP addresses that can be allocated to LoadBalancer services.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/metallb/metallb/v0.16.0/config/manifests/metallb-native.yaml>.
+module io.metallb.v1beta1.IPAddressPool
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "metallb.io/v1beta1"
+
+fixed kind: "IPAddressPool"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// IPAddressPoolSpec defines the desired state of IPAddressPool.
+spec: Spec
+
+/// IPAddressPoolStatus defines the observed state of IPAddressPool.
+status: Status?
+
+/// IPAddressPoolSpec defines the desired state of IPAddressPool.
+class Spec {
+  /// A list of IP address ranges over which MetalLB has authority. You can list multiple ranges in a
+  /// single pool, they will all share the same settings. Each range can be either a CIDR prefix, or an
+  /// explicit start-end range of IPs.
+  addresses: Listing<String>
+
+  /// AutoAssign flag used to prevent MetallB from automatic allocation for a pool.
+  ///
+  /// Default if undefined: `true`
+  autoAssign: Boolean?
+
+  /// AvoidBuggyIPs prevents addresses ending with .0 and .255 to be used by a pool.
+  ///
+  /// Default if undefined: `false`
+  avoidBuggyIPs: Boolean?
+
+  /// AllocateTo makes ip pool allocation to specific namespace and/or service. The controller will use
+  /// the pool with lowest value of priority in case of multiple matches. A pool with no priority set
+  /// will be used only if the pools with priority can't be used. If multiple matching IPAddressPools are
+  /// available it will check for the availability of IPs sorting the matching IPAddressPools by
+  /// priority, starting from the highest to the lowest. If multiple IPAddressPools have the same
+  /// priority, choice will be random.
+  serviceAllocation: ServiceAllocation?
+}
+
+/// AllocateTo makes ip pool allocation to specific namespace and/or service. The controller will use the
+/// pool with lowest value of priority in case of multiple matches. A pool with no priority set will be
+/// used only if the pools with priority can't be used. If multiple matching IPAddressPools are available
+/// it will check for the availability of IPs sorting the matching IPAddressPools by priority, starting
+/// from the highest to the lowest. If multiple IPAddressPools have the same priority, choice will be
+/// random.
+class ServiceAllocation {
+  /// NamespaceSelectors list of label selectors to select namespace(s) for ip pool, an alternative to
+  /// using namespace list.
+  namespaceSelectors: Listing<ServiceSelector>?
+
+  /// Namespaces list of namespace(s) on which ip pool can be attached.
+  namespaces: Listing<String>?
+
+  /// Priority priority given for ip pool while ip allocation on a service.
+  priority: Int?
+
+  /// ServiceSelectors list of label selector to select service(s) for which ip pool can be used for ip
+  /// allocation.
+  serviceSelectors: Listing<ServiceSelector>?
+}
+
+/// A label selector is a label query over a set of resources. The result of matchLabels and
+/// matchExpressions are ANDed. An empty label selector matches all objects. A null label selector
+/// matches no objects.
+class ServiceSelector {
+  /// matchExpressions is a list of label selector requirements. The requirements are ANDed.
+  matchExpressions: Listing<ServiceSelectorMatchExpression>?
+
+  /// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is
+  /// equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and
+  /// the values array contains only "value". The requirements are ANDed.
+  matchLabels: Mapping<String, String>?
+}
+
+/// A label selector requirement is a selector that contains values, a key, and an operator that relates
+/// the key and values.
+class ServiceSelectorMatchExpression {
+  /// key is the label key that the selector applies to.
+  key: String
+
+  /// operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists
+  /// and DoesNotExist.
+  operator: String
+
+  /// values is an array of string values. If the operator is In or NotIn, the values array must be
+  /// non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is
+  /// replaced during a strategic merge patch.
+  values: Listing<String>?
+}
+
+/// IPAddressPoolStatus defines the observed state of IPAddressPool.
+class Status {
+  /// AssignedIPv4 is the number of assigned IPv4 addresses.
+  assignedIPv4: Int
+
+  /// AssignedIPv6 is the number of assigned IPv6 addresses.
+  assignedIPv6: Int
+
+  /// AvailableIPv4 is the number of available IPv4 addresses.
+  availableIPv4: Int
+
+  /// AvailableIPv6 is the number of available IPv6 addresses.
+  availableIPv6: Int
+}

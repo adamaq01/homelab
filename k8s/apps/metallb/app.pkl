@@ -1,0 +1,3 @@
+amends ".../app.pkl"
+
+namespace = "metallb-system"

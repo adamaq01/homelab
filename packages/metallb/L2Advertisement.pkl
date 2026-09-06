@@ -1,0 +1,76 @@
+/// L2Advertisement allows to advertise the LoadBalancer IPs provided by the selected pools via L2.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/metallb/metallb/v0.16.0/config/manifests/metallb-native.yaml>.
+module io.metallb.v1beta1.L2Advertisement
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "metallb.io/v1beta1"
+
+fixed kind: "L2Advertisement"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// L2AdvertisementSpec defines the desired state of L2Advertisement.
+spec: Spec?
+
+/// L2AdvertisementStatus defines the observed state of L2Advertisement.
+status: Dynamic?
+
+/// L2AdvertisementSpec defines the desired state of L2Advertisement.
+class Spec {
+  /// A list of interfaces to announce from. The LB IP will be announced only from these interfaces. If
+  /// the field is not set, we advertise from all the interfaces on the host.
+  interfaces: Listing<String>?
+
+  /// A selector for the IPAddressPools which would get advertised via this advertisement. If no
+  /// IPAddressPool is selected by this or by the list, the advertisement is applied to all the
+  /// IPAddressPools.
+  ipAddressPoolSelectors: Listing<ServiceSelector>?
+
+  /// The list of IPAddressPools to advertise via this advertisement, selected by name.
+  ipAddressPools: Listing<String>?
+
+  /// NodeSelectors allows to limit the nodes to announce as next hops for the LoadBalancer IP. When
+  /// empty, all the nodes having are announced as next hops.
+  nodeSelectors: Listing<ServiceSelector>?
+
+  /// ServiceSelectors limits the set of services that will be advertised via this advertisement. If
+  /// empty, all services from the selected pools are advertised.
+  serviceSelectors: Listing<ServiceSelector>?
+}
+
+/// A label selector is a label query over a set of resources. The result of matchLabels and
+/// matchExpressions are ANDed. An empty label selector matches all objects. A null label selector
+/// matches no objects.
+class ServiceSelector {
+  /// matchExpressions is a list of label selector requirements. The requirements are ANDed.
+  matchExpressions: Listing<MatchExpression>?
+
+  /// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels map is
+  /// equivalent to an element of matchExpressions, whose key field is "key", the operator is "In", and
+  /// the values array contains only "value". The requirements are ANDed.
+  matchLabels: Mapping<String, String>?
+}
+
+/// A label selector requirement is a selector that contains values, a key, and an operator that relates
+/// the key and values.
+class MatchExpression {
+  /// key is the label key that the selector applies to.
+  key: String
+
+  /// operator represents a key's relationship to a set of values. Valid operators are In, NotIn, Exists
+  /// and DoesNotExist.
+  operator: String
+
+  /// values is an array of string values. If the operator is In or NotIn, the values array must be
+  /// non-empty. If the operator is Exists or DoesNotExist, the values array must be empty. This array is
+  /// replaced during a strategic merge patch.
+  values: Listing<String>?
+}

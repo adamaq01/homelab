@@ -10,5 +10,6 @@ dependencies {
   ["argocd"] = import("packages/argocd/PklProject")
   ["talos"] = import("packages/talos/PklProject")
   ["manifest"] = import("packages/manifest/PklProject")
+  ["metallb"] = import("packages/metallb/PklProject")
   ["gateway-api"] = import("packages/gateway-api/PklProject")
 }
