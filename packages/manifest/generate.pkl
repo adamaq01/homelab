@@ -33,6 +33,10 @@
 /// [convertedResources] as-is and [patches] is never validated, for example to compare against the
 /// upstream manifest unpatched without having to touch [patches] itself.
 ///
+/// [onlyResources] restricts [value] to just the listed [fileNameFor] keys (default: none, meaning
+/// everything renders), for debugging one resource at a time without wading through the rest of a
+/// large manifest.
+///
 /// [customResourceTemplates] registers a template for a `kind` `pkl-k8s` doesn't ship one for. It's
 /// only consulted while coercing [resources] into [value] (via [classFor]). [convertResource] itself
 /// never needs it, since it derives a resource's import URI straight from the already-typed value's
@@ -111,6 +115,13 @@ excludePatches: Boolean = read?("prop:excludePatches")?.toBoolean() ?? false
 /// resource needs. Default `false`.
 logPatchKeys: Boolean = read?("prop:logPatchKeys")?.toBoolean() ?? false
 
+/// Restricts [value] to just the resources whose [fileNameFor] key is listed here. Empty (default)
+/// renders everything. [patches] is still validated against every resource regardless of this filter,
+/// so a typo'd [patches] key fails fast the same way it would unfiltered. Comma-separate to keep more
+/// than one.
+onlyResources: List<String> =
+  read?("prop:onlyResources")?.split(",")?.map((key) -> key.trim())?.filter((key) -> !key.isEmpty) ?? List()
+
 local function normalizePatchKey(key: String): String =
   key.replaceAll(Regex(#"^.*/"#), "").replaceAll(Regex(#"\.pkl$"#), "")
 
@@ -152,8 +163,10 @@ local function mixinFor(entry: Mixin<K8sResource> | Patch): Mixin<K8sResource> =
 /// `output.value` and `output.files`.
 value: Listing<K8sResource> = new Listing {
   for (resource in convertedResources) {
-    let (entry = checkedPatches.getOrNull(patchKeyFor(resource)))
-      if (entry == null) resource else mixinFor(entry).apply(resource)
+    when (onlyResources.isEmpty || onlyResources.contains(fileNameFor(resource))) {
+      let (entry = checkedPatches.getOrNull(patchKeyFor(resource)))
+        if (entry == null) resource else mixinFor(entry).apply(resource)
+    }
   }
 }
 
