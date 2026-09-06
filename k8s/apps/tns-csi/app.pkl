@@ -1,0 +1,83 @@
+amends ".../app.pkl"
+
+// We run a fork (https://github.com/adamaq01/tns-csi) of the upstream driver, published to GHCR
+// under this account rather than upstream's Docker Hub namespace. The fork adds hostname
+// resolution for the NVMe-oF `server` address (upstream/nvme-cli only accept a literal IP) and a
+// configurable node.dnsPolicy (see below).
+// renovate: datasource=docker packageName=ghcr.io/adamaq01/charts/tns-csi-driver
+local version = "0.17.6-fork.3"
+
+// The chart's own templates place every resource in `.Values.namespace` (default
+// "kube-system"), not `.Release.Namespace`, so both this Application's destination and the
+// chart value below must be set to match.
+
+// Published as an OCI artifact rather than a classic Helm repo index.
+source {
+  repoURL = "ghcr.io/adamaq01/charts"
+  chart = "tns-csi-driver"
+  targetRevision = version
+  path = null
+  helm {
+    valuesObject = new {
+      namespace = "tns-csi"
+      truenas {
+        url = "wss://nas.home.adamaq01.fr/api/current"
+        skipTLSVerify = true
+        // Manually created for now
+        existingSecret = "tns-csi-credentials"
+      }
+      node {
+        // iSCSI isn't used (NVMe-oF only) — keeps /etc/iscsi out of the DaemonSet entirely, so
+        // the Talos iscsi-tools extension isn't a dependency for this driver.
+        iscsi {
+          enabled = false
+        }
+        // TrueNAS's NVMe-oF port is reachable from every node's general-LAN address, so there's
+        // no need to pin this DaemonSet's pods to a particular node or route through CoreDNS —
+        // fall back to the host's own resolver for the `server` domain name below.
+        dnsPolicy = "Default"
+      }
+      storageClasses {
+        new {
+          name = "tns-csi-nvmeof"
+          enabled = true
+          protocol = "nvmeof"
+          isDefault = true
+          pool = "k8s"
+          // Resolved by the fork's driver at connect time; nvme-cli itself only accepts a
+          // literal IP, so a stock/upstream build of tns-csi cannot use a hostname here.
+          server = "nas.home.adamaq01.fr"
+          transport = "tcp"
+          port = "4420"
+          fsType = "ext4"
+          reclaimPolicy = "Delete"
+          volumeBindingMode = "Immediate"
+          allowVolumeExpansion = true
+          parameters {
+            zfs {
+              compression = "lz4"
+              volblocksize = "64K"
+              sparse = "true"
+              sync = "disabled"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // The node DaemonSet runs privileged/hostNetwork/hostPID/hostIPC/hostPath, which the
+          // default PodSecurity "baseline" level blocks outside of the (exempted) kube-system
+          // namespace.
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
+        }
+      }
+    }
+  }
+}
