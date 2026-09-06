@@ -115,7 +115,7 @@ documents: documentsModule.Documents = new {
   }
   (KubeClusterConfig) {
     clusterName = module.clusterName
-    endpoint = module.controlPlaneEndpoint
+    endpoint = module.k8sControlPlaneEndpoint
   }
   (KubeNodeConfig) {
     nodeIP {

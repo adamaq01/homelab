@@ -50,7 +50,7 @@ documents {
   (StaticHostConfig) {
     name = "10.0.10.1"
     hostnames {
-      "nas.\(module.domain)"
+      module.nasDomain
     }
   }
 }

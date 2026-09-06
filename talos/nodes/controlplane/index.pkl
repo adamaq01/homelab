@@ -120,7 +120,7 @@ documents {
   (KubeServiceAccountConfig) {
     issuer {
       privateKey = module.secrets.certs.k8sserviceaccount.key.base64Decoded
-      issuerURL = module.controlPlaneEndpoint
+      issuerURL = module.k8sControlPlaneEndpoint
     }
   }
   (KubeAPIServerConfig) {

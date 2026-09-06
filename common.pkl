@@ -1,0 +1,6 @@
+open module common
+
+repoURL: String = "https://github.com/adamaq01/homelab.git"
+domain: String = "home.adamaq01.fr"
+nasDomain: String = "nas.\(domain)"
+k8sControlPlaneEndpoint: String = "https://k8s.\(domain):6443"

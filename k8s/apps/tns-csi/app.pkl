@@ -21,7 +21,7 @@ source {
     valuesObject = new {
       namespace = "tns-csi"
       truenas {
-        url = "wss://nas.home.adamaq01.fr/api/current"
+        url = "wss://\(module.nasDomain)/api/current"
         skipTLSVerify = true
         // Manually created for now
         existingSecret = "tns-csi-credentials"
@@ -46,7 +46,7 @@ source {
           pool = "k8s"
           // Resolved by the fork's driver at connect time; nvme-cli itself only accepts a
           // literal IP, so a stock/upstream build of tns-csi cannot use a hostname here.
-          server = "nas.home.adamaq01.fr"
+          server = module.nasDomain
           transport = "tcp"
           port = "4420"
           fsType = "ext4"
