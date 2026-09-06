@@ -11,7 +11,7 @@ import "@k8s/api/core/v1/Service.pkl"
 import "@k8s/api/apps/v1/Deployment.pkl"
 import "@k8s/api/rbac/v1/ClusterRole.pkl"
 import "@k8s/api/rbac/v1/ClusterRoleBinding.pkl"
-import "app.pkl" as App
+import "app.pkl"
 
 local saName = "pod-viewer"
 local roleName = "pod-viewer-role"
@@ -53,7 +53,7 @@ clusterRole: ClusterRole = new {
 }
 
 /// The upstream guide's ClusterRoleBinding subject namespace defaults to `default`; it must
-/// instead match [App.namespace] (the namespace this Application actually deploys into) or the
+/// instead match [app.namespace] (the namespace this Application actually deploys into) or the
 /// binding silently grants nothing.
 clusterRoleBinding: ClusterRoleBinding = new {
   metadata {
@@ -63,7 +63,7 @@ clusterRoleBinding: ClusterRoleBinding = new {
     new {
       kind = "ServiceAccount"
       name = saName
-      namespace = App.namespace
+      namespace = app.namespace
     }
   }
   roleRef {

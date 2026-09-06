@@ -1,9 +1,9 @@
 import "@argocd/Application.pkl"
-import "app.pkl" as App
+import "app.pkl"
 
 local discoveredApps: List<Application> = import*("apps/**/app.pkl").toMap().values.map((mod) -> mod.application)
 
-local rootApp: Application = (new App {
+local rootApp: Application = (new app {
   name = "root"
   namespace = "argocd"
   source {
