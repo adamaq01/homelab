@@ -87,6 +87,23 @@ value {
       }
     }
   }
+  new Certificate {
+    metadata {
+      name = "public-adamaq01-fr-wildcard"
+      namespace = app.namespace
+    }
+    spec {
+      secretName = app.publicWildcardCertSecretName
+      issuerRef {
+        name = "cloudflare"
+        kind = "ClusterIssuer"
+      }
+      dnsNames {
+        app.rootDomain
+        "*.\(app.rootDomain)"
+      }
+    }
+  }
   // Grants Traefik's Gateway (which lives in its own namespace) permission to reference the
   // ingress wildcard Certificate's Secret above across namespaces.
   new ReferenceGrant {
@@ -107,6 +124,29 @@ value {
           group = ""
           kind = "Secret"
           name = app.ingressWildcardCertSecretName
+        }
+      }
+    }
+  }
+  // Same grant, for the public wildcard Certificate's Secret above.
+  new ReferenceGrant {
+    metadata {
+      name = "traefik-gateway-\(app.publicWildcardCertSecretName)"
+      namespace = app.namespace
+    }
+    spec {
+      from {
+        new {
+          group = "gateway.networking.k8s.io"
+          kind = "Gateway"
+          namespace = traefik.namespace
+        }
+      }
+      to {
+        new {
+          group = ""
+          kind = "Secret"
+          name = app.publicWildcardCertSecretName
         }
       }
     }

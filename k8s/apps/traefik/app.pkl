@@ -76,6 +76,21 @@ source {
                 }
               }
             }
+            ["public"] {
+              port = 8443
+              protocol = "HTTPS"
+              hostname = "*.\(module.rootDomain)"
+              mode = "Terminate"
+              namespacePolicy {
+                from = "All"
+              }
+              certificateRefs {
+                new {
+                  name = cert_manager.publicWildcardCertSecretName
+                  namespace = cert_manager.namespace
+                }
+              }
+            }
           }
         }
         service {

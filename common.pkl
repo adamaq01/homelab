@@ -1,7 +1,7 @@
 open module common
 
 repoURL: String = "https://github.com/adamaq01/homelab.git"
-local rootDomain: String = "adamaq01.fr"
+rootDomain: String = "adamaq01.fr"
 clusterName: String = "pegasus"
 
 /// LAN domain for literal hosts (nodes, the NAS, ...), resolved via the router's own DNS.
