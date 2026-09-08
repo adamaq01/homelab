@@ -99,6 +99,11 @@
       "uri": "projectpackage://local/homelab/packages/gateway-api@0.1.0",
       "path": "packages/gateway-api"
     },
+    "package://local/homelab/packages/traefik-crds@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/traefik-crds@0.1.0",
+      "path": "packages/traefik-crds"
+    },
     "package://local/homelab/packages/metallb@0": {
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/metallb@0.1.0",

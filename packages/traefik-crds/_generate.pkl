@@ -1,0 +1,9 @@
+amends "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6#/generate.pkl"
+
+// renovate: datasource=github-releases packageName=traefik/traefik
+local version = "v3.7.12"
+
+source = "https://raw.githubusercontent.com/traefik/traefik/\(version)/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
+baseApiGroup = "v1alpha1.traefik.io"
+
+k8sImportPath = "@k8s"
