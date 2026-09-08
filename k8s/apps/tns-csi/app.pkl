@@ -1,4 +1,4 @@
-amends ".../app.pkl"
+extends ".../app.pkl"
 
 // We run a fork (https://github.com/adamaq01/tns-csi) of the upstream driver, published to GHCR
 // under this account rather than upstream's Docker Hub namespace. The fork adds hostname
@@ -10,6 +10,10 @@ local version = "0.17.6-fork.3"
 // The chart's own templates place every resource in `.Values.namespace` (default
 // "kube-system"), not `.Release.Namespace`, so both this Application's destination and the
 // chart value below must be set to match.
+
+// Referenced cross-app by anything that wants NVMe-oF storage (e.g. `dozzle/chart.pkl`,
+// `jellyfin/app.pkl`), which must set it explicitly since it isn't the cluster's default.
+nvmeofStorageClassName: String = "tns-csi-nvmeof"
 
 // Published as an OCI artifact rather than a classic Helm repo index.
 source {
@@ -27,22 +31,22 @@ source {
         existingSecret = "tns-csi-credentials"
       }
       node {
-        // iSCSI isn't used (NVMe-oF only) — keeps /etc/iscsi out of the DaemonSet entirely, so
+        // iSCSI isn't used (NVMe-oF only), keeping /etc/iscsi out of the DaemonSet entirely, so
         // the Talos iscsi-tools extension isn't a dependency for this driver.
         iscsi {
           enabled = false
         }
         // TrueNAS's NVMe-oF port is reachable from every node's general-LAN address, so there's
-        // no need to pin this DaemonSet's pods to a particular node or route through CoreDNS —
-        // fall back to the host's own resolver for the `server` domain name below.
+        // no need to pin this DaemonSet's pods to a particular node or route through CoreDNS.
+        // Fall back to the host's own resolver for the `server` domain name below.
         dnsPolicy = "Default"
       }
       storageClasses {
         new {
-          name = "tns-csi-nvmeof"
+          name = module.nvmeofStorageClassName
           enabled = true
           protocol = "nvmeof"
-          isDefault = true
+          isDefault = false
           pool = "k8s"
           // Resolved by the fork's driver at connect time; nvme-cli itself only accepts a
           // literal IP, so a stock/upstream build of tns-csi cannot use a hostname here.
