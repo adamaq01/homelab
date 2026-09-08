@@ -1,0 +1,422 @@
+/// Headscale's control-plane API must be publicly reachable (roaming clients need to reach it
+/// before any tunnel exists), so it gets its own public hostname. Headplane's admin UI stays
+/// LAN/VPN-only, on a separate private hostname, since it's the higher-value target of the two.
+///
+/// Headplane's `config_path` mounts Headscale's own ConfigMap read-only, so it can display (but
+/// not edit) `config.yaml` itself. Editing that would need `shareProcessNamespace` plus pod-read
+/// RBAC so Headplane can SIGHUP-reload Headscale, and Headscale's SIGHUP handler only reloads the
+/// ACL policy anyway, not the rest of config.yaml, so that complexity isn't worth it here.
+///
+/// ACL policy is handled separately from `config.yaml`: `policy.mode: database` makes Headscale
+/// store it in its own database instead of a file, which is what lets Headplane's ACL editor read
+/// and write it live over Headscale's API (`GET`/`PUT /v1/policy`), no reload needed. Tradeoff:
+/// the policy then lives outside this repo, in Headscale's sqlite DB, rather than being
+/// GitOps-tracked here.
+///
+/// Bootstrap step after first deploy (Headplane's cookie needs a stable secret to sign sessions):
+///
+/// kubectl create secret generic headplane-secrets \
+///   --namespace headscale \
+///   --from-literal=cookie-secret="$(openssl rand -hex 16)"
+///
+/// Must be exactly 32 characters (Headplane's own schema rejects anything else), hence
+/// `-hex 16` (16 bytes = 32 hex chars).
+///
+/// To log into Headplane, generate a Headscale API key and use it as the login credential:
+///
+/// kubectl exec -n headscale deploy/headscale -- headscale apikeys create
+module chart
+
+import "@k8s/api/core/v1/ConfigMap.pkl"
+import "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
+import "@k8s/api/core/v1/Service.pkl"
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "@gateway-api/HTTPRoute.pkl"
+import "@traefik-crds/Middleware.pkl"
+import "app.pkl"
+import "../traefik/app.pkl" as traefik
+import "../tns-csi/app.pkl" as tns_csi
+
+// renovate: datasource=docker packageName=headscale/headscale
+local headscaleVersion = "v0.29.3"
+
+// renovate: datasource=docker packageName=ghcr.io/tale/headplane
+local headplaneVersion = "0.7.1"
+
+local headscaleHostname = "vpn.\(app.rootDomain)"
+local headplaneHostname = "vpn.\(app.ingressDomain)"
+local headplaneAliasHostname = "vpn.\(app.ingressAliasDomain)"
+
+/// Base domain for MagicDNS node names (e.g. `mynode.\(tailnetDomain)`). Must differ from
+/// [headscaleHostname]. Doesn't need a real DNS record: Headscale pushes it to mesh clients as an
+/// overridden resolver domain, nothing external ever resolves it.
+local tailnetDomain = "tailnet.\(app.rootDomain)"
+
+local headplaneSecretName = "headplane-secrets"
+local headscalePvcName = "headscale-data"
+local headplanePvcName = "headplane-data"
+local headscaleAppLabel = "headscale"
+local headplaneAppLabel = "headplane"
+
+local headscaleConfigYaml = """
+  server_url: https://\(headscaleHostname)
+  listen_addr: 0.0.0.0:8080
+  metrics_listen_addr: 127.0.0.1:9090
+
+  noise:
+    private_key_path: /var/lib/headscale/noise_private.key
+
+  policy:
+    mode: database
+
+  prefixes:
+    v4: 100.64.0.0/10
+    v6: fd7a:115c:a1e0::/48
+
+  derp:
+    urls:
+      - https://controlplane.tailscale.com/derpmap/default
+
+  database:
+    type: sqlite
+    sqlite:
+      path: /var/lib/headscale/db.sqlite
+
+  dns:
+    magic_dns: true
+    base_domain: \(tailnetDomain)
+    nameservers:
+      global:
+        - 1.1.1.1
+        - 1.0.0.1
+
+  log:
+    level: info
+    format: text
+  """
+
+local headplaneConfigYaml = """
+  server:
+    cookie_secure: true
+    base_url: https://\(headplaneHostname)
+    cookie_secret_path: /etc/headplane/secrets/cookie-secret
+
+  headscale:
+    url: http://headscale.\(app.namespace).svc.cluster.local:8080
+    config_path: /etc/headscale-ro/config.yaml
+  """
+
+headscaleConfigMap: ConfigMap = new {
+  metadata {
+    name = "headscale-config"
+  }
+  data {
+    ["config.yaml"] = headscaleConfigYaml
+  }
+}
+
+headplaneConfigMap: ConfigMap = new {
+  metadata {
+    name = "headplane-config"
+  }
+  data {
+    ["config.yaml"] = headplaneConfigYaml
+  }
+}
+
+headscalePvc: PersistentVolumeClaim = new {
+  metadata {
+    name = headscalePvcName
+  }
+  spec {
+    accessModes { "ReadWriteOnce" }
+    storageClassName = tns_csi.nvmeofStorageClassName
+    resources {
+      requests {
+        ["storage"] = "1Gi"
+      }
+    }
+  }
+}
+
+headplanePvc: PersistentVolumeClaim = new {
+  metadata {
+    name = headplanePvcName
+  }
+  spec {
+    accessModes { "ReadWriteOnce" }
+    storageClassName = tns_csi.nvmeofStorageClassName
+    resources {
+      requests {
+        ["storage"] = "1Gi"
+      }
+    }
+  }
+}
+
+headscaleDeployment: Deployment = new {
+  metadata {
+    name = "headscale"
+  }
+  spec {
+    selector {
+      matchLabels {
+        ["app"] = headscaleAppLabel
+      }
+    }
+    strategy {
+      type = "Recreate"
+    }
+    template {
+      metadata {
+        labels {
+          ["app"] = headscaleAppLabel
+        }
+      }
+      spec {
+        containers {
+          new {
+            name = "headscale"
+            image = "headscale/headscale:\(headscaleVersion)"
+            args { "serve" }
+            ports {
+              new { containerPort = 8080 }
+            }
+            volumeMounts {
+              new { name = "config"; mountPath = "/etc/headscale" }
+              new { name = "data"; mountPath = "/var/lib/headscale" }
+            }
+          }
+        }
+        volumes {
+          new {
+            name = "config"
+            configMap {
+              name = headscaleConfigMap.metadata.name!!
+            }
+          }
+          new {
+            name = "data"
+            persistentVolumeClaim {
+              claimName = headscalePvcName
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+headplaneDeployment: Deployment = new {
+  metadata {
+    name = "headplane"
+  }
+  spec {
+    selector {
+      matchLabels {
+        ["app"] = headplaneAppLabel
+      }
+    }
+    strategy {
+      type = "Recreate"
+    }
+    template {
+      metadata {
+        labels {
+          ["app"] = headplaneAppLabel
+        }
+      }
+      spec {
+        containers {
+          new {
+            name = "headplane"
+            image = "ghcr.io/tale/headplane:\(headplaneVersion)"
+            ports {
+              new { containerPort = 3000 }
+            }
+            volumeMounts {
+              new { name = "config"; mountPath = "/etc/headplane" }
+              new { name = "secrets"; mountPath = "/etc/headplane/secrets"; readOnly = true }
+              new { name = "headscale-config"; mountPath = "/etc/headscale-ro"; readOnly = true }
+              new { name = "data"; mountPath = "/var/lib/headplane" }
+            }
+          }
+        }
+        volumes {
+          new {
+            name = "config"
+            configMap {
+              name = headplaneConfigMap.metadata.name!!
+            }
+          }
+          new {
+            name = "secrets"
+            secret {
+              secretName = headplaneSecretName
+            }
+          }
+          new {
+            name = "headscale-config"
+            configMap {
+              name = headscaleConfigMap.metadata.name!!
+            }
+          }
+          new {
+            name = "data"
+            persistentVolumeClaim {
+              claimName = headplanePvcName
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+headscaleService: Service = new {
+  metadata {
+    name = "headscale"
+  }
+  spec {
+    type = "ClusterIP"
+    selector {
+      ["app"] = headscaleAppLabel
+    }
+    ports {
+      new {
+        port = 8080
+        targetPort = 8080
+        protocol = "TCP"
+      }
+    }
+  }
+}
+
+headplaneService: Service = new {
+  metadata {
+    name = "headplane"
+  }
+  spec {
+    type = "ClusterIP"
+    selector {
+      ["app"] = headplaneAppLabel
+    }
+    ports {
+      new {
+        port = 3000
+        targetPort = 3000
+        protocol = "TCP"
+      }
+    }
+  }
+}
+
+headscaleCorsMiddleware: Middleware = new {
+  metadata {
+    name = "headscale-cors"
+  }
+  spec {
+    headers {
+      accessControlAllowHeaders { "*" }
+      accessControlAllowMethods { "GET"; "POST"; "PUT" }
+      accessControlAllowOriginList {
+        "https://\(headplaneHostname)"
+        "https://\(headplaneAliasHostname)"
+      }
+      accessControlMaxAge = 100
+      addVaryHeader = true
+    }
+  }
+}
+
+headscaleHttpRoute: HTTPRoute = new {
+  metadata {
+    name = "headscale"
+    annotations {
+      [app.publicAnnotationKey] = ""
+    }
+  }
+  spec {
+    parentRefs {
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "public"
+      }
+    }
+    hostnames {
+      headscaleHostname
+    }
+    rules {
+      new {
+        filters {
+          new {
+            type = "ExtensionRef"
+            extensionRef {
+              group = "traefik.io"
+              kind = "Middleware"
+              name = headscaleCorsMiddleware.metadata.name!!
+            }
+          }
+        }
+        backendRefs {
+          new {
+            name = headscaleService.metadata.name!!
+            port = 8080
+          }
+        }
+      }
+    }
+  }
+}
+
+headplaneHttpRoute: HTTPRoute = new {
+  metadata {
+    name = "headplane"
+  }
+  spec {
+    parentRefs {
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "private"
+      }
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "private-alias"
+      }
+    }
+    hostnames {
+      headplaneHostname
+      headplaneAliasHostname
+    }
+    rules {
+      new {
+        backendRefs {
+          new {
+            name = headplaneService.metadata.name!!
+            port = 3000
+          }
+        }
+      }
+    }
+  }
+}
+
+output {
+  value = new Listing {
+    headscaleConfigMap
+    headplaneConfigMap
+    headscalePvc
+    headplanePvc
+    headscaleDeployment
+    headplaneDeployment
+    headscaleService
+    headplaneService
+    headscaleCorsMiddleware
+    headscaleHttpRoute
+    headplaneHttpRoute
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
