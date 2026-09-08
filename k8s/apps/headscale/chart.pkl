@@ -1,6 +1,7 @@
 /// Headscale's control-plane API must be publicly reachable (roaming clients need to reach it
-/// before any tunnel exists), so it gets its own public hostname. Headplane's admin UI stays
-/// LAN/VPN-only, on a separate private hostname, since it's the higher-value target of the two.
+/// before any tunnel exists), so it gets its own public hostname. Headplane's admin UI shares that
+/// same hostname, under the "/admin" path, but stays LAN/tailnet-only via `headplaneAllowListMiddleware`
+/// below, since it's the higher-value target of the two.
 ///
 /// Headplane's `config_path` mounts Headscale's own ConfigMap read-only, so it can display (but
 /// not edit) `config.yaml` itself. Editing that would need `shareProcessNamespace` plus pod-read
@@ -55,8 +56,9 @@ local headscaleVersion = "v0.29.3"
 local headplaneVersion = "0.7.1"
 
 local headscaleHostname = "vpn.\(app.rootDomain)"
-local headplaneHostname = "vpn.\(app.ingressDomain)"
-local headplaneAliasHostname = "vpn.\(app.ingressAliasDomain)"
+
+local headplaneAllowedCidr = "192.168.1.0/24"
+local tailnetCidr = "100.64.0.0/10"
 
 /// Base domain for MagicDNS node names (e.g. `mynode.\(tailnetDomain)`). Must differ from
 /// [headscaleHostname]. Doesn't need a real DNS record: Headscale pushes it to mesh clients as an
@@ -118,7 +120,7 @@ local headscaleConfigYaml = """
 local headplaneConfigYaml = """
   server:
     cookie_secure: true
-    base_url: https://\(headplaneHostname)
+    base_url: https://\(headscaleHostname)
     cookie_secret_path: /etc/headplane/secrets/cookie-secret
 
   headscale:
@@ -340,11 +342,30 @@ headscaleCorsMiddleware: Middleware = new {
       accessControlAllowHeaders { "*" }
       accessControlAllowMethods { "GET"; "POST"; "PUT" }
       accessControlAllowOriginList {
-        "https://\(headplaneHostname)"
-        "https://\(headplaneAliasHostname)"
+        "https://\(headscaleHostname)"
       }
       accessControlMaxAge = 100
       addVaryHeader = true
+    }
+  }
+}
+
+headplaneAllowListMiddleware: Middleware = new {
+  metadata {
+    name = "headplane-allowlist"
+  }
+  spec {
+    // Headplane shares Headscale's own public hostname/listener below, so this is what keeps it
+    // from being reachable over the internet via rathole. An allowlist rather than a denylist on
+    // rathole's own pod IP: that IP isn't stable (no static-IP pinning on the `rathole-client`
+    // Deployment), so it changes on every pod restart/reschedule, and a denylist keyed to it would
+    // silently go stale and fail open (Headplane becomes internet-reachable again, with no error).
+    // These ranges don't have that problem.
+    ipAllowList {
+      sourceRange {
+        headplaneAllowedCidr
+        tailnetCidr
+      }
     }
   }
 }
@@ -399,23 +420,25 @@ headplaneHttpRoute: HTTPRoute = new {
       new {
         name = traefik.gatewayName
         namespace = traefik.namespace
-        sectionName = "private"
-      }
-      new {
-        name = traefik.gatewayName
-        namespace = traefik.namespace
-        sectionName = "private-alias"
+        sectionName = "public"
       }
     }
+    // Shares Headscale's own hostname (see `headscaleHttpRoute` below): Headscale's control-plane
+    // API needs to stay reachable from the internet, but Headplane doesn't, so it can't get its
+    // own public hostname the way it used to — instead it's scoped to the "/admin" path below and
+    // gated by `headplaneAllowListMiddleware`, and only ever reachable at all once a roaming
+    // client already has a tunnel (LAN or tailnet) to reach it over.
     hostnames {
-      headplaneHostname
-      headplaneAliasHostname
+      headscaleHostname
     }
     rules {
       new {
         // Headplane's UI is built with a baked-in "/admin" basename (Vite `base`/react-router
         // `basename`), so its own asset/API/nav requests already carry that prefix once loaded.
-        // Only the bare root needs a redirect to get a visitor there in the first place.
+        // Only the bare root needs a redirect to get a visitor there in the first place. This also
+        // makes Headscale's own bare hostname root redirect to Headplane's login, since the two
+        // now share a hostname — acceptable, Headscale's actual API endpoints all live under their
+        // own non-root paths and never collide with it.
         matches {
           new { path { type = "Exact"; value = "/" } }
         }
@@ -432,6 +455,19 @@ headplaneHttpRoute: HTTPRoute = new {
         }
       }
       new {
+        matches {
+          new { path { type = "PathPrefix"; value = "/admin" } }
+        }
+        filters {
+          new {
+            type = "ExtensionRef"
+            extensionRef {
+              group = "traefik.io"
+              kind = "Middleware"
+              name = headplaneAllowListMiddleware.metadata.name!!
+            }
+          }
+        }
         backendRefs {
           new {
             name = headplaneService.metadata.name!!
@@ -454,6 +490,7 @@ output {
     headscaleService
     headplaneService
     headscaleCorsMiddleware
+    headplaneAllowListMiddleware
     headscaleHttpRoute
     headplaneHttpRoute
   }
