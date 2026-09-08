@@ -58,6 +58,12 @@ local headplanePvcName = "headplane-data"
 local headscaleAppLabel = "headscale"
 local headplaneAppLabel = "headplane"
 
+/// `dns.nameservers.split` routes every hostname under [app.rootDomain] to the router's own DNS
+/// instead of the global resolvers. That covers every private hostname (`domain`/`ingressDomain`/
+/// `ingressAliasDomain` are all subdomains of it) plus every public-annotated one:
+/// `external-dns-unifi` already gives those a split-horizon override on the router pointing
+/// straight at `gatewayIP`, instead of the public record which resolves to the rathole VPS, so
+/// routing tailnet clients' DNS here too avoids that same rathole round-trip.
 local headscaleConfigYaml = """
   server_url: https://\(headscaleHostname)
   listen_addr: 0.0.0.0:8080
@@ -89,6 +95,9 @@ local headscaleConfigYaml = """
       global:
         - 1.1.1.1
         - 1.0.0.1
+      split:
+        \(app.rootDomain):
+          - \(app.routerIP)
 
   log:
     level: info
