@@ -55,6 +55,11 @@
         "sha256": "b2d4ca9f04918a47a5d53f5a744dbe8e8cd782e0a3726fbd26f85ccc6dbd1379"
       }
     },
+    "package://local/homelab/packages/external-dns@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/external-dns@0.1.0",
+      "path": "packages/external-dns"
+    },
     "package://local/homelab/packages/manifest@0": {
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/manifest@0.1.0",

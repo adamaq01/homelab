@@ -1,0 +1,52 @@
+/// Generates a single Pkl module from the external-dns Helm chart's `values.schema.json`, exposing
+/// its properties as the module's own top-level properties, the same way `packages/traefik/Values.pkl`
+/// is generated and consumed by `k8s/apps/traefik/app.pkl`.
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/external-dns/_generate.pkl --project-dir packages/external-dns -m packages/external-dns
+/// ```
+module externalDns.generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/external-dns extractVersion=^external-dns-helm-chart-(?<version>.*)$
+version = "1.21.1"
+
+sourceUri = "https://raw.githubusercontent.com/kubernetes-sigs/external-dns/external-dns-helm-chart-\(version)/charts/external-dns/values.schema.json"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+local parsedRootSchema = Parser.parse(read(sourceUri)) as JsonSchema
+
+/// Same JSON Schema `pattern`-vs-`matches()` anchoring mismatch documented in
+/// `packages/traefik/_generate.pkl`.
+local plainPatternRegex = Regex(#"matches\(Regex\("([^"]*)"\)\)"#)
+local rawPatternRegex = Regex(##"matches\(Regex\(#"([^"]*)"#\)\)"##)
+
+local function relaxUnanchoredPatterns(text: String): String =
+  let (afterPlain = text.replaceAllMapped(plainPatternRegex, (m) ->
+    let (pattern = m.groups[1]!!.value)
+      if (pattern.endsWith("$")) m.value else "contains(Regex(\"\(pattern)\"))"
+  ))
+    afterPlain.replaceAllMapped(rawPatternRegex, (m) ->
+      let (pattern = m.groups[1]!!.value)
+        if (pattern.endsWith("$")) m.value else "contains(Regex(#\"" + pattern + "\"#))"
+    )
+
+output {
+  files {
+    ["Values.pkl"] {
+      text = relaxUnanchoredPatterns((new ModuleGenerator {
+        rootSchema = parsedRootSchema
+        baseUri = schemaBaseUri
+        moduleName = "Values"
+        existingTypes = Map()
+      }).moduleNode.output.text)
+    }
+  }
+}

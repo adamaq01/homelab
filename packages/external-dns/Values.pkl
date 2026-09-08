@@ -1,0 +1,570 @@
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/kubernetes-sigs/external-dns/external-dns-helm-chart-1.21.1/charts/external-dns/values.schema.json>.
+///
+/// WARN: The root schema describes open-ended properties, but this is not possible to describe at the
+/// module level.
+module Values
+
+/// Affinity settings for `Pod`
+/// [scheduling](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/). If an
+/// explicit label selector is not provided for pod affinity or pod anti-affinity one will be created
+/// from the pod selector labels.
+affinity: Dynamic?
+
+/// Filter resources queried for endpoints by annotation selector.
+annotationFilter: String?
+
+/// Annotation prefix for external-dns annotations (useful for split horizon DNS with multiple
+/// instances).
+annotationPrefix: String?
+
+/// Set this to `false` to [opt out of API credential
+/// automounting](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting)
+/// for the `Pod`.
+automountServiceAccountToken: Boolean?
+
+/// Labels to add to all chart resources.
+commonLabels: Dynamic?
+
+/// Annotations to add to the `Deployment`.
+deploymentAnnotations: Dynamic?
+
+/// [Deployment
+/// Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
+deploymentStrategy: DeploymentStrategy?
+
+/// [DNS config](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-dns-config)
+/// for the pod, if not set the default will be used.
+dnsConfig: Dynamic?
+
+/// [DNS
+/// policy](https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy)
+/// for the pod, if not set the default will be used.
+dnsPolicy: String?
+
+/// Limit possible target zones by domain suffixes.
+domainFilters: Listing?
+
+/// if `true`, the Gateway API ListenerSet flag will be enabled.
+enableGatewayListenerSets: Boolean?
+
+/// No effect - reserved for use in sub-charting
+enabled: Boolean?
+
+/// [Environment
+/// variables](https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/)
+/// for the `external-dns` container.
+env: Listing?
+
+/// Intentionally exclude domains from being managed.
+excludeDomains: Listing?
+
+/// Extra arguments to provide to _ExternalDNS_. An array or map can be used, with maps allowing for
+/// value overrides; maps also support slice values to use the same arg multiple times.
+extraArgs: (Listing<String>(isDistinct))?
+
+/// Extra containers to add to the `Deployment`.
+extraContainers: Listing?
+
+/// Extra [volume mounts](https://kubernetes.io/docs/concepts/storage/volumes/) for the `external-dns`
+/// container.
+extraVolumeMounts: Listing?
+
+/// Extra [volumes](https://kubernetes.io/docs/concepts/storage/volumes/) for the `Pod`.
+extraVolumes: Listing?
+
+/// Override the full name of the chart.
+fullnameOverride: String?
+
+/// _Gateway API_ gateway namespace to watch. When `namespaced=true`, setting this value avoids creating
+/// any cluster-scoped RBAC (no ClusterRole/ClusterRoleBinding) for Gateway sources.
+gatewayNamespace: String?
+
+global: Global?
+
+image: Image?
+
+/// Image pull secrets.
+imagePullSecrets: Listing<Dynamic>?
+
+/// [Init containers](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) to add to the
+/// `Pod` definition.
+initContainers: Listing?
+
+/// Interval for DNS updates.
+interval: String?
+
+/// Filter resources queried for endpoints by label selector.
+labelFilter: String?
+
+/// [Liveness
+/// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+/// configuration for the `external-dns` container.
+livenessProbe: LivenessProbe?
+
+/// Log format.
+///
+/// Default if undefined: `"text"`
+logFormat: ("text"|"json")?
+
+/// Log level.
+///
+/// Default if undefined: `"info"`
+logLevel: ("panic"|"debug"|"info"|"warning"|"error"|"fatal")?
+
+/// Record types to manage (default: A, AAAA, CNAME)
+managedRecordTypes: Listing<String>(isDistinct)?
+
+/// Override the name of the chart.
+nameOverride: String?
+
+/// Override the namespace that chart resources are rendered into. Defaults to the release namespace.
+/// Useful when installing the chart as a subchart that should live in its own namespace, separate from
+/// the umbrella release namespace.
+namespaceOverride: String?
+
+/// if `true`, _ExternalDNS_ will run in a namespaced scope (`Role`` and `Rolebinding`` will be
+/// namespaced too).
+namespaced: Boolean?
+
+/// Node labels to match for `Pod`
+/// [scheduling](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/).
+nodeSelector: Dynamic?
+
+/// Annotations to add to the `Pod`.
+podAnnotations: Dynamic?
+
+/// Labels to add to the `Pod`.
+podLabels: Dynamic?
+
+/// [Pod security
+/// context](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#podsecuritycontext-v1-core),
+/// this supports full customisation.
+podSecurityContext: PodSecurityContext?
+
+/// How DNS records are synchronized between sources and providers; available values are `create-only`,
+/// `sync`, & `upsert-only`.
+///
+/// Default if undefined: `"upsert-only"`
+policy: ("create-only"|"sync"|"upsert-only")?
+
+/// Priority class name for the `Pod`.
+priorityClassName: String?
+
+provider: Provider?
+
+rbac: Rbac?
+
+/// [Readiness
+/// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+/// configuration for the `external-dns` container.
+readinessProbe: ItemReadinessProbe?
+
+/// Specify the registry for storing ownership and labels. Valid values are `txt`, `aws-sd`, `dynamodb` &
+/// `noop`.
+///
+/// Default if undefined: `"txt"`
+registry: ("txt"|"aws-sd"|"dynamodb"|"noop")?
+
+/// [Resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for the
+/// `external-dns` container.
+resources: Resources?
+
+/// Specify the number of old `ReplicaSets` to retain to allow rollback of the `Deployment``.
+revisionHistoryLimit: Number(isPositive)?
+
+secretConfiguration: SecretConfiguration?
+
+/// [Security
+/// context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+/// for the `external-dns` container.
+securityContext: SecurityContext?
+
+service: ItemService?
+
+serviceAccount: ServiceAccount?
+
+serviceMonitor: ItemServiceMonitor?
+
+/// If `true`, the `Pod` will have [process namespace
+/// sharing](https://kubernetes.io/docs/tasks/configure-pod-container/share-process-namespace/) enabled.
+shareProcessNamespace: Boolean?
+
+/// Source namespace to watch for Kubernetes resources other than Gateway API gateways. Used only when
+/// `namespaced=true`. Defaults to Release.Namespace
+sourceNamespace: String?
+
+/// _Kubernetes_ resources to monitor for DNS entries.
+sources: Listing<String>?
+
+/// Termination grace period for the `Pod` in seconds.
+terminationGracePeriodSeconds: Number?
+
+/// Node taints which will be tolerated for `Pod`
+/// [scheduling](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/).
+tolerations: Listing?
+
+/// Topology spread constraints for `Pod`
+/// [scheduling](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/). If an
+/// explicit label selector is not provided one will be created from the pod selector labels.
+topologySpreadConstraints: Listing?
+
+/// If `true`, triggers run loop on create/update/delete events in addition of regular interval.
+triggerLoopOnEvent: Boolean?
+
+/// Specify an identifier for this instance of _ExternalDNS_ when using a registry other than `noop`.
+txtOwnerId: String?
+
+/// Specify a prefix for the domain names of TXT records created for the `txt` registry. Mutually
+/// exclusive with `txtSuffix`.
+txtPrefix: String?
+
+/// Specify a suffix for the domain names of TXT records created for the `txt` registry. Mutually
+/// exclusive with `txtPrefix`.
+txtSuffix: String?
+
+/// [Deployment
+/// Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
+class DeploymentStrategy {
+  /// Default if undefined: `"Recreate"`
+  type: ("Recreate"|"RollingUpdate")?
+}
+
+class Global {
+  /// Global image pull secrets.
+  imagePullSecrets: Listing<Dynamic>?
+}
+
+class Image {
+  /// Image pull policy for the `external-dns` container.
+  pullPolicy: ("IfNotPresent"|"Always")?
+
+  /// Image repository for the `external-dns` container.
+  repository: String?
+
+  /// Image tag for the `external-dns` container, this will default to `.Chart.AppVersion` if not set.
+  tag: String?
+}
+
+/// [Liveness
+/// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+/// configuration for the `external-dns` container.
+class LivenessProbe {
+  failureThreshold: Int?
+
+  httpGet: ItemReadinessProbeHttpGet?
+
+  initialDelaySeconds: Int?
+
+  periodSeconds: Int?
+
+  successThreshold: Int?
+
+  timeoutSeconds: Int?
+}
+
+class ItemReadinessProbeHttpGet {
+  path: String?
+
+  port: String?
+}
+
+/// [Pod security
+/// context](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22/#podsecuritycontext-v1-core),
+/// this supports full customisation.
+class PodSecurityContext {
+  fsGroup: Int?
+
+  runAsNonRoot: Boolean?
+
+  seccompProfile: SeccompProfile?
+}
+
+class SeccompProfile {
+  type: String?
+}
+
+class Provider {
+  /// _ExternalDNS_ provider name; for the available providers and how to configure them see
+  /// [README](https://github.com/kubernetes-sigs/external-dns/blob/master/charts/external-dns/README.md#providers).
+  name: String?
+
+  webhook: Webhook?
+}
+
+class Webhook {
+  /// Extra arguments to provide for the `webhook` container.
+  args: Listing?
+
+  /// [Environment
+  /// variables](https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/)
+  /// for the `webhook` container.
+  env: Listing?
+
+  /// Extra [volume mounts](https://kubernetes.io/docs/concepts/storage/volumes/) for the `webhook`
+  /// container.
+  extraVolumeMounts: Listing?
+
+  image: WebhookImage?
+
+  limits: Requests?
+
+  /// [Liveness
+  /// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+  /// configuration for the `external-dns` container.
+  livenessProbe: WebhookLivenessProbe?
+
+  /// [Readiness
+  /// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+  /// configuration for the `webhook` container.
+  readinessProbe: ReadinessProbe?
+
+  requests: Requests?
+
+  /// [Resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for the
+  /// `webhook` container.
+  resources: Dynamic?
+
+  /// [Pod security
+  /// context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+  /// for the `webhook` container.
+  securityContext: Dynamic?
+
+  service: Service?
+
+  /// Optional [Service Monitor](https://prometheus-operator.dev/docs/operator/design/#servicemonitor)
+  /// configuration for the `webhook` container.
+  serviceMonitor: ServiceMonitor?
+}
+
+class WebhookImage {
+  /// Image pull policy for the `webhook` container.
+  pullPolicy: String?
+
+  /// Image repository for the `webhook` container.
+  repository: String?
+
+  /// Image tag for the `webhook` container.
+  tag: String?
+}
+
+class Requests {
+  cpu: String?
+
+  memory: String?
+}
+
+/// [Liveness
+/// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+/// configuration for the `external-dns` container.
+class WebhookLivenessProbe {
+  failureThreshold: Number?
+
+  httpGet: ReadinessProbeHttpGet?
+
+  initialDelaySeconds: Number?
+
+  periodSeconds: Number?
+
+  successThreshold: Number?
+
+  timeoutSeconds: Number?
+}
+
+class ReadinessProbeHttpGet {
+  path: String?
+
+  /// Default if undefined: `"string"`
+  port: (Int|String)?
+}
+
+/// [Readiness
+/// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+/// configuration for the `webhook` container.
+class ReadinessProbe {
+  failureThreshold: Number?
+
+  httpGet: ReadinessProbeHttpGet?
+
+  initialDelaySeconds: Number?
+
+  periodSeconds: Number?
+
+  successThreshold: Number?
+
+  timeoutSeconds: Number?
+}
+
+class Service {
+  /// Webhook exposed HTTP port for the service.
+  port: Int?
+}
+
+/// Optional [Service Monitor](https://prometheus-operator.dev/docs/operator/design/#servicemonitor)
+/// configuration for the `webhook` container.
+class ServiceMonitor {
+  bearerTokenFile: String?
+
+  interval: String?
+
+  metricRelabelings: Listing?
+
+  relabelings: Listing?
+
+  scheme: String?
+
+  scrapeTimeout: String?
+
+  tlsConfig: Dynamic?
+}
+
+class Rbac {
+  /// Additional rules to add to the `ClusterRole`.
+  additionalPermissions: Listing?
+
+  /// If `true`, create a `ClusterRole` & `ClusterRoleBinding` with access to the Kubernetes API.
+  create: Boolean?
+}
+
+/// [Readiness
+/// probe](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+/// configuration for the `external-dns` container.
+class ItemReadinessProbe {
+  failureThreshold: Int?
+
+  httpGet: ItemReadinessProbeHttpGet?
+
+  initialDelaySeconds: Int?
+
+  periodSeconds: Int?
+
+  successThreshold: Int?
+
+  timeoutSeconds: Int?
+}
+
+/// [Resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) for the
+/// `external-dns` container.
+class Resources {
+  limits: Requests?
+
+  requests: Requests?
+}
+
+class SecretConfiguration {
+  /// `Secret` data.
+  data: Dynamic?
+
+  /// If `true`, create a `Secret` to store sensitive provider configuration (**DEPRECATED**).
+  enabled: Boolean?
+
+  /// Mount path for the `Secret`, this can be templated.
+  mountPath: String?
+
+  /// Sub-path for mounting the `Secret`, this can be templated.
+  subPath: String?
+}
+
+/// [Security
+/// context](https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container)
+/// for the `external-dns` container.
+class SecurityContext {
+  allowPrivilegeEscalation: Boolean?
+
+  capabilities: Capabilities?
+
+  privileged: Boolean?
+
+  readOnlyRootFilesystem: Boolean?
+
+  runAsGroup: Int?
+
+  runAsNonRoot: Boolean?
+
+  runAsUser: Int?
+}
+
+class Capabilities {
+  drop: Listing<String>?
+}
+
+class ItemService {
+  /// Service annotations.
+  annotations: Dynamic?
+
+  /// Service IP families (e.g. IPv4 and/or IPv6).
+  ipFamilies: Listing<"IPv4"|"IPv6">(length.isBetween(0, 2), isDistinct)?
+
+  /// Service IP family policy.
+  ipFamilyPolicy: String(this == "SingleStack" || this == "PreferDualStack" || this == "RequireDualStack" || this == null)?
+
+  /// Service HTTP port.
+  ///
+  /// Default if undefined: `7979`
+  port: Int(isPositive)?
+}
+
+class ServiceAccount {
+  /// Annotations to add to the service account. Templates are allowed in both the key and the value.
+  /// Example: `example.com/annotation/{{ .Values.nameOverride }}: {{ .Values.nameOverride }}`
+  annotations: Dynamic?
+
+  /// Set this to `false` to [opt out of API credential
+  /// automounting](https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting)
+  /// for the `ServiceAccount`.
+  automountServiceAccountToken: Boolean?
+
+  /// If `true`, create a new `ServiceAccount`.
+  create: Boolean?
+
+  /// Labels to add to the service account.
+  labels: Dynamic?
+
+  /// If this is set and `serviceAccount.create` is `true` this will be used for the created
+  /// `ServiceAccount` name, if set and `serviceAccount.create` is `false` then this will define an
+  /// existing `ServiceAccount` to use.
+  name: String?
+}
+
+class ItemServiceMonitor {
+  /// Additional labels for the `ServiceMonitor`.
+  additionalLabels: Dynamic?
+
+  /// Annotations to add to the `ServiceMonitor`.
+  annotations: Dynamic?
+
+  /// Provide a bearer token file for the `ServiceMonitor`.
+  bearerTokenFile: String?
+
+  /// If `true`, create a `ServiceMonitor` resource to support the _Prometheus Operator_.
+  enabled: Boolean?
+
+  /// If set override the _Prometheus_ default interval.
+  interval: String?
+
+  /// [Metric relabel
+  /// configs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#metric_relabel_configs)
+  /// to apply to samples before ingestion.
+  metricRelabelings: Listing?
+
+  /// If set create the `ServiceMonitor` in an alternate namespace.
+  namespace: String?
+
+  /// [Relabel
+  /// configs](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#relabel_config)
+  /// to apply to samples before ingestion.
+  relabelings: Listing?
+
+  /// If set overrides the _Prometheus_ default scheme.
+  scheme: String?
+
+  /// If set override the _Prometheus_ default scrape timeout.
+  scrapeTimeout: String?
+
+  /// Provide target labels for the `ServiceMonitor`.
+  targetLabels: Listing?
+
+  /// Configure the `ServiceMonitor` [TLS
+  /// config](https://github.com/coreos/prometheus-operator/blob/master/Documentation/api.md#tlsconfig).
+  tlsConfig: Dynamic?
+}

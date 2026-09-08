@@ -43,6 +43,12 @@ source {
           }
         }
         gateway {
+          // external-dns only honors this on the Gateway itself, never on an HTTPRoute. Safe
+          // despite the LAN-only listeners sharing this Gateway: external-dns's `annotationFilter`
+          // (see `external-dns/app.pkl`) excludes every route that isn't explicitly public.
+          annotations {
+            ["external-dns.alpha.kubernetes.io/target"] = module.publicGatewayHostname
+          }
           listeners {
             // Namespace-restricted by default in Gateway API, but every app's HTTPRoute lives in
             // its own namespace.

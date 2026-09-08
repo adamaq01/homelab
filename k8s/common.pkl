@@ -14,3 +14,17 @@ gatewayIP: String = "192.168.2.240"
 
 /// Email cert-manager's Let's Encrypt ACME account registers under.
 acmeEmail: String = "adamthibert01@gmail.com"
+
+/// Annotation a publicly-exposed HTTPRoute must carry to opt into DNS management. external-dns is
+/// scoped to only this annotation (see `external-dns/app.pkl`'s `annotationFilter`) rather than any
+/// hostname pattern, since `ingressDomain`/`ingressAliasDomain`/`domain` (from the root `common.pkl`)
+/// are themselves bare subdomains of `rootDomain` and could otherwise be mistaken for public
+/// hostnames by a suffix filter. They must never get a public DNS record: they're LAN-only, resolved
+/// by the router's own DNS.
+publicAnnotationKey: String = "\(rootDomain)/public"
+
+/// CNAME target for every publicly-exposed hostname, set as the `external-dns.alpha.kubernetes.io/
+/// target` annotation on Traefik's Gateway (see `traefik/app.pkl`), the only place it's honored for
+/// Gateway API sources. A manually created A record, pointing at the VPS's public IP, since the VPS
+/// itself isn't tracked in this repo.
+publicGatewayHostname: String = "gateway.\(rootDomain)"
