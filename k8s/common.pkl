@@ -12,6 +12,10 @@ argoCDNamespace: String = "argocd"
 /// record covering `domain`.
 gatewayIP: String = "192.168.2.240"
 
+/// LAN IP of the UniFi router, which also acts as the UniFi controller (see
+/// `external-dns-unifi/app.pkl`).
+routerIP: String = "192.168.2.1"
+
 /// Email cert-manager's Let's Encrypt ACME account registers under.
 acmeEmail: String = "adamthibert01@gmail.com"
 
