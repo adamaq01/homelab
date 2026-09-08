@@ -382,7 +382,7 @@ headscaleHttpRoute: HTTPRoute = new {
       new {
         name = traefik.gatewayName
         namespace = traefik.namespace
-        sectionName = "public"
+        sectionName = "websecure"
       }
     }
     hostnames {
@@ -420,12 +420,12 @@ headplaneHttpRoute: HTTPRoute = new {
       new {
         name = traefik.gatewayName
         namespace = traefik.namespace
-        sectionName = "public"
+        sectionName = "websecure"
       }
     }
     // Shares Headscale's own hostname (see `headscaleHttpRoute` below): Headscale's control-plane
     // API needs to stay reachable from the internet, but Headplane doesn't, so it can't get its
-    // own public hostname the way it used to — instead it's scoped to the "/admin" path below and
+    // own public hostname the way it used to, instead it's scoped to the "/admin" path below and
     // gated by `headplaneAllowListMiddleware`, and only ever reachable at all once a roaming
     // client already has a tunnel (LAN or tailnet) to reach it over.
     hostnames {
@@ -437,7 +437,7 @@ headplaneHttpRoute: HTTPRoute = new {
         // `basename`), so its own asset/API/nav requests already carry that prefix once loaded.
         // Only the bare root needs a redirect to get a visitor there in the first place. This also
         // makes Headscale's own bare hostname root redirect to Headplane's login, since the two
-        // now share a hostname — acceptable, Headscale's actual API endpoints all live under their
+        // now share a hostname, acceptable since Headscale's actual API endpoints all live under their
         // own non-root paths and never collide with it.
         matches {
           new { path { type = "Exact"; value = "/" } }

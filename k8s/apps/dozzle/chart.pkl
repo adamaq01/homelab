@@ -171,12 +171,7 @@ httpRoute: HTTPRoute = new {
       new {
         name = traefik.gatewayName
         namespace = traefik.namespace
-        sectionName = "private"
-      }
-      new {
-        name = traefik.gatewayName
-        namespace = traefik.namespace
-        sectionName = "private-alias"
+        sectionName = "websecure"
       }
     }
     hostnames {

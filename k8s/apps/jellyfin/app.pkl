@@ -51,7 +51,7 @@ source {
           new {
             name = traefik.gatewayName
             namespace = traefik.namespace
-            sectionName = "public"
+            sectionName = "websecure"
           }
         }
         hostnames {

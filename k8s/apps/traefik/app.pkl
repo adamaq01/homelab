@@ -63,18 +63,26 @@ source {
         }
         gateway {
           // external-dns only honors this on the Gateway itself, never on an HTTPRoute. Safe
-          // despite the LAN-only listeners sharing this Gateway: external-dns's `annotationFilter`
-          // (see `external-dns/app.pkl`) excludes every route that isn't explicitly public.
+          // despite the single listener below carrying both private and public hostnames:
+          // external-dns's `annotationFilter` (see `external-dns/app.pkl`) excludes every route
+          // that isn't explicitly public.
           annotations {
             ["external-dns.alpha.kubernetes.io/target"] = module.publicGatewayHostname
           }
           listeners {
             // Namespace-restricted by default in Gateway API, but every app's HTTPRoute lives in
             // its own namespace.
-            ["private"] {
+            //
+            // One listener covers every hostname in the cluster: which apps are reachable from
+            // where is entirely `HTTPRoute.hostnames`-driven, not listener-driven, so there's no
+            // routing/access-control reason to split listeners. The only reason multiple
+            // `certificateRefs` exist here is that a wildcard cert only covers one label of
+            // subdomain depth (`*.\(module.rootDomain)` doesn't cover `*.\(module.ingressDomain)`),
+            // so each hostname pattern in use needs its own cert; Traefik picks the right one
+            // per-request via SNI.
+            ["websecure"] {
               port = 8443
               protocol = "HTTPS"
-              hostname = "*.\(module.ingressDomain)"
               mode = "Terminate"
               namespacePolicy {
                 from = "All"
@@ -84,32 +92,6 @@ source {
                   name = cert_manager.ingressWildcardCertSecretName
                   namespace = cert_manager.namespace
                 }
-              }
-            }
-            ["private-alias"] {
-              port = 8443
-              protocol = "HTTPS"
-              hostname = "*.\(module.ingressAliasDomain)"
-              mode = "Terminate"
-              namespacePolicy {
-                from = "All"
-              }
-              certificateRefs {
-                new {
-                  name = cert_manager.ingressWildcardCertSecretName
-                  namespace = cert_manager.namespace
-                }
-              }
-            }
-            ["public"] {
-              port = 8443
-              protocol = "HTTPS"
-              hostname = "*.\(module.rootDomain)"
-              mode = "Terminate"
-              namespacePolicy {
-                from = "All"
-              }
-              certificateRefs {
                 new {
                   name = cert_manager.publicWildcardCertSecretName
                   namespace = cert_manager.namespace
