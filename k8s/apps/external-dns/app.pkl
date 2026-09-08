@@ -48,9 +48,6 @@ source {
         annotationFilter = module.publicAnnotationKey
         txtOwnerId = module.clusterName
         policy = "sync"
-        extraArgs {
-          "--cloudflare-proxied=false"
-        }
       }.toDynamic()
   }
 }
