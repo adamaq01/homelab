@@ -13,7 +13,7 @@ gatewayName: String = "traefik-gateway"
 // The Gateway resource this chart creates (via `gateway.listeners`) ends up in this Application's
 // own destination namespace, while cert-manager's wildcard Certificate/Secret for the domain
 // lives in the `cert-manager` namespace. A ReferenceGrant there (see cert-manager's chart.pkl)
-// authorizes the `websecure` listener's `certificateRefs` to resolve it cross-namespace.
+// authorizes each listener's `certificateRefs` to resolve it cross-namespace.
 source {
   repoURL = "https://traefik.github.io/charts"
   chart = "traefik"
@@ -23,13 +23,13 @@ source {
     valuesObject =
       new Values {
         // Redirects all plain HTTP traffic to HTTPS at the entrypoint level, so every app's
-        // HTTPRoute only needs to target the `websecure` listener to get HTTP covered for free.
+        // HTTPRoute only needs to target an HTTPS listener to get HTTP covered for free.
         ports {
           ["web"] {
             http {
               redirections {
                 entryPoint {
-                  to = "websecure"
+                  to = ":443"
                   scheme = "https"
                   permanent = true
                 }
@@ -44,16 +44,13 @@ source {
         }
         gateway {
           listeners {
-            // Two listeners on the same port/protocol, disambiguated by hostname, so both the
-            // default and the shorter alias ingress domain terminate TLS here (same cert covers
-            // both, see cert-manager's chart.pkl).
-            ["websecure"] {
+            // Namespace-restricted by default in Gateway API, but every app's HTTPRoute lives in
+            // its own namespace.
+            ["private"] {
               port = 8443
               protocol = "HTTPS"
               hostname = "*.\(module.ingressDomain)"
               mode = "Terminate"
-              // Gateway API restricts HTTPRoutes to the Gateway's own namespace by default, but
-              // every app's HTTPRoute lives in that app's own namespace instead.
               namespacePolicy {
                 from = "All"
               }
@@ -64,7 +61,7 @@ source {
                 }
               }
             }
-            ["websecure-alias"] {
+            ["private-alias"] {
               port = 8443
               protocol = "HTTPS"
               hostname = "*.\(module.ingressAliasDomain)"

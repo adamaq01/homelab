@@ -20,12 +20,12 @@ local httpRoute: HTTPRoute = new {
       new {
         name = traefik.gatewayName
         namespace = traefik.namespace
-        sectionName = "websecure"
+        sectionName = "private"
       }
       new {
         name = traefik.gatewayName
         namespace = traefik.namespace
-        sectionName = "websecure-alias"
+        sectionName = "private-alias"
       }
     }
     hostnames {
