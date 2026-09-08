@@ -1,0 +1,63 @@
+amends ".../app.pkl"
+
+import "../traefik/app.pkl" as traefik
+import "../tns-csi/app.pkl" as tns_csi
+
+// renovate: datasource=helm packageName=jellyfin registryUrl=https://jellyfin.github.io/jellyfin-helm
+local version = "3.2.0"
+
+// Pinned ahead of the chart's own `appVersion`, which hasn't caught up to this release yet.
+// renovate: datasource=docker packageName=jellyfin/jellyfin
+local jellyfinVersion = "12.0"
+
+local hostname = "\(module.name).\(module.rootDomain)"
+
+// Media storage isn't wired up yet (see `docs/architecture.md`'s "Open / undecided" section), so
+// `persistence.media` falls back to an emptyDir below.
+source {
+  repoURL = "https://jellyfin.github.io/jellyfin-helm"
+  chart = "jellyfin"
+  targetRevision = version
+  path = null
+  helm {
+    valuesObject = new {
+      image {
+        tag = jellyfinVersion
+      }
+      jellyfin {
+        // Without this, Jellyfin advertises its in-cluster pod IP/port to clients doing network
+        // discovery instead of the public hostname.
+        env {
+          new {
+            name = "JELLYFIN_PublishedServerUrl"
+            value = "https://\(hostname)"
+          }
+        }
+      }
+      persistence {
+        config {
+          storageClass = tns_csi.nvmeofStorageClassName
+        }
+        media {
+          enabled = false
+        }
+      }
+      httpRoute {
+        enabled = true
+        annotations {
+          [module.publicAnnotationKey] = ""
+        }
+        parentRefs {
+          new {
+            name = traefik.gatewayName
+            namespace = traefik.namespace
+            sectionName = "public"
+          }
+        }
+        hostnames {
+          hostname
+        }
+      }
+    }
+  }
+}
