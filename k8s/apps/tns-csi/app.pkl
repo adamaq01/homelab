@@ -57,6 +57,11 @@ source {
           reclaimPolicy = "Delete"
           volumeBindingMode = "Immediate"
           allowVolumeExpansion = true
+          // Otherwise zvols are named after the PV's own generated UUID, which is unreadable from
+          // the TrueNAS UI. Requires no cluster-side wiring: the chart's provisioner sidecar
+          // already runs with `--extra-create-metadata`, which is what makes the PVC name/
+          // namespace available to the driver in the first place.
+          nameTemplate = "{{ .PVCNamespace }}-{{ .PVCName }}"
           parameters {
             zfs {
               compression = "lz4"
