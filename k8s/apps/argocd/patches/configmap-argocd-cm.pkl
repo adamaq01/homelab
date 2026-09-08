@@ -1,0 +1,12 @@
+/// The GitHub webhook endpoint (`argocd-server-webhook` HTTPRoute, see `chart.pkl`) has no rate
+/// limiting of its own, so this caps the request body ArgoCD will read from it to bound abuse via
+/// oversized payloads. GitHub's push payloads are ordinarily well under this.
+amends "@manifest/Patch.pkl"
+
+import "@k8s/api/core/v1/ConfigMap.pkl"
+
+patch = new Mixin<ConfigMap> {
+  data = new Mapping {
+    ["webhook.maxPayloadSizeMB"] = "1"
+  }
+}

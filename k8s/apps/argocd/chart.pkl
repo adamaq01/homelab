@@ -1,6 +1,7 @@
 amends "@manifest/generate.pkl"
 
 import "@gateway-api/HTTPRoute.pkl"
+import "@traefik-crds/Middleware.pkl"
 import "app.pkl"
 import "../traefik/app.pkl" as traefik
 
@@ -45,6 +46,67 @@ local httpRoute: HTTPRoute = new {
   }
 }
 
+local webhookHttpRoute: HTTPRoute = new {
+  metadata {
+    name = "argocd-server-webhook"
+  }
+  spec {
+    parentRefs {
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "public"
+      }
+    }
+    hostnames {
+      app.publicGatewayHostname
+    }
+    rules {
+      new {
+        matches {
+          new {
+            path {
+              type = "Exact"
+              value = "/argocd/api/webhook"
+            }
+          }
+        }
+        filters {
+          new {
+            type = "ExtensionRef"
+            extensionRef {
+              group = "traefik.io"
+              kind = "Middleware"
+              name = argocdWebhookStripPrefix.metadata.name!!
+            }
+          }
+        }
+        backendRefs {
+          new {
+            name = "argocd-server"
+            port = 80
+          }
+        }
+      }
+    }
+  }
+}
+
+local argocdWebhookStripPrefix: Middleware = new {
+  metadata {
+    name = "argocd-webhook-strip-prefix"
+  }
+  spec {
+    stripPrefix {
+      prefixes {
+        "/argocd"
+      }
+    }
+  }
+}
+
 value {
   httpRoute
+  webhookHttpRoute
+  argocdWebhookStripPrefix
 }
