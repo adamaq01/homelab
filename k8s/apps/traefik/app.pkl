@@ -20,6 +20,25 @@ source {
   targetRevision = version
   path = null
   helm {
+    // `Values.Spec` (the vendored, generated wrapper for `service.spec`) only surfaces `type`,
+    // since that's the one field the chart's own schema bothers to name explicitly even though
+    // `service.spec` itself is documented as an open passthrough merged directly into the real
+    // Service spec, a generated-file gap, not a real restriction, so reached via a plain Helm
+    // `--set`-style parameter here instead of a `valuesObject` field.
+    //
+    // Needed because kube-proxy's default `externalTrafficPolicy: Cluster` SNATs every request
+    // arriving via the LoadBalancer IP to a node IP before it reaches Traefik, so `IpAllowList`
+    // middlewares (e.g. `headscale/chart.pkl`'s `headplaneAllowListMiddleware`) never see the real
+    // client IP and reject everything regardless of its true origin. `Local` preserves it. Safe
+    // with this Gateway's single replica: MetalLB (L2 mode) only announces the VIP from a node
+    // with a ready local endpoint, so there's no dead-end routing risk from restricting to
+    // node-local endpoints.
+    parameters {
+      new {
+        name = "service.spec.externalTrafficPolicy"
+        value = "Local"
+      }
+    }
     valuesObject =
       new Values {
         // Redirects all plain HTTP traffic to HTTPS at the entrypoint level, so every app's
