@@ -25,6 +25,17 @@
 /// To log into Headplane, generate a Headscale API key and use it as the login credential:
 ///
 /// kubectl exec -n headscale deploy/headscale -- headscale apikeys create
+///
+/// The subnet router advertising the home VLANs (and exit node) into the tailnet runs as the
+/// `tailscale-unifi` addon natively on the UniFi Cloud Gateway itself, not tracked in this repo.
+/// See <https://github.com/unifi-utilities/unifi-common-addons/tree/main/tailscale-unifi> for setup.
+///
+/// By default the UniFi Cloud Gateway's own DNS resolver doesn't listen on the tailscale interface,
+/// so it never answers queries routed to it by `dns.nameservers.split` below, even though the
+/// gateway is otherwise reachable over the tailnet (confirmed via `dig @<router-ip>` timing out
+/// while a plain HTTPS request to the same IP succeeded). Fixed per
+/// <https://github.com/SierraSoftworks/tailscale-unifi/issues/122>. Required for split DNS to work
+/// at all, not just an optimization.
 module chart
 
 import "@k8s/api/core/v1/ConfigMap.pkl"
