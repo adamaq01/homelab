@@ -393,6 +393,25 @@ headplaneHttpRoute: HTTPRoute = new {
     }
     rules {
       new {
+        // Headplane's UI is built with a baked-in "/admin" basename (Vite `base`/react-router
+        // `basename`), so its own asset/API/nav requests already carry that prefix once loaded.
+        // Only the bare root needs a redirect to get a visitor there in the first place.
+        matches {
+          new { path { type = "Exact"; value = "/" } }
+        }
+        filters {
+          new {
+            type = "RequestRedirect"
+            requestRedirect {
+              path {
+                type = "ReplaceFullPath"
+                replaceFullPath = "/admin"
+              }
+            }
+          }
+        }
+      }
+      new {
         backendRefs {
           new {
             name = headplaneService.metadata.name!!
