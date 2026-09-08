@@ -1,0 +1,147 @@
+/// rathole (https://github.com/rathole-org/rathole) client, tunneling the public HTTP/HTTPS
+/// entrypoints back to Traefik's LAN-only Gateway (see `traefik/app.pkl`).
+///
+/// rathole itself has no way to substitute secret values into its TOML config, so the config's
+/// structure (topology, transport pattern, service names/targets) is tracked here, and only the
+/// three actual secrets (shared token, this side's Noise private key, the server's Noise public
+/// key) live in a small, manually-created Secret. An initContainer renders the real config file
+/// from that Secret's values onto a shared `emptyDir` before the `rathole` container starts:
+///
+/// kubectl create secret generic rathole-client-secrets \
+///   --namespace rathole \
+///   --from-literal=token=<shared token, from rathole-token.txt> \
+///   --from-literal=local-private-key=<this side's private key, from rathole-client-keys.txt> \
+///   --from-literal=remote-public-key=<the server's public key, from rathole-server-keys.txt>
+module chart
+
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "app.pkl"
+import "../traefik/app.pkl" as traefik
+
+// renovate: datasource=docker packageName=rapiz1/rathole
+local version = "v0.5.0"
+
+// renovate: datasource=docker packageName=busybox
+local renderImageVersion = "1.37.0"
+
+local appLabel = "rathole-client"
+local secretName = "rathole-client-secrets"
+
+// Forwards to Traefik's own Service by its in-cluster DNS name rather than the LAN-facing
+// `gatewayIP`, since this traffic never leaves the cluster network.
+local traefikServiceHost = "traefik.\(traefik.namespace).svc.cluster.local"
+
+local renderConfigScript = """
+  cat > /config/client.toml <<EOF
+  [client]
+  remote_addr = "\(app.publicGatewayHostname):2333"
+  default_token = "$RATHOLE_TOKEN"
+
+  [client.transport]
+  type = "noise"
+
+  [client.transport.noise]
+  local_private_key = "$RATHOLE_LOCAL_PRIVATE_KEY"
+  remote_public_key = "$RATHOLE_REMOTE_PUBLIC_KEY"
+
+  [client.services.https-gateway]
+  local_addr = "\(traefikServiceHost):443"
+
+  [client.services.http-gateway]
+  local_addr = "\(traefikServiceHost):80"
+  EOF
+  """
+
+deployment: Deployment = new {
+  metadata {
+    name = "rathole-client"
+  }
+  spec {
+    replicas = 1
+    selector {
+      matchLabels {
+        ["app"] = appLabel
+      }
+    }
+    template {
+      metadata {
+        labels {
+          ["app"] = appLabel
+        }
+      }
+      spec {
+        initContainers {
+          new {
+            name = "render-config"
+            image = "busybox:\(renderImageVersion)"
+            command { "sh"; "-c" }
+            args { renderConfigScript }
+            env {
+              new {
+                name = "RATHOLE_TOKEN"
+                valueFrom {
+                  secretKeyRef {
+                    name = secretName
+                    key = "token"
+                  }
+                }
+              }
+              new {
+                name = "RATHOLE_LOCAL_PRIVATE_KEY"
+                valueFrom {
+                  secretKeyRef {
+                    name = secretName
+                    key = "local-private-key"
+                  }
+                }
+              }
+              new {
+                name = "RATHOLE_REMOTE_PUBLIC_KEY"
+                valueFrom {
+                  secretKeyRef {
+                    name = secretName
+                    key = "remote-public-key"
+                  }
+                }
+              }
+            }
+            volumeMounts {
+              new {
+                name = "config"
+                mountPath = "/config"
+              }
+            }
+          }
+        }
+        containers {
+          new {
+            name = "rathole"
+            image = "rapiz1/rathole:\(version)"
+            args {
+              "--client"
+              "/config/client.toml"
+            }
+            volumeMounts {
+              new {
+                name = "config"
+                mountPath = "/config"
+                readOnly = true
+              }
+            }
+          }
+        }
+        volumes {
+          new {
+            name = "config"
+            emptyDir {}
+          }
+        }
+      }
+    }
+  }
+}
+
+output {
+  value = new Listing { deployment }
+  renderer = new YamlRenderer { isStream = true }
+}
