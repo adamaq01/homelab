@@ -38,17 +38,16 @@
 /// at all, not just an optimization.
 module chart
 
+import "../../utils/ExternalSecret.pkl"
+import "../tns-csi/app.pkl" as tns_csi
+import "../traefik/app.pkl" as traefik
+import "@gateway-api/HTTPRoute.pkl"
+import "@k8s/api/apps/v1/Deployment.pkl"
 import "@k8s/api/core/v1/ConfigMap.pkl"
 import "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
 import "@k8s/api/core/v1/Service.pkl"
-import "@k8s/api/apps/v1/Deployment.pkl"
-import "@gateway-api/HTTPRoute.pkl"
 import "@traefik-crds/Middleware.pkl"
-import "@external-secrets/v1/ExternalSecret.pkl"
 import "app.pkl"
-import "../traefik/app.pkl" as traefik
-import "../tns-csi/app.pkl" as tns_csi
-import "../openbao/app.pkl" as openbao
 
 // renovate: datasource=docker packageName=headscale/headscale
 local headscaleVersion = "v0.29.3"
@@ -78,7 +77,8 @@ local headplaneAppLabel = "headplane"
 /// `external-dns-unifi` already gives those a split-horizon override on the router pointing
 /// straight at `gatewayIP`, instead of the public record which resolves to the rathole VPS, so
 /// routing tailnet clients' DNS here too avoids that same rathole round-trip.
-local headscaleConfigYaml = """
+local headscaleConfigYaml =
+  """
   server_url: https://\(headscaleHostname)
   listen_addr: 0.0.0.0:8080
   metrics_listen_addr: 127.0.0.1:9090
@@ -118,7 +118,8 @@ local headscaleConfigYaml = """
     format: text
   """
 
-local headplaneConfigYaml = """
+local headplaneConfigYaml =
+  """
   server:
     cookie_secure: true
     base_url: https://\(headscaleHostname)
@@ -129,29 +130,15 @@ local headplaneConfigYaml = """
     config_path: /etc/headscale-ro/config.yaml
   """
 
-headplaneSecretsExternalSecret: ExternalSecret = new {
-  metadata {
+headplaneSecretsExternalSecret =
+  new ExternalSecret {
     name = headplaneSecretName
-  }
-  spec {
-    secretStoreRef {
-      kind = "ClusterSecretStore"
-      name = openbao.clusterSecretStoreName
-    }
-    target {
-      name = headplaneSecretName
-    }
-    data {
-      new {
-        secretKey = "cookie-secret"
-        remoteRef {
-          key = "headplane"
-          property = "cookie-secret"
-        }
+    secrets {
+      ["headplane"] {
+        "cookie-secret"
       }
     }
-  }
-}
+  }.resource
 
 headscaleConfigMap: ConfigMap = new {
   metadata {

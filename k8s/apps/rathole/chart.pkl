@@ -14,11 +14,10 @@
 ///   remote-public-key=<the server's public key, from rathole-server-keys.txt>
 module chart
 
-import "@k8s/api/apps/v1/Deployment.pkl"
-import "@external-secrets/v1/ExternalSecret.pkl"
-import "app.pkl"
+import "../../utils/ExternalSecret.pkl"
 import "../traefik/app.pkl" as traefik
-import "../openbao/app.pkl" as openbao
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "app.pkl"
 
 // renovate: datasource=docker packageName=rapiz1/rathole
 local version = "v0.5.0"
@@ -33,7 +32,8 @@ local secretName = "rathole-client-secrets"
 // `gatewayIP`, since this traffic never leaves the cluster network.
 local traefikServiceHost = "traefik.\(traefik.namespace).svc.cluster.local"
 
-local renderConfigScript = """
+local renderConfigScript =
+  """
   cat > /config/client.toml <<EOF
   [client]
   remote_addr = "\(app.publicGatewayHostname):2333"
@@ -54,43 +54,17 @@ local renderConfigScript = """
   EOF
   """
 
-secretsExternalSecret: ExternalSecret = new {
-  metadata {
+secretsExternalSecret =
+  new ExternalSecret {
     name = secretName
-  }
-  spec {
-    secretStoreRef {
-      kind = "ClusterSecretStore"
-      name = openbao.clusterSecretStoreName
-    }
-    target {
-      name = secretName
-    }
-    data {
-      new {
-        secretKey = "token"
-        remoteRef {
-          key = "rathole"
-          property = "token"
-        }
-      }
-      new {
-        secretKey = "local-private-key"
-        remoteRef {
-          key = "rathole"
-          property = "local-private-key"
-        }
-      }
-      new {
-        secretKey = "remote-public-key"
-        remoteRef {
-          key = "rathole"
-          property = "remote-public-key"
-        }
+    secrets {
+      ["rathole"] {
+        "token"
+        "local-private-key"
+        "remote-public-key"
       }
     }
-  }
-}
+  }.resource
 
 deployment: Deployment = new {
   metadata {

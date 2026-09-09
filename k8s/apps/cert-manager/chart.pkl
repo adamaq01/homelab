@@ -9,46 +9,29 @@
 /// namespace.
 amends "@manifest/generate.pkl"
 
-import "@cert-manager/ClusterIssuer.pkl"
 import "@cert-manager/Certificate.pkl"
+import "@cert-manager/ClusterIssuer.pkl"
 import "@gateway-api/ReferenceGrant.pkl"
-import "@external-secrets/v1/ExternalSecret.pkl"
-import "app.pkl"
+
+import "../../utils/ExternalSecret.pkl"
 import "../traefik/app.pkl" as traefik
-import "../openbao/app.pkl" as openbao
+import "app.pkl"
 
 // renovate: datasource=github-releases packageName=cert-manager/cert-manager
 local version = "v1.21.1"
 
-source = "https://github.com/cert-manager/cert-manager/releases/download/\(version)/cert-manager.yaml"
-
-local cloudflareApiTokenExternalSecret: ExternalSecret = new {
-  metadata {
-    name = "cloudflare-api-token-secret"
-    namespace = app.namespace
-  }
-  spec {
-    secretStoreRef {
-      kind = "ClusterSecretStore"
-      name = openbao.clusterSecretStoreName
-    }
-    target {
-      name = "cloudflare-api-token-secret"
-    }
-    data {
-      new {
-        secretKey = "api-token"
-        remoteRef {
-          key = "cloudflare"
-          property = "api-token"
-        }
-      }
-    }
-  }
-}
+source =
+  "https://github.com/cert-manager/cert-manager/releases/download/\(version)/cert-manager.yaml"
 
 value {
-  cloudflareApiTokenExternalSecret
+  new ExternalSecret {
+    name = "cloudflare-api-token-secret"
+    secrets {
+      ["cloudflare"] {
+        "api-token"
+      }
+    }
+  }.resource
   new ClusterIssuer {
     metadata {
       name = "cloudflare"

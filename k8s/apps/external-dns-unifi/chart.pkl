@@ -1,40 +1,8 @@
-/// Hand-written manifests supplementing `app.pkl`'s Helm source, folded into this same
-/// Application via ArgoCD's multi-source (`sources`) support (see `../openbao/app.pkl` for the
-/// original precedent) rather than a separate Application.
-module chart
+amends "../../utils/ExternalSecret.pkl"
 
-import "@external-secrets/v1/ExternalSecret.pkl"
-import "../openbao/app.pkl" as openbao
-
-/// The UniFi API key the webhook sidecar uses, fetched from OpenBao. Seed it once with (see
-/// `../openbao/app.pkl`'s bootstrap step 5):
-///
-/// bao kv put secret/unifi api-key=<unifi-api-key>
-apiKeyExternalSecret: ExternalSecret = new {
-  metadata {
-    name = "unifi-api-key-secret"
+name = "unifi-api-key-secret"
+secrets {
+  ["unifi"] {
+    "api-key"
   }
-  spec {
-    secretStoreRef {
-      kind = "ClusterSecretStore"
-      name = openbao.clusterSecretStoreName
-    }
-    target {
-      name = "unifi-api-key-secret"
-    }
-    data {
-      new {
-        secretKey = "api-key"
-        remoteRef {
-          key = "unifi"
-          property = "api-key"
-        }
-      }
-    }
-  }
-}
-
-output {
-  value = new Listing { apiKeyExternalSecret }
-  renderer = new YamlRenderer { isStream = true }
 }
