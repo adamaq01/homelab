@@ -1,0 +1,85 @@
+/// Hand-written manifests supplementing `app.pkl`'s Helm source, folded into this same
+/// Application via ArgoCD's multi-source (`sources`) support rather than a separate Application:
+///
+/// - The HTTPRoute fronting the Helm chart's Service. OpenBao's own chart has no Gateway API
+///   support to express it directly (only a classic Ingress and an OpenShift Route). No
+///   IpAllowList Middleware needed (contrast `../headscale/chart.pkl`'s `headplaneAllowListMiddleware`):
+///   this route only uses the private subdomains (`ingressDomain`/`ingressAliasDomain`), which
+///   are already unreachable from outside the home network by DNS resolution alone, unlike
+///   Headplane's deliberately-public shared hostname.
+/// - The `ClusterSecretStore` wiring `../external-secrets/app.pkl`'s operator up to this
+///   Application's own OpenBao backend. Tracked here rather than under `external-secrets`
+///   since, unlike the manual init/unseal/policy steps documented on `app.pkl`, this part *can*
+///   be expressed as a GitOps-applied manifest, and it's this backend's connection details that
+///   it encodes.
+module chart
+
+import "@gateway-api/HTTPRoute.pkl"
+import "@external-secrets/v1/ClusterSecretStore.pkl"
+import "app.pkl"
+import "../traefik/app.pkl" as traefik
+
+httpRoute: HTTPRoute = new {
+  metadata {
+    name = "openbao"
+  }
+  spec {
+    parentRefs {
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "websecure"
+      }
+    }
+    hostnames {
+      "openbao.\(app.ingressDomain)"
+      "openbao.\(app.ingressAliasDomain)"
+    }
+    rules {
+      new {
+        backendRefs {
+          new {
+            name = "openbao"
+            port = 8200
+          }
+        }
+      }
+    }
+  }
+}
+
+clusterSecretStore: ClusterSecretStore = new {
+  metadata {
+    name = "openbao"
+  }
+  spec {
+    provider {
+      vault {
+        server = "http://openbao.\(app.namespace).svc.cluster.local:8200"
+        // Matches the `bao secrets enable -path=secret kv-v2` step documented on `app.pkl`.
+        path = "secret"
+        version = "v2"
+        auth {
+          kubernetes {
+            // Default mount path ("kubernetes") — matches the `bao auth enable kubernetes` step
+            // documented on `app.pkl`, so left unset here rather than repeated.
+            mountPath = "kubernetes"
+            // Bound (via `bao write auth/kubernetes/role/external-secrets`, also documented on
+            // `app.pkl`) to that Application's own ServiceAccount. No `serviceAccountRef` needed:
+            // leaving it unset makes ESO authenticate as its own controller identity, which is
+            // exactly that ServiceAccount.
+            role = "external-secrets"
+          }
+        }
+      }
+    }
+  }
+}
+
+output {
+  value = new Listing {
+    httpRoute
+    clusterSecretStore
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

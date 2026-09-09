@@ -1,0 +1,80 @@
+amends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+import "@openbao/Values.pkl"
+import "../tns-csi/app.pkl" as tns_csi
+
+// renovate: datasource=helm packageName=openbao registryUrl=https://openbao.github.io/openbao-helm
+local version = "0.29.4"
+
+/// Bootstrap sequence after first deploy (OpenBao starts sealed and uninitialized; none of this can
+/// be expressed as GitOps-applied manifests, since it's the very root of trust this repo's other
+/// secrets ultimately chain up to):
+///
+/// 1. Initialize (only once, ever — re-running this against an already-initialized store wipes it):
+///
+///    kubectl exec -n openbao openbao-0 -- bao operator init
+///
+///    Save the 5 unseal key shares and the initial root token somewhere outside this cluster (a
+///    password manager, printed and locked away, ...) — losing enough of them permanently locks
+///    every secret this backs.
+///
+/// 2. Unseal (needed again after every pod restart, since the master key only ever lives in memory;
+///    3 of the 5 shares from step 1 are required):
+///
+///    kubectl exec -n openbao openbao-0 -- bao operator unseal <key 1>
+///    kubectl exec -n openbao openbao-0 -- bao operator unseal <key 2>
+///    kubectl exec -n openbao openbao-0 -- bao operator unseal <key 3>
+///
+/// 3. Enable the KV v2 secrets engine at the path `chart.pkl`'s ClusterSecretStore expects, and
+///    the Kubernetes auth method ESO authenticates through:
+///
+///    kubectl exec -n openbao openbao-0 -- bao login <root token>
+///    kubectl exec -n openbao openbao-0 -- bao secrets enable -path=secret kv-v2
+///    kubectl exec -n openbao openbao-0 -- bao auth enable kubernetes
+///    kubectl exec -n openbao openbao-0 -- bao write auth/kubernetes/config \
+///      kubernetes_host="https://kubernetes.default.svc.cluster.local:443"
+///
+/// 4. Grant ESO's own controller ServiceAccount (`external-secrets` in the `external-secrets`
+///    namespace) read access, matching the `role = "external-secrets"` the ClusterSecretStore
+///    authenticates as. `bao policy write <name> -` reads the policy body from stdin, which
+///    `kubectl exec` only forwards with `-i`; without it the heredoc never reaches the container
+///    and `bao` sees an empty/malformed request:
+///
+///    kubectl exec -i -n openbao openbao-0 -- bao policy write external-secrets - <<'EOF'
+///    path "secret/data/*" {
+///      capabilities = ["read"]
+///    }
+///    EOF
+///    kubectl exec -n openbao openbao-0 -- bao write auth/kubernetes/role/external-secrets \
+///      bound_service_account_names=external-secrets \
+///      bound_service_account_namespaces=external-secrets \
+///      policies=external-secrets \
+///      ttl=1h
+// This Application's manifests come from two sources at once (ArgoCD's multi-source support):
+// this Helm chart, and `chart.pkl`'s hand-written HTTPRoute/ClusterSecretStore, both landing in
+// the same Application rather than being split across separate ones.
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://openbao.github.io/openbao-helm"
+    chart = "openbao"
+    targetRevision = version
+    helm {
+      valuesObject =
+        new Values {
+          injector {
+            enabled = false
+          }
+          server {
+            standalone {
+              enabled = true
+            }
+            dataStorage {
+              storageClass = tns_csi.nvmeofStorageClassName
+            }
+          }
+        }.toDynamic()
+    }
+  }
+  module.directorySource
+}

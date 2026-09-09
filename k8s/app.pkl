@@ -25,6 +25,21 @@ source: Application.SpecSource = new {
   path = relativePath.join("/")
 }
 
+/// This directory's own path as an `ComparedToSource`, for an app that needs to combine
+/// hand-written manifests (via the CMP `Directory`-type source every other multi-source entry
+/// below it is) alongside `source` above. Left out of `sources` by default: set `sources` (which
+/// takes priority over `source` once non-null) to a `Listing` including this when needed.
+directorySource: Application.ComparedToSource = new {
+  repoURL = module.repoURL
+  targetRevision = module.targetRevision
+  path = relativePath.join("/")
+}
+
+/// When set, used instead of `source` (ArgoCD's multi-source Application feature): lets one
+/// Application combine, e.g., a Helm-chart source with this directory's own hand-written
+/// manifests (`directorySource`) rather than needing a separate Application per source.
+sources: Listing<Application.ComparedToSource>? = null
+
 local app = this
 
 application: Application = new {
@@ -38,7 +53,11 @@ application: Application = new {
   }
   spec {
     project = app.project
-    source = app.source
+    when (app.sources != null) {
+      sources = app.sources
+    } else {
+      source = app.source
+    }
     destination {
       name = "in-cluster"
       namespace = app.namespace
