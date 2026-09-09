@@ -1,0 +1,26 @@
+amends "@traefik-crds/Middleware.pkl"
+
+import ".../app.pkl"
+
+local headplaneAllowedCidr = "192.168.1.0/24"
+local tailnetCidr = "100.64.0.0/10"
+
+metadata {
+  name = "headplane-allowlist"
+}
+
+spec {
+  // Headplane shares Headscale's own public hostname/listener, so this is what keeps it from being
+  // reachable over the internet via rathole. An allowlist rather than a denylist on rathole's own
+  // pod IP: that IP isn't stable (no static-IP pinning on the `rathole-client` Deployment), so it
+  // changes on every pod restart/reschedule, and a denylist keyed to it would silently go stale and
+  // fail open (Headplane becomes internet-reachable again, with no error). These ranges don't have
+  // that problem.
+  ipAllowList {
+    sourceRange {
+      headplaneAllowedCidr
+      tailnetCidr
+      "\(app.routerIP)/32"
+    }
+  }
+}

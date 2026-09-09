@@ -1,0 +1,17 @@
+amends "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
+
+import ".../tns-csi/app.pkl" as tns_csi
+
+metadata {
+  name = "headplane-data"
+}
+
+spec {
+  accessModes { "ReadWriteOnce" }
+  storageClassName = tns_csi.nvmeofStorageClassName
+  resources {
+    requests {
+      ["storage"] = "1Gi"
+    }
+  }
+}

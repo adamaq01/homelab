@@ -1,0 +1,58 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+
+// renovate: datasource=docker packageName=headscale/headscale
+local version = "v0.29.3"
+
+metadata {
+  name = "headscale"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = app.headscaleAppLabel
+    }
+  }
+  strategy {
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = app.headscaleAppLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "headscale"
+          image = "headscale/headscale:\(version)"
+          args { "serve" }
+          ports {
+            new { containerPort = 8080 }
+          }
+          volumeMounts {
+            new { name = "config"; mountPath = "/etc/headscale" }
+            new { name = "data"; mountPath = "/var/lib/headscale" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "config"
+          configMap {
+            name = import("config-map.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}

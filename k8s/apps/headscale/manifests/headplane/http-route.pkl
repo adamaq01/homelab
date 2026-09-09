@@ -1,0 +1,71 @@
+/// Shares Headscale's own hostname (see `../headscale/http-route.pkl`): Headscale's control-plane
+/// API needs to stay reachable from the internet, but Headplane doesn't, so it can't get its own
+/// public hostname the way it used to, instead it's scoped to the "/admin" path below and gated by
+/// `allow-list-middleware.pkl`, and only ever reachable at all once a roaming client already has a
+/// tunnel (LAN or tailnet) to reach it over.
+amends "@gateway-api/HTTPRoute.pkl"
+
+import ".../app.pkl"
+import ".../traefik/app.pkl" as traefik
+
+metadata {
+  name = "headplane"
+}
+
+spec {
+  parentRefs {
+    new {
+      name = traefik.gatewayName
+      namespace = traefik.namespace
+      sectionName = "websecure"
+    }
+  }
+  hostnames {
+    app.hostname
+  }
+  rules {
+    new {
+      // Headplane's UI is built with a baked-in "/admin" basename (Vite `base`/react-router
+      // `basename`), so its own asset/API/nav requests already carry that prefix once loaded.
+      // Only the bare root needs a redirect to get a visitor there in the first place. This also
+      // makes Headscale's own bare hostname root redirect to Headplane's login, since the two now
+      // share a hostname, acceptable since Headscale's actual API endpoints all live under their
+      // own non-root paths and never collide with it.
+      matches {
+        new { path { type = "Exact"; value = "/" } }
+      }
+      filters {
+        new {
+          type = "RequestRedirect"
+          requestRedirect {
+            path {
+              type = "ReplaceFullPath"
+              replaceFullPath = "/admin"
+            }
+          }
+        }
+      }
+    }
+    new {
+      matches {
+        new { path { type = "PathPrefix"; value = "/admin" } }
+      }
+      filters {
+        new {
+          type = "ExtensionRef"
+          extensionRef {
+            group = "traefik.io"
+            kind = "Middleware"
+            name = import("allow-list-middleware.pkl").metadata.name!!
+          }
+        }
+      }
+      backendRefs {
+        new {
+          name = import("service.pkl").metadata.name!!
+          port = 3000
+        }
+      }
+    }
+  }
+}

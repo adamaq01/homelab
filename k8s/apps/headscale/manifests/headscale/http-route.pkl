@@ -1,0 +1,44 @@
+amends "@gateway-api/HTTPRoute.pkl"
+
+import ".../app.pkl"
+import ".../traefik/app.pkl" as traefik
+
+metadata {
+  name = "headscale"
+  annotations {
+    [app.publicAnnotationKey] = ""
+  }
+}
+
+spec {
+  parentRefs {
+    new {
+      name = traefik.gatewayName
+      namespace = traefik.namespace
+      sectionName = "websecure"
+    }
+  }
+  hostnames {
+    app.hostname
+  }
+  rules {
+    new {
+      filters {
+        new {
+          type = "ExtensionRef"
+          extensionRef {
+            group = "traefik.io"
+            kind = "Middleware"
+            name = import("cors-middleware.pkl").metadata.name!!
+          }
+        }
+      }
+      backendRefs {
+        new {
+          name = import("service.pkl").metadata.name!!
+          port = 8080
+        }
+      }
+    }
+  }
+}

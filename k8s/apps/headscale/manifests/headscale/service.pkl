@@ -1,0 +1,21 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = "headscale"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = app.headscaleAppLabel
+  }
+  ports {
+    new {
+      port = 8080
+      targetPort = 8080
+      protocol = "TCP"
+    }
+  }
+}

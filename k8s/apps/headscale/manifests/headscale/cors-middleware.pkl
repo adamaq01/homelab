@@ -1,0 +1,19 @@
+amends "@traefik-crds/Middleware.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = "headscale-cors"
+}
+
+spec {
+  headers {
+    accessControlAllowHeaders { "*" }
+    accessControlAllowMethods { "GET"; "POST"; "PUT" }
+    accessControlAllowOriginList {
+      "https://\(app.hostname)"
+    }
+    accessControlMaxAge = 100
+    addVaryHeader = true
+  }
+}

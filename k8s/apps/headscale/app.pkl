@@ -1,1 +1,12 @@
-amends ".../app.pkl"
+extends ".../app.pkl"
+
+/// Public hostname for Headscale's control-plane API. Headplane's admin UI (see chart.pkl) shares
+/// this same hostname, under the "/admin" path.
+hostname: String = "vpn.\(module.rootDomain)"
+
+headscaleAppLabel: String = "headscale"
+headplaneAppLabel: String = "headplane"
+
+/// Secret Headplane's cookie-signing key is stored in. See chart.pkl's doc comment for how it's
+/// seeded.
+headplaneSecretName: String = "headplane-secrets"

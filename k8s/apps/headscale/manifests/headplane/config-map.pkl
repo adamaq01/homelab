@@ -1,0 +1,21 @@
+amends "@k8s/api/core/v1/ConfigMap.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = "headplane-config"
+}
+
+data {
+  ["config.yaml"] =
+    """
+    server:
+      cookie_secure: true
+      base_url: https://\(app.hostname)
+      cookie_secret_path: /etc/headplane/secrets/cookie-secret
+
+    headscale:
+      url: http://headscale.\(app.namespace).svc.cluster.local:8080
+      config_path: /etc/headscale-ro/config.yaml
+    """
+}

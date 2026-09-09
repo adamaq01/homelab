@@ -1,0 +1,75 @@
+/// Headplane's `config_path` mounts Headscale's own ConfigMap read-only, so it can display (but
+/// not edit) `config.yaml` itself. Editing that would need `shareProcessNamespace` plus pod-read
+/// RBAC so Headplane can SIGHUP-reload Headscale, and Headscale's SIGHUP handler only reloads the
+/// ACL policy anyway, not the rest of config.yaml, so that complexity isn't worth it here.
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+
+// renovate: datasource=docker packageName=ghcr.io/tale/headplane
+local version = "0.7.1"
+
+metadata {
+  name = "headplane"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = app.headplaneAppLabel
+    }
+  }
+  strategy {
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = app.headplaneAppLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "headplane"
+          image = "ghcr.io/tale/headplane:\(version)"
+          ports {
+            new { containerPort = 3000 }
+          }
+          volumeMounts {
+            new { name = "config"; mountPath = "/etc/headplane" }
+            new { name = "secrets"; mountPath = "/etc/headplane/secrets"; readOnly = true }
+            new { name = "headscale-config"; mountPath = "/etc/headscale-ro"; readOnly = true }
+            new { name = "data"; mountPath = "/var/lib/headplane" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "config"
+          configMap {
+            name = import("config-map.pkl").metadata.name
+          }
+        }
+        new {
+          name = "secrets"
+          secret {
+            secretName = app.headplaneSecretName
+          }
+        }
+        new {
+          name = "headscale-config"
+          configMap {
+            name = import("../headscale/config-map.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}
