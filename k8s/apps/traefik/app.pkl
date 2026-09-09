@@ -41,6 +41,9 @@ source {
     }
     valuesObject =
       new Values {
+        accessLog {
+          enabled = true
+        }
         // Redirects all plain HTTP traffic to HTTPS at the entrypoint level, so every app's
         // HTTPRoute only needs to target an HTTPS listener to get HTTP covered for free.
         ports {
