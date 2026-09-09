@@ -4,6 +4,7 @@ repoURL: String = "https://github.com/adamaq01/homelab.git"
 rootDomain: String = "adamaq01.fr"
 clusterName: String = "pegasus"
 
+// TODO Rename stuff to clearer names
 /// LAN domain for literal hosts (nodes, the NAS, ...), resolved via the router's own DNS.
 domain: String = "home.\(rootDomain)"
 nasDomain: String = "nas.\(domain)"

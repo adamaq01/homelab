@@ -1,13 +1,20 @@
 extends ".../app.pkl"
 
-/// Secret the `domain` wildcard Certificate (see chart.pkl) is stored in. Covers the LAN's literal
-/// hosts, not Kubernetes ingress.
-wildcardCertSecretName: String = "home-adamaq01-fr-tls"
+/// Name of the ClusterIssuer resource that will be used to issue Certificates for the app.
+issuerName: String = "cloudflare"
 
-/// Secret the `ingressDomain` wildcard Certificate (see chart.pkl) is stored in, referenced cross-app
-/// by Traefik's Gateway private listener.
-ingressWildcardCertSecretName: String = "pegasus-adamaq01-fr-tls"
+/// Secret the Cloudflare API token is stored in, referenced by the ClusterIssuer.
+apiTokenSecretName: String = "cloudflare-api-token-secret"
+apiTokenSecretKey: String = "api-token"
 
 /// Secret the `rootDomain` wildcard Certificate (see chart.pkl) is stored in, referenced cross-app by
 /// Traefik's Gateway public listener.
-publicWildcardCertSecretName: String = "public-adamaq01-fr-tls"
+rootCertSecretName: String = "public-adamaq01-fr-tls"
+
+/// Secret the `domain` wildcard Certificate (see chart.pkl) is stored in. Covers the LAN's literal
+/// hosts, not Kubernetes ingress.
+homeCertSecretName: String = "home-adamaq01-fr-tls"
+
+/// Secret the `ingressDomain` wildcard Certificate (see chart.pkl) is stored in, referenced cross-app
+/// by Traefik's Gateway private listener.
+clusterCertSecretName: String = "\(module.clusterName)-adamaq01-fr-tls"

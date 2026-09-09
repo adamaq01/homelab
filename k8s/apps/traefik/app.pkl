@@ -92,11 +92,11 @@ source {
               }
               certificateRefs {
                 new {
-                  name = cert_manager.ingressWildcardCertSecretName
+                  name = cert_manager.clusterCertSecretName
                   namespace = cert_manager.namespace
                 }
                 new {
-                  name = cert_manager.publicWildcardCertSecretName
+                  name = cert_manager.rootCertSecretName
                   namespace = cert_manager.namespace
                 }
               }

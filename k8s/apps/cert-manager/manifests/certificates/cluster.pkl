@@ -1,0 +1,22 @@
+amends "@cert-manager/Certificate.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = "\(app.clusterName)-adamaq01-fr-wildcard"
+  namespace = app.namespace
+}
+
+spec {
+  secretName = app.clusterCertSecretName
+  issuerRef {
+    name = app.issuerName
+    kind = "ClusterIssuer"
+  }
+  dnsNames {
+    app.ingressDomain
+    "*.\(app.ingressDomain)"
+    app.ingressAliasDomain
+    "*.\(app.ingressAliasDomain)"
+  }
+}

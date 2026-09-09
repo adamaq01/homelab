@@ -9,12 +9,7 @@
 /// namespace.
 amends "@manifest/generate.pkl"
 
-import "@cert-manager/Certificate.pkl"
-import "@cert-manager/ClusterIssuer.pkl"
-import "@gateway-api/ReferenceGrant.pkl"
-
-import "../../utils/ExternalSecret.pkl"
-import "../traefik/app.pkl" as traefik
+import ".../utils/ExternalSecret.pkl"
 import "app.pkl"
 
 // renovate: datasource=github-releases packageName=cert-manager/cert-manager
@@ -25,137 +20,14 @@ source =
 
 value {
   new ExternalSecret {
-    name = "cloudflare-api-token-secret"
+    name = app.apiTokenSecretName
     secrets {
       ["cloudflare"] {
-        "api-token"
+        app.apiTokenSecretKey
       }
     }
   }.resource
-  new ClusterIssuer {
-    metadata {
-      name = "cloudflare"
-    }
-    spec {
-      acme {
-        server = "https://acme-v02.api.letsencrypt.org/directory"
-        email = app.acmeEmail
-        privateKeySecretRef {
-          name = "cloudflare-issuer-account-key"
-        }
-        solvers {
-          new {
-            dns01 {
-              cloudflare {
-                apiTokenSecretRef {
-                  name = "cloudflare-api-token-secret"
-                  key = "api-token"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  new Certificate {
-    metadata {
-      name = "home-adamaq01-fr-wildcard"
-      namespace = app.namespace
-    }
-    spec {
-      secretName = app.wildcardCertSecretName
-      issuerRef {
-        name = "cloudflare"
-        kind = "ClusterIssuer"
-      }
-      dnsNames {
-        app.domain
-        "*.\(app.domain)"
-      }
-    }
-  }
-  new Certificate {
-    metadata {
-      name = "pegasus-adamaq01-fr-wildcard"
-      namespace = app.namespace
-    }
-    spec {
-      secretName = app.ingressWildcardCertSecretName
-      issuerRef {
-        name = "cloudflare"
-        kind = "ClusterIssuer"
-      }
-      dnsNames {
-        app.ingressDomain
-        "*.\(app.ingressDomain)"
-        app.ingressAliasDomain
-        "*.\(app.ingressAliasDomain)"
-      }
-    }
-  }
-  new Certificate {
-    metadata {
-      name = "public-adamaq01-fr-wildcard"
-      namespace = app.namespace
-    }
-    spec {
-      secretName = app.publicWildcardCertSecretName
-      issuerRef {
-        name = "cloudflare"
-        kind = "ClusterIssuer"
-      }
-      dnsNames {
-        app.rootDomain
-        "*.\(app.rootDomain)"
-      }
-    }
-  }
-  // Grants Traefik's Gateway (which lives in its own namespace) permission to reference the
-  // ingress wildcard Certificate's Secret above across namespaces.
-  new ReferenceGrant {
-    metadata {
-      name = "traefik-gateway-\(app.ingressWildcardCertSecretName)"
-      namespace = app.namespace
-    }
-    spec {
-      from {
-        new {
-          group = "gateway.networking.k8s.io"
-          kind = "Gateway"
-          namespace = traefik.namespace
-        }
-      }
-      to {
-        new {
-          group = ""
-          kind = "Secret"
-          name = app.ingressWildcardCertSecretName
-        }
-      }
-    }
-  }
-  // Same grant, for the public wildcard Certificate's Secret above.
-  new ReferenceGrant {
-    metadata {
-      name = "traefik-gateway-\(app.publicWildcardCertSecretName)"
-      namespace = app.namespace
-    }
-    spec {
-      from {
-        new {
-          group = "gateway.networking.k8s.io"
-          kind = "Gateway"
-          namespace = traefik.namespace
-        }
-      }
-      to {
-        new {
-          group = ""
-          kind = "Secret"
-          name = app.publicWildcardCertSecretName
-        }
-      }
-    }
+  for (_, resource in import*("manifests/**.pkl")) {
+    resource
   }
 }

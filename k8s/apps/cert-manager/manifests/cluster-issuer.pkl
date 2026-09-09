@@ -1,0 +1,29 @@
+amends "@cert-manager/ClusterIssuer.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = app.issuerName
+}
+
+spec {
+  acme {
+    server = "https://acme-v02.api.letsencrypt.org/directory"
+    email = app.acmeEmail
+    privateKeySecretRef {
+      name = "cloudflare-issuer-account-key"
+    }
+    solvers {
+      new {
+        dns01 {
+          cloudflare {
+            apiTokenSecretRef {
+              name = app.apiTokenSecretName
+              key = app.apiTokenSecretKey
+            }
+          }
+        }
+      }
+    }
+  }
+}

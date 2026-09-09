@@ -1,0 +1,28 @@
+/// Grants Traefik's Gateway (which lives in its own namespace) permission to
+/// reference the wildcard cluster Certificate's Secret across namespaces.
+amends "@gateway-api/ReferenceGrant.pkl"
+
+import ".../app.pkl"
+import ".../traefik/app.pkl" as traefik
+
+metadata {
+  name = "traefik-gateway-\(app.clusterCertSecretName)"
+  namespace = app.namespace
+}
+
+spec {
+  from {
+    new {
+      group = "gateway.networking.k8s.io"
+      kind = "Gateway"
+      namespace = traefik.namespace
+    }
+  }
+  to {
+    new {
+      group = ""
+      kind = "Secret"
+      name = app.clusterCertSecretName
+    }
+  }
+}
