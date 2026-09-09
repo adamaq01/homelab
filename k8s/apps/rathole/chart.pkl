@@ -4,19 +4,21 @@
 /// rathole itself has no way to substitute secret values into its TOML config, so the config's
 /// structure (topology, transport pattern, service names/targets) is tracked here, and only the
 /// three actual secrets (shared token, this side's Noise private key, the server's Noise public
-/// key) live in a small, manually-created Secret. An initContainer renders the real config file
-/// from that Secret's values onto a shared `emptyDir` before the `rathole` container starts:
+/// key) are fetched from OpenBao via `secretsExternalSecret` below. An initContainer renders the
+/// real config file from that Secret's values onto a shared `emptyDir` before the `rathole`
+/// container starts. Seed the three values once with (see `../openbao/app.pkl`'s bootstrap step 5):
 ///
-/// kubectl create secret generic rathole-client-secrets \
-///   --namespace rathole \
-///   --from-literal=token=<shared token, from rathole-token.txt> \
-///   --from-literal=local-private-key=<this side's private key, from rathole-client-keys.txt> \
-///   --from-literal=remote-public-key=<the server's public key, from rathole-server-keys.txt>
+/// bao kv put secret/rathole \
+///   token=<shared token, from rathole-token.txt> \
+///   local-private-key=<this side's private key, from rathole-client-keys.txt> \
+///   remote-public-key=<the server's public key, from rathole-server-keys.txt>
 module chart
 
 import "@k8s/api/apps/v1/Deployment.pkl"
+import "@external-secrets/v1/ExternalSecret.pkl"
 import "app.pkl"
 import "../traefik/app.pkl" as traefik
+import "../openbao/app.pkl" as openbao
 
 // renovate: datasource=docker packageName=rapiz1/rathole
 local version = "v0.5.0"
@@ -51,6 +53,44 @@ local renderConfigScript = """
   local_addr = "\(traefikServiceHost):80"
   EOF
   """
+
+secretsExternalSecret: ExternalSecret = new {
+  metadata {
+    name = secretName
+  }
+  spec {
+    secretStoreRef {
+      kind = "ClusterSecretStore"
+      name = openbao.clusterSecretStoreName
+    }
+    target {
+      name = secretName
+    }
+    data {
+      new {
+        secretKey = "token"
+        remoteRef {
+          key = "rathole"
+          property = "token"
+        }
+      }
+      new {
+        secretKey = "local-private-key"
+        remoteRef {
+          key = "rathole"
+          property = "local-private-key"
+        }
+      }
+      new {
+        secretKey = "remote-public-key"
+        remoteRef {
+          key = "rathole"
+          property = "remote-public-key"
+        }
+      }
+    }
+  }
+}
 
 deployment: Deployment = new {
   metadata {
@@ -142,6 +182,6 @@ deployment: Deployment = new {
 }
 
 output {
-  value = new Listing { deployment }
+  value = new Listing { secretsExternalSecret; deployment }
   renderer = new YamlRenderer { isStream = true }
 }

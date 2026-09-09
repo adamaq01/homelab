@@ -1,0 +1,39 @@
+/// Hand-written manifests supplementing `app.pkl`'s Helm source, folded into this same
+/// Application via ArgoCD's multi-source (`sources`) support (see `../openbao/app.pkl` for the
+/// original precedent) rather than a separate Application.
+module chart
+
+import "@external-secrets/v1/ExternalSecret.pkl"
+import "../openbao/app.pkl" as openbao
+
+/// The same underlying Cloudflare API token as `../cert-manager/chart.pkl`'s
+/// `cloudflareApiTokenExternalSecret`, fetched again here since ExternalSecret output is
+/// namespace-scoped and this instance runs in its own `external-dns` namespace.
+apiTokenExternalSecret: ExternalSecret = new {
+  metadata {
+    name = "cloudflare-api-token-secret"
+  }
+  spec {
+    secretStoreRef {
+      kind = "ClusterSecretStore"
+      name = openbao.clusterSecretStoreName
+    }
+    target {
+      name = "cloudflare-api-token-secret"
+    }
+    data {
+      new {
+        secretKey = "api-token"
+        remoteRef {
+          key = "cloudflare"
+          property = "api-token"
+        }
+      }
+    }
+  }
+}
+
+output {
+  value = new Listing { apiTokenExternalSecret }
+  renderer = new YamlRenderer { isStream = true }
+}

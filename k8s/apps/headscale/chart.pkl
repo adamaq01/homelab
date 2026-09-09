@@ -14,11 +14,10 @@
 /// the policy then lives outside this repo, in Headscale's sqlite DB, rather than being
 /// GitOps-tracked here.
 ///
-/// Bootstrap step after first deploy (Headplane's cookie needs a stable secret to sign sessions):
+/// Headplane's cookie-signing secret is fetched from OpenBao via `headplaneSecretsExternalSecret`
+/// below, seeded once with (see `../openbao/app.pkl`'s bootstrap step 5):
 ///
-/// kubectl create secret generic headplane-secrets \
-///   --namespace headscale \
-///   --from-literal=cookie-secret="$(openssl rand -hex 16)"
+/// bao kv put secret/headplane cookie-secret="$(openssl rand -hex 16)"
 ///
 /// Must be exactly 32 characters (Headplane's own schema rejects anything else), hence
 /// `-hex 16` (16 bytes = 32 hex chars).
@@ -45,9 +44,11 @@ import "@k8s/api/core/v1/Service.pkl"
 import "@k8s/api/apps/v1/Deployment.pkl"
 import "@gateway-api/HTTPRoute.pkl"
 import "@traefik-crds/Middleware.pkl"
+import "@external-secrets/v1/ExternalSecret.pkl"
 import "app.pkl"
 import "../traefik/app.pkl" as traefik
 import "../tns-csi/app.pkl" as tns_csi
+import "../openbao/app.pkl" as openbao
 
 // renovate: datasource=docker packageName=headscale/headscale
 local headscaleVersion = "v0.29.3"
@@ -127,6 +128,30 @@ local headplaneConfigYaml = """
     url: http://headscale.\(app.namespace).svc.cluster.local:8080
     config_path: /etc/headscale-ro/config.yaml
   """
+
+headplaneSecretsExternalSecret: ExternalSecret = new {
+  metadata {
+    name = headplaneSecretName
+  }
+  spec {
+    secretStoreRef {
+      kind = "ClusterSecretStore"
+      name = openbao.clusterSecretStoreName
+    }
+    target {
+      name = headplaneSecretName
+    }
+    data {
+      new {
+        secretKey = "cookie-secret"
+        remoteRef {
+          key = "headplane"
+          property = "cookie-secret"
+        }
+      }
+    }
+  }
+}
 
 headscaleConfigMap: ConfigMap = new {
   metadata {
@@ -482,6 +507,7 @@ headplaneHttpRoute: HTTPRoute = new {
 
 output {
   value = new Listing {
+    headplaneSecretsExternalSecret
     headscaleConfigMap
     headplaneConfigMap
     headscalePvc

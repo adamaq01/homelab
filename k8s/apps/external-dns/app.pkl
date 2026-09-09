@@ -1,53 +1,53 @@
 extends ".../app.pkl"
 
+import "@argocd/Application.pkl"
 import "@external-dns/Values.pkl"
 
 // renovate: datasource=helm packageName=external-dns registryUrl=https://kubernetes-sigs.github.io/external-dns/
 local version = "1.21.1"
 
-/// This Secret must exist in the `external-dns` namespace and provides the Cloudflare API token
-/// external-dns uses via `CF_API_TOKEN` to manage DNS records:
-///
-/// kubectl create secret generic cloudflare-api-token-secret \
-///   --namespace external-dns \
-///   --from-literal=api-token=<cloudflare-api-token>
-source {
-  repoURL = "https://kubernetes-sigs.github.io/external-dns/"
-  chart = "external-dns"
-  targetRevision = version
-  path = null
-  helm {
-    valuesObject =
-      new Values {
-        provider {
-          name = "cloudflare"
-        }
-        env {
-          new {
-            name = "CF_API_TOKEN"
-            valueFrom {
-              secretKeyRef {
-                name = "cloudflare-api-token-secret"
-                key = "api-token"
+// This Application's manifests come from two sources at once (ArgoCD's multi-source support,
+// see `../openbao/app.pkl`): this Helm chart, and `chart.pkl`'s hand-written
+// `cloudflare-api-token-secret` ExternalSecret.
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://kubernetes-sigs.github.io/external-dns/"
+    chart = "external-dns"
+    targetRevision = version
+    helm {
+      valuesObject =
+        new Values {
+          provider {
+            name = "cloudflare"
+          }
+          env {
+            new {
+              name = "CF_API_TOKEN"
+              valueFrom {
+                secretKeyRef {
+                  name = "cloudflare-api-token-secret"
+                  key = "api-token"
+                }
               }
             }
           }
-        }
-        // Watches Gateway API HTTPRoutes (what every app in this repo uses for ingress) rather than
-        // the Ingress or plain Service sources.
-        sources {
-          "gateway-httproute"
-        }
-        // Declares the zone this token is allowed to touch. The real gate is `annotationFilter`
-        // below: only HTTPRoutes explicitly opted into public exposure are ever considered, so the
-        // LAN-only `domain`/`ingressDomain`/`ingressAliasDomain` hostnames (themselves bare
-        // subdomains of this same zone) never get a public DNS record.
-        domainFilters {
-          module.rootDomain
-        }
-        annotationFilter = module.publicAnnotationKey
-        txtOwnerId = module.clusterName
-        policy = "sync"
-      }.toDynamic()
+          // Watches Gateway API HTTPRoutes (what every app in this repo uses for ingress) rather
+          // than the Ingress or plain Service sources.
+          sources {
+            "gateway-httproute"
+          }
+          // Declares the zone this token is allowed to touch. The real gate is `annotationFilter`
+          // below: only HTTPRoutes explicitly opted into public exposure are ever considered, so
+          // the LAN-only `domain`/`ingressDomain`/`ingressAliasDomain` hostnames (themselves bare
+          // subdomains of this same zone) never get a public DNS record.
+          domainFilters {
+            module.rootDomain
+          }
+          annotationFilter = module.publicAnnotationKey
+          txtOwnerId = module.clusterName
+          policy = "sync"
+        }.toDynamic()
+    }
   }
+  module.directorySource
 }

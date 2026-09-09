@@ -1,5 +1,6 @@
 amends ".../app.pkl"
 
+import "@argocd/Application.pkl"
 import "@external-dns/Values.pkl"
 
 // renovate: datasource=helm packageName=external-dns registryUrl=https://kubernetes-sigs.github.io/external-dns/
@@ -8,82 +9,81 @@ local version = "1.21.1"
 // renovate: datasource=docker packageName=ghcr.io/home-operations/external-dns-unifi-webhook
 local webhookVersion = "0.10.12"
 
-/// This Secret must exist in the `external-dns-unifi` namespace and provides the UniFi API key the
-/// webhook sidecar uses via `UNIFI_API_KEY` to manage DNS records on the router's own local DNS
-/// (Settings > Control Plane > Integrations > Create API Key):
-///
-/// kubectl create secret generic unifi-api-key-secret \
-///   --namespace external-dns-unifi \
-///   --from-literal=api-key=<unifi-api-key>
-source {
-  repoURL = "https://kubernetes-sigs.github.io/external-dns/"
-  chart = "external-dns"
-  targetRevision = version
-  path = null
-  helm {
-    valuesObject =
-      new Values {
-        fullnameOverride = "external-dns-unifi"
-        // Split-horizon setup: this instance and the Cloudflare one (`external-dns/app.pkl`) both
-        // watch the same public HTTPRoutes. A distinct annotation prefix keeps this instance from
-        // ever reading the Cloudflare instance's `target` override annotation on Traefik's Gateway
-        // (see `traefik/app.pkl`), so it falls back to the Gateway's own status address (Traefik's
-        // LAN-only LoadBalancer IP) instead of the public VPS hostname.
-        annotationPrefix = "external-dns-unifi.alpha.kubernetes.io/"
-        // Defensive fallback in case the Gateway's status address is ever unset; harmless otherwise,
-        // since the Gateway API source already reports it directly.
-        extraArgs {
-          "--default-targets=\(module.gatewayIP)"
-        }
-        provider {
-          name = "webhook"
-          webhook {
-            image {
-              repository = "ghcr.io/home-operations/external-dns-unifi-webhook"
-              tag = webhookVersion
-            }
-            env {
-              new {
-                name = "UNIFI_HOST"
-                value = "https://\(module.routerIP)"
+// This Application's manifests come from two sources at once (ArgoCD's multi-source support,
+// see `../openbao/app.pkl`): this Helm chart, and `chart.pkl`'s hand-written
+// `unifi-api-key-secret` ExternalSecret. The webhook sidecar consumes it via `UNIFI_API_KEY`
+// (Settings > Control Plane > Integrations > Create API Key, on the router).
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://kubernetes-sigs.github.io/external-dns/"
+    chart = "external-dns"
+    targetRevision = version
+    helm {
+      valuesObject =
+        new Values {
+          fullnameOverride = "external-dns-unifi"
+          // Split-horizon setup: this instance and the Cloudflare one (`external-dns/app.pkl`)
+          // both watch the same public HTTPRoutes. A distinct annotation prefix keeps this
+          // instance from ever reading the Cloudflare instance's `target` override annotation on
+          // Traefik's Gateway (see `traefik/app.pkl`), so it falls back to the Gateway's own
+          // status address (Traefik's LAN-only LoadBalancer IP) instead of the public VPS hostname.
+          annotationPrefix = "external-dns-unifi.alpha.kubernetes.io/"
+          // Defensive fallback in case the Gateway's status address is ever unset; harmless
+          // otherwise, since the Gateway API source already reports it directly.
+          extraArgs {
+            "--default-targets=\(module.gatewayIP)"
+          }
+          provider {
+            name = "webhook"
+            webhook {
+              image {
+                repository = "ghcr.io/home-operations/external-dns-unifi-webhook"
+                tag = webhookVersion
               }
-              new {
-                name = "UNIFI_API_KEY"
-                valueFrom {
-                  secretKeyRef {
-                    name = "unifi-api-key-secret"
-                    key = "api-key"
+              env {
+                new {
+                  name = "UNIFI_HOST"
+                  value = "https://\(module.routerIP)"
+                }
+                new {
+                  name = "UNIFI_API_KEY"
+                  valueFrom {
+                    secretKeyRef {
+                      name = "unifi-api-key-secret"
+                      key = "api-key"
+                    }
                   }
                 }
               }
-            }
-            livenessProbe {
-              httpGet {
-                path = "/healthz"
-                port = "http-webhook"
+              livenessProbe {
+                httpGet {
+                  path = "/healthz"
+                  port = "http-webhook"
+                }
+                initialDelaySeconds = 10
+                timeoutSeconds = 5
               }
-              initialDelaySeconds = 10
-              timeoutSeconds = 5
-            }
-            readinessProbe {
-              httpGet {
-                path = "/readyz"
-                port = "http-webhook"
+              readinessProbe {
+                httpGet {
+                  path = "/readyz"
+                  port = "http-webhook"
+                }
+                initialDelaySeconds = 10
+                timeoutSeconds = 5
               }
-              initialDelaySeconds = 10
-              timeoutSeconds = 5
             }
           }
-        }
-        sources {
-          "gateway-httproute"
-        }
-        domainFilters {
-          module.rootDomain
-        }
-        annotationFilter = module.publicAnnotationKey
-        txtOwnerId = "\(module.clusterName)-unifi"
-        policy = "sync"
-      }.toDynamic()
+          sources {
+            "gateway-httproute"
+          }
+          domainFilters {
+            module.rootDomain
+          }
+          annotationFilter = module.publicAnnotationKey
+          txtOwnerId = "\(module.clusterName)-unifi"
+          policy = "sync"
+        }.toDynamic()
+    }
   }
+  module.directorySource
 }

@@ -1,12 +1,8 @@
-/// The Cloudflare API token backing the `cloudflare` ClusterIssuer's DNS01 solver is manually
-/// created for now (same precedent as tns-csi's `tns-csi-credentials`, since secrets-management
-/// tooling isn't decided for this repo yet). It needs Zone:DNS:Edit on the `adamaq01.fr` zone
-/// (which also covers the `home.adamaq01.fr` subdomain used below, since it isn't a separately
-/// delegated zone in Cloudflare):
-///
-/// kubectl create secret generic cloudflare-api-token-secret \
-///   --namespace cert-manager \
-///   --from-literal=api-token=<cloudflare-api-token>
+/// The Cloudflare API token backing the `cloudflare` ClusterIssuer's DNS01 solver is fetched from
+/// OpenBao via `cloudflareApiTokenExternalSecret` below (seeded with `bao kv put secret/cloudflare
+/// api-token=<cloudflare-api-token>` — see `../openbao/app.pkl`'s bootstrap step 5). It needs
+/// Zone:DNS:Edit on the `adamaq01.fr` zone (which also covers the `home.adamaq01.fr` subdomain
+/// used below, since it isn't a separately delegated zone in Cloudflare).
 ///
 /// Must live in the `cert-manager` namespace specifically: ClusterIssuer secret references resolve
 /// against cert-manager's "cluster resource namespace", which defaults to the controller's own
@@ -16,15 +12,43 @@ amends "@manifest/generate.pkl"
 import "@cert-manager/ClusterIssuer.pkl"
 import "@cert-manager/Certificate.pkl"
 import "@gateway-api/ReferenceGrant.pkl"
+import "@external-secrets/v1/ExternalSecret.pkl"
 import "app.pkl"
 import "../traefik/app.pkl" as traefik
+import "../openbao/app.pkl" as openbao
 
 // renovate: datasource=github-releases packageName=cert-manager/cert-manager
 local version = "v1.21.1"
 
 source = "https://github.com/cert-manager/cert-manager/releases/download/\(version)/cert-manager.yaml"
 
+local cloudflareApiTokenExternalSecret: ExternalSecret = new {
+  metadata {
+    name = "cloudflare-api-token-secret"
+    namespace = app.namespace
+  }
+  spec {
+    secretStoreRef {
+      kind = "ClusterSecretStore"
+      name = openbao.clusterSecretStoreName
+    }
+    target {
+      name = "cloudflare-api-token-secret"
+    }
+    data {
+      new {
+        secretKey = "api-token"
+        remoteRef {
+          key = "cloudflare"
+          property = "api-token"
+        }
+      }
+    }
+  }
+}
+
 value {
+  cloudflareApiTokenExternalSecret
   new ClusterIssuer {
     metadata {
       name = "cloudflare"
