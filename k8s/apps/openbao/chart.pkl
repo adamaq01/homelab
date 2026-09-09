@@ -50,7 +50,7 @@ httpRoute: HTTPRoute = new {
 
 clusterSecretStore: ClusterSecretStore = new {
   metadata {
-    name = "openbao"
+    name = app.clusterSecretStoreName
   }
   spec {
     provider {

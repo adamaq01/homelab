@@ -1,4 +1,4 @@
-amends ".../app.pkl"
+extends ".../app.pkl"
 
 import "@argocd/Application.pkl"
 import "@openbao/Values.pkl"
@@ -6,6 +6,10 @@ import "../tns-csi/app.pkl" as tns_csi
 
 // renovate: datasource=helm packageName=openbao registryUrl=https://openbao.github.io/openbao-helm
 local version = "0.29.4"
+
+// Referenced cross-app by every `ExternalSecret`'s `secretStoreRef.name` (e.g.
+// `../cert-manager/chart.pkl`), matching `chart.pkl`'s ClusterSecretStore.
+clusterSecretStoreName = "openbao"
 
 /// Bootstrap sequence after first deploy (OpenBao starts sealed and uninitialized; none of this can
 /// be expressed as GitOps-applied manifests, since it's the very root of trust this repo's other

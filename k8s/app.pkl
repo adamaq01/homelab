@@ -29,7 +29,7 @@ source: Application.SpecSource = new {
 /// hand-written manifests (via the CMP `Directory`-type source every other multi-source entry
 /// below it is) alongside `source` above. Left out of `sources` by default: set `sources` (which
 /// takes priority over `source` once non-null) to a `Listing` including this when needed.
-directorySource: Application.ComparedToSource = new {
+fixed directorySource: Application.ComparedToSource = new {
   repoURL = module.repoURL
   targetRevision = module.targetRevision
   path = relativePath.join("/")
