@@ -45,10 +45,9 @@ module generate
 
 import "pkl:reflect"
 import "pkl:yaml"
-
 import "@deepToTyped/deepToTyped.pkl"
-import "@k8s/k8sSchema.pkl"
 import "@k8s/K8sResource.pkl"
+import "@k8s/k8sSchema.pkl"
 import "Patch.pkl"
 
 /// Where to find the raw manifest to convert.
@@ -71,7 +70,11 @@ function fileNameFor(resource: K8sResource): String =
 /// [String] key is the resource's `kind`, the second its `apiVersion`. Empty by default.
 customResourceTemplates: Mapping<String, Mapping<String, K8sResource>> = new {}
 
-local function lookupTemplate(kind: String, apiVersion: String, templatesByKindAndVersion: Mapping): K8sResource? =
+local function lookupTemplate(
+  kind: String,
+  apiVersion: String,
+  templatesByKindAndVersion: Mapping,
+): K8sResource? =
   let (templatesByVersion: Mapping? = templatesByKindAndVersion.getOrNull(kind))
     if (templatesByVersion == null)
       null
@@ -120,7 +123,10 @@ logPatchKeys: Boolean = read?("prop:logPatchKeys")?.toBoolean() ?? false
 /// so a typo'd [patches] key fails fast the same way it would unfiltered. Comma-separate to keep more
 /// than one.
 onlyResources: List<String> =
-  read?("prop:onlyResources")?.split(",")?.map((key) -> key.trim())?.filter((key) -> !key.isEmpty) ?? List()
+  read?("prop:onlyResources")
+    ?.split(",")
+    ?.map((key) -> key.trim())
+    ?.filter((key) -> !key.isEmpty) ?? List()
 
 local function normalizePatchKey(key: String): String =
   key.replaceAll(Regex(#"^.*/"#), "").replaceAll(Regex(#"\.pkl$"#), "")
@@ -163,9 +169,15 @@ local function mixinFor(entry: Mixin<K8sResource> | Patch): Mixin<K8sResource> =
 /// `output.value` and `output.files`.
 value: Listing<K8sResource> = new Listing {
   for (resource in convertedResources) {
+    let (entry = checkedPatches.getOrNull(patchKeyFor(resource)))
+      if (entry == null) resource else mixinFor(entry).apply(resource)
+  }
+}
+
+fixed outputValue: Listing<K8sResource> = new Listing {
+  for (resource in value) {
     when (onlyResources.isEmpty || onlyResources.contains(fileNameFor(resource))) {
-      let (entry = checkedPatches.getOrNull(patchKeyFor(resource)))
-        if (entry == null) resource else mixinFor(entry).apply(resource)
+      resource
     }
   }
 }
@@ -177,7 +189,10 @@ value: Listing<K8sResource> = new Listing {
 k8sImportPath: String = "@k8s/"
 
 local function rewriteK8sImport(text: String): String =
-  text.replaceAll(Regex(#"(?:project)?package://pkg\.pkl-lang\.org/pkl-k8s/k8s@[\d.]+#/"#), k8sImportPath)
+  text.replaceAll(
+    Regex(#"(?:project)?package://pkg\.pkl-lang\.org/pkl-k8s/k8s@[\d.]+#/"#),
+    k8sImportPath,
+  )
 
 /// Strips the leading `apiVersion = "..."` / `kind = "..."` pair `PcfRenderer` writes out for the
 /// outermost resource. `apiVersion`/`kind` are `fixed` (always equal to the enclosing class's own
@@ -211,10 +226,10 @@ local function convertResource(resource: K8sResource): String =
     "amends \"\(importUri)\"\n\n\(body)"
 
 output {
-  value = outer.value
+  value = outputValue
   renderer = new YamlRenderer { isStream = true }
   files {
-    for (resource in outer.value.toList()) {
+    for (resource in outputValue.toList()) {
       ["\(fileNameFor(resource)).pkl"] { text = convertResource(resource) }
     }
   }
