@@ -1,0 +1,38 @@
+/// Generates a single Pkl module from the OpenBao Helm chart's `values.schema.json`, exposing its
+/// properties as the module's own top-level properties (matching how `k8s/apps/openbao/app.pkl`
+/// constructs `helm.valuesObject` by amending an imported module, the same pattern
+/// `packages/traefik/_generate.pkl` uses).
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/openbao/_generate.pkl --project-dir packages/openbao -m packages/openbao
+/// ```
+module openbao.generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+
+// renovate: datasource=github-tags packageName=openbao/openbao-helm extractVersion=^openbao-(?<version>.*)$
+version = "0.29.4"
+
+sourceUri = "https://raw.githubusercontent.com/openbao/openbao-helm/openbao-\(version)/charts/openbao/values.schema.json"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+local parsedRootSchema = Parser.parse(read(sourceUri)) as JsonSchema
+
+output {
+  files {
+    ["Values.pkl"] {
+      text = (new ModuleGenerator {
+        rootSchema = parsedRootSchema
+        baseUri = schemaBaseUri
+        moduleName = "Values"
+        existingTypes = Map()
+      }).moduleNode.output.text
+    }
+  }
+}

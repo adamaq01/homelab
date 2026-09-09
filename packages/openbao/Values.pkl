@@ -1,0 +1,600 @@
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/openbao/openbao-helm/openbao-0.29.4/charts/openbao/values.schema.json>.
+///
+/// WARN: The root schema describes open-ended properties, but this is not possible to describe at the
+/// module level.
+module Values
+
+csi: Csi?
+
+global: Global?
+
+injector: Injector?
+
+server: Server?
+
+serverTelemetry: ServerTelemetry?
+
+ui: Ui?
+
+class Csi {
+  agent: Agent?
+
+  daemonSet: DaemonSet?
+
+  debug: Boolean?
+
+  enabled: (Boolean|String)?
+
+  extraArgs: Listing?
+
+  image: ServerImage?
+
+  livenessProbe: ReadinessProbe?
+
+  pod: Pod?
+
+  priorityClassName: String?
+
+  readinessProbe: ReadinessProbe?
+
+  resources: Dynamic?
+
+  serviceAccount: ServiceAccount?
+
+  volumeMounts: Listing?
+
+  volumes: Listing?
+}
+
+class Agent {
+  enabled: Boolean?
+
+  extraArgs: Listing?
+
+  image: ServerImage?
+
+  logFormat: String?
+
+  logLevel: String?
+
+  resources: Dynamic?
+}
+
+class ServerImage {
+  pullPolicy: String?
+
+  repository: String?
+
+  tag: String?
+}
+
+class DaemonSet {
+  annotations: (Dynamic|String)?
+
+  extraLabels: Dynamic?
+
+  kubeletRootDir: String?
+
+  providersDir: String?
+
+  securityContext: SecurityContext?
+
+  updateStrategy: UpdateStrategy?
+}
+
+class SecurityContext {
+  container: (Dynamic|String)?
+
+  pod: (Dynamic|String)?
+}
+
+class UpdateStrategy {
+  maxUnavailable: String?
+
+  type: String?
+}
+
+class ReadinessProbe {
+  failureThreshold: Int?
+
+  initialDelaySeconds: Int?
+
+  periodSeconds: Int?
+
+  successThreshold: Int?
+
+  timeoutSeconds: Int?
+}
+
+class Pod {
+  affinity: (Dynamic|String)?
+
+  annotations: (Dynamic|String)?
+
+  extraLabels: Dynamic?
+
+  nodeSelector: (Dynamic|String)?
+
+  tolerations: (Listing|String)?
+}
+
+class ServiceAccount {
+  annotations: (Dynamic|String)?
+
+  extraLabels: Dynamic?
+}
+
+class Global {
+  enabled: Boolean?
+
+  namespace: String?
+
+  externalVaultAddr: String?
+
+  externalBaoAddr: String?
+
+  imagePullSecrets: Listing?
+
+  openshift: Boolean?
+
+  tlsDisable: Boolean?
+}
+
+class Injector {
+  affinity: (Dynamic|String)?
+
+  agentDefaults: AgentDefaults?
+
+  agentImage: AgentImage?
+
+  annotations: (Dynamic|String)?
+
+  authPath: String?
+
+  certs: Certs?
+
+  enabled: (Boolean|String)?
+
+  externalVaultAddr: String?
+
+  extraEnvironmentVars: Dynamic?
+
+  extraLabels: Dynamic?
+
+  failurePolicy: String?
+
+  hostNetwork: Boolean?
+
+  image: ServerImage?
+
+  leaderElector: ServiceDiscovery?
+
+  logFormat: String?
+
+  logLevel: String?
+
+  metrics: ServiceDiscovery?
+
+  namespaceSelector: Dynamic?
+
+  nodeSelector: (Dynamic|String)?
+
+  objectSelector: (Dynamic|String)?
+
+  podDisruptionBudget: Dynamic?
+
+  port: Int?
+
+  priorityClassName: String?
+
+  replicas: Int?
+
+  resources: Dynamic?
+
+  revokeOnShutdown: Boolean?
+
+  securityContext: SecurityContext?
+
+  service: InjectorServiceAccount?
+
+  serviceAccount: InjectorServiceAccount?
+
+  strategy: (Dynamic|String)?
+
+  tolerations: (Listing|String)?
+
+  topologySpreadConstraints: (Listing|String)?
+
+  webhook: Webhook?
+
+  webhookAnnotations: (Dynamic|String)?
+}
+
+class AgentDefaults {
+  cpuLimit: String?
+
+  cpuRequest: String?
+
+  memLimit: String?
+
+  memRequest: String?
+
+  ephemeralLimit: String?
+
+  ephemeralRequest: String?
+
+  template: String?
+
+  templateConfig: TemplateConfig?
+}
+
+class TemplateConfig {
+  exitOnRetryFailure: Boolean?
+
+  staticSecretRenderInterval: String?
+}
+
+class AgentImage {
+  repository: String?
+
+  tag: String?
+}
+
+class Certs {
+  caBundle: String?
+
+  certName: String?
+
+  keyName: String?
+
+  secretName: String?
+}
+
+class ServiceDiscovery {
+  enabled: Boolean?
+}
+
+class InjectorServiceAccount {
+  annotations: (Dynamic|String)?
+}
+
+class Webhook {
+  annotations: (Dynamic|String)?
+
+  failurePolicy: String?
+
+  matchPolicy: String?
+
+  namespaceSelector: Dynamic?
+
+  objectSelector: (Dynamic|String)?
+
+  timeoutSeconds: Int?
+}
+
+class Server {
+  affinity: (Dynamic|String)?
+
+  annotations: (Dynamic|String)?
+
+  auditStorage: DataStorage?
+
+  authDelegator: ServiceDiscovery?
+
+  dataStorage: DataStorage?
+
+  persistentVolumeClaimRetentionPolicy: PersistentVolumeClaimRetentionPolicy?
+
+  dev: Dev?
+
+  enabled: (Boolean|String)?
+
+  extraArgs: String?
+
+  extraPorts: Listing?
+
+  extraContainers: Listing?
+
+  extraEnvironmentVars: Dynamic?
+
+  extraInitContainers: Listing?
+
+  extraLabels: Dynamic?
+
+  extraSecretEnvironmentVars: Listing?
+
+  extraVolumes: Listing?
+
+  ha: Ha?
+
+  hostAliases: Listing?
+
+  image: ServerImage?
+
+  ingress: Ingress?
+
+  livenessProbe: LivenessProbe?
+
+  logFormat: String?
+
+  logLevel: String?
+
+  networkPolicy: NetworkPolicy?
+
+  nodeSelector: (Dynamic|String)?
+
+  postStart: Listing?
+
+  preStopSleepSeconds: Int?
+
+  priorityClassName: String?
+
+  readinessProbe: ServerReadinessProbe?
+
+  resources: Dynamic?
+
+  route: Route?
+
+  service: Service?
+
+  serviceAccount: ServerServiceAccount?
+
+  shareProcessNamespace: Boolean?
+
+  standalone: Standalone?
+
+  statefulSet: StatefulSet?
+
+  terminationGracePeriodSeconds: Int?
+
+  tolerations: (Listing|String)?
+
+  topologySpreadConstraints: (Listing|String)?
+
+  updateStrategyType: String?
+
+  volumeMounts: Listing?
+
+  volumes: Listing?
+
+  hostNetwork: Boolean?
+}
+
+class DataStorage {
+  accessMode: String?
+
+  annotations: (Dynamic|String)?
+
+  labels: (Dynamic|String)?
+
+  enabled: (Boolean|String)?
+
+  mountPath: String?
+
+  size: String?
+
+  storageClass: String?
+}
+
+class PersistentVolumeClaimRetentionPolicy {
+  whenDeleted: String?
+
+  whenScaled: String?
+}
+
+class Dev {
+  devRootToken: String?
+
+  enabled: Boolean?
+}
+
+class Ha {
+  apiAddr: String?
+
+  clusterAddr: String?
+
+  config: (String|Dynamic)?
+
+  disruptionBudget: DisruptionBudget?
+
+  enabled: Boolean?
+
+  raft: Raft?
+
+  replicas: Int?
+}
+
+class DisruptionBudget {
+  enabled: Boolean?
+
+  maxUnavailable: Number?
+}
+
+class Raft {
+  config: (String|Dynamic)?
+
+  enabled: Boolean?
+
+  setNodeId: Boolean?
+}
+
+class Ingress {
+  activeService: Boolean?
+
+  annotations: (Dynamic|String)?
+
+  enabled: Boolean?
+
+  extraPaths: Listing?
+
+  hosts: Listing<Host>?
+
+  ingressClassName: String?
+
+  labels: Dynamic?
+
+  pathType: String?
+
+  tls: Listing?
+}
+
+class Host {
+  host: String?
+
+  paths: Listing?
+}
+
+class LivenessProbe {
+  enabled: Boolean?
+
+  failureThreshold: Int?
+
+  initialDelaySeconds: Int?
+
+  path: String?
+
+  port: Int?
+
+  execCommand: Listing?
+
+  periodSeconds: Int?
+
+  successThreshold: Int?
+
+  timeoutSeconds: Int?
+}
+
+class NetworkPolicy {
+  egress: Listing?
+
+  enabled: Boolean?
+
+  ingress: Listing?
+}
+
+class ServerReadinessProbe {
+  enabled: Boolean?
+
+  failureThreshold: Int?
+
+  initialDelaySeconds: Int?
+
+  periodSeconds: Int?
+
+  successThreshold: Int?
+
+  timeoutSeconds: Int?
+}
+
+class Route {
+  activeService: Boolean?
+
+  annotations: (Dynamic|String)?
+
+  enabled: Boolean?
+
+  host: String?
+
+  labels: Dynamic?
+
+  tls: Dynamic?
+}
+
+class Service {
+  active: Standby?
+
+  annotations: (Dynamic|String)?
+
+  enabled: Boolean?
+
+  externalTrafficPolicy: String?
+
+  instanceSelector: ServiceDiscovery?
+
+  port: Int?
+
+  publishNotReadyAddresses: Boolean?
+
+  standby: Standby?
+
+  targetPort: Int?
+
+  nodePort: Int?
+
+  activeNodePort: Int?
+
+  standbyNodePort: Int?
+
+  ipFamilyPolicy: String?
+
+  ipFamilies: Listing?
+}
+
+class Standby {
+  enabled: Boolean?
+
+  annotations: (Dynamic|String)?
+}
+
+class ServerServiceAccount {
+  annotations: (Dynamic|String)?
+
+  create: Boolean?
+
+  extraLabels: Dynamic?
+
+  createSecret: Boolean?
+
+  name: String?
+
+  serviceDiscovery: ServiceDiscovery?
+}
+
+class Standalone {
+  config: (String|Dynamic)?
+
+  enabled: (String|Boolean)?
+}
+
+class StatefulSet {
+  annotations: (Dynamic|String)?
+
+  securityContext: SecurityContext?
+}
+
+class ServerTelemetry {
+  prometheusRules: PrometheusRules?
+}
+
+class PrometheusRules {
+  enabled: Boolean?
+
+  rules: Listing?
+
+  selectors: Dynamic?
+}
+
+class Ui {
+  activeOpenbaoPodOnly: Boolean?
+
+  annotations: (Dynamic|String)?
+
+  enabled: (Boolean|String)?
+
+  externalPort: Int?
+
+  externalTrafficPolicy: String?
+
+  publishNotReadyAddresses: Boolean?
+
+  serviceNodePort: Number?
+
+  serviceType: String?
+
+  targetPort: Int?
+
+  serviceIPFamilyPolicy: String?
+
+  serviceIPFamilies: Listing?
+}

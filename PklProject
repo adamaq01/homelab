@@ -16,4 +16,6 @@ dependencies {
   ["cert-manager"] = import("packages/cert-manager/PklProject")
   ["traefik"] = import("packages/traefik/PklProject")
   ["external-dns"] = import("packages/external-dns/PklProject")
+  ["external-secrets"] = import("packages/external-secrets/PklProject")
+  ["openbao"] = import("packages/openbao/PklProject")
 }

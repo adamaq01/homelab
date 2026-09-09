@@ -1,0 +1,9 @@
+amends "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6#/generate.pkl"
+
+// renovate: datasource=github-tags packageName=external-secrets/external-secrets
+local version = "v2.10.0"
+
+source = "https://raw.githubusercontent.com/external-secrets/external-secrets/\(version)/deploy/crds/bundle.yaml"
+baseApiGroup = "external-secrets.io"
+
+k8sImportPath = "@k8s"
