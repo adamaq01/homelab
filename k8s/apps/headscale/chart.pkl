@@ -365,6 +365,7 @@ headplaneAllowListMiddleware: Middleware = new {
       sourceRange {
         headplaneAllowedCidr
         tailnetCidr
+        "\(app.routerIP)/32"
       }
     }
   }
