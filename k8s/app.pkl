@@ -50,6 +50,9 @@ application: Application = new {
       // Reduces diff noise from server-defaulted fields.
       ["argocd.argoproj.io/compare-options"] = "ServerSideDiff=true"
     }
+    // Without this, pruning/deleting this Application object doesn't cascade-delete the
+    // resources it manages.
+    finalizers { "resources-finalizer.argocd.argoproj.io" }
   }
   spec {
     project = app.project
