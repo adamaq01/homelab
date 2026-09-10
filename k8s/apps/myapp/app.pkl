@@ -1,6 +1,1 @@
 amends ".../app.pkl"
-
-// Disabled for the duration of the namespace-migration test (docs/pvc-namespace-migration.md):
-// the root app-of-apps' own selfHeal would otherwise revert any manual PVC/PV surgery done
-// against this app's resources. Re-enable once the migration is verified.
-autoSync = false
