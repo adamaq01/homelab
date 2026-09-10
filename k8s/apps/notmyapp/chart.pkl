@@ -1,0 +1,76 @@
+/// Disposable PVC-backed test app, used to exercise namespace migration.
+/// Not a real workload, safe to delete once the test is done.
+module chart
+
+import "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "../tns-csi/app.pkl" as tns_csi
+
+local pvcName = "notmyapp-data"
+local appLabel = "notmyapp"
+
+pvc: PersistentVolumeClaim = new {
+  metadata {
+    name = pvcName
+  }
+  spec {
+    accessModes { "ReadWriteOnce" }
+    storageClassName = tns_csi.nvmeofStorageClassName
+    resources {
+      requests {
+        ["storage"] = "1Gi"
+      }
+    }
+  }
+}
+
+deployment: Deployment = new {
+  metadata {
+    name = "notmyapp"
+  }
+  spec {
+    selector {
+      matchLabels {
+        ["app"] = appLabel
+      }
+    }
+    strategy {
+      type = "Recreate"
+    }
+    template {
+      metadata {
+        labels {
+          ["app"] = appLabel
+        }
+      }
+      spec {
+        containers {
+          new {
+            name = "notmyapp"
+            image = "busybox:latest"
+            command { "sleep"; "infinity" }
+            volumeMounts {
+              new { name = "data"; mountPath = "/data" }
+            }
+          }
+        }
+        volumes {
+          new {
+            name = "data"
+            persistentVolumeClaim {
+              claimName = pvcName
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+output {
+  value = new Listing {
+    pvc
+    deployment
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
