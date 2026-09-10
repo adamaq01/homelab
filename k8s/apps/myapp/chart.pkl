@@ -6,8 +6,8 @@ import "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
 import "@k8s/api/apps/v1/Deployment.pkl"
 import "../tns-csi/app.pkl" as tns_csi
 
-local pvcName = "notmyapp-data"
-local appLabel = "notmyapp"
+local pvcName = "myapp-data"
+local appLabel = "myapp"
 
 pvc: PersistentVolumeClaim = new {
   metadata {
@@ -26,7 +26,7 @@ pvc: PersistentVolumeClaim = new {
 
 deployment: Deployment = new {
   metadata {
-    name = "notmyapp"
+    name = "myapp"
   }
   spec {
     selector {
@@ -46,7 +46,7 @@ deployment: Deployment = new {
       spec {
         containers {
           new {
-            name = "notmyapp"
+            name = "myapp"
             image = "busybox:latest"
             command { "sleep"; "infinity" }
             volumeMounts {
