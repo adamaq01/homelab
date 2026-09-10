@@ -54,7 +54,12 @@ source {
           transport = "tcp"
           port = "4420"
           fsType = "ext4"
-          reclaimPolicy = "Delete"
+          // Retain rather than Delete: a deleted PVC (whether by mistake, or because ArgoCD prunes
+          // it along with the rest of an app being removed) leaves the underlying TrueNAS zvol
+          // behind as a "Released" PV instead of deleting real data. Trades needing to manually
+          // clean up the zvol (and the stale PV object) after an intentional PVC deletion, for not
+          // silently losing data on an unintentional one.
+          reclaimPolicy = "Retain"
           volumeBindingMode = "Immediate"
           allowVolumeExpansion = true
           // Otherwise zvols are named after the PV's own generated UUID, which is unreadable from
