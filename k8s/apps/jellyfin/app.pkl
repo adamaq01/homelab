@@ -7,6 +7,8 @@ import "../tns-csi/app.pkl" as tns_csi
 // Re-enable once the migration is verified.
 autoSync = false
 
+namespace = "media"
+
 // renovate: datasource=helm packageName=jellyfin registryUrl=https://jellyfin.github.io/jellyfin-helm
 local version = "3.2.0"
 
