@@ -1,7 +1,7 @@
 amends ".../app.pkl"
 
-import "../traefik/app.pkl" as traefik
-import "../tns-csi/app.pkl" as tns_csi
+import ".../networking/traefik/app.pkl" as traefik
+import ".../storage/tns-csi/app.pkl" as tns_csi
 
 namespace = "media"
 

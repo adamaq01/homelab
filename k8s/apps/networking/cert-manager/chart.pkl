@@ -1,6 +1,6 @@
 /// The Cloudflare API token backing the `cloudflare` ClusterIssuer's DNS01 solver is fetched from
 /// OpenBao via `cloudflareApiTokenExternalSecret` below (seeded with `bao kv put secret/cloudflare
-/// api-token=<cloudflare-api-token>` — see `../openbao/app.pkl`'s bootstrap step 5). It needs
+/// api-token=<cloudflare-api-token>` — see `.../secrets/openbao/app.pkl`'s bootstrap step 5). It needs
 /// Zone:DNS:Edit on the `adamaq01.fr` zone (which also covers the `home.adamaq01.fr` subdomain
 /// used below, since it isn't a separately delegated zone in Cloudflare).
 ///

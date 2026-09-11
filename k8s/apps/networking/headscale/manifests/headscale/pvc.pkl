@@ -1,6 +1,6 @@
 amends "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
 
-import ".../tns-csi/app.pkl" as tns_csi
+import ".../storage/tns-csi/app.pkl" as tns_csi
 
 metadata {
   name = "headscale-data"

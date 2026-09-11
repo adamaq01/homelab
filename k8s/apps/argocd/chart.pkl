@@ -3,7 +3,7 @@ amends "@manifest/generate.pkl"
 import "@gateway-api/HTTPRoute.pkl"
 import "@traefik-crds/Middleware.pkl"
 import "app.pkl"
-import "../traefik/app.pkl" as traefik
+import ".../networking/traefik/app.pkl" as traefik
 
 // renovate: datasource=github-releases packageName=argoproj/argo-cd
 local version = "v3.5.2"

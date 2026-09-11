@@ -13,8 +13,8 @@ import "@k8s/api/rbac/v1/ClusterRole.pkl"
 import "@k8s/api/rbac/v1/ClusterRoleBinding.pkl"
 import "@gateway-api/HTTPRoute.pkl"
 import "app.pkl"
-import "../traefik/app.pkl" as traefik
-import "../tns-csi/app.pkl" as tns_csi
+import ".../networking/traefik/app.pkl" as traefik
+import ".../storage/tns-csi/app.pkl" as tns_csi
 
 local saName = "pod-viewer"
 local roleName = "pod-viewer-role"

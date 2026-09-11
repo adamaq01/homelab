@@ -7,7 +7,7 @@ import "@external-dns/Values.pkl"
 local version = "1.21.1"
 
 // This Application's manifests come from two sources at once (ArgoCD's multi-source support,
-// see `../openbao/app.pkl`): this Helm chart, and `chart.pkl`'s hand-written
+// see `.../secrets/openbao/app.pkl`): this Helm chart, and `chart.pkl`'s hand-written
 // `cloudflare-api-token-secret` ExternalSecret.
 sources = new Listing {
   new Application.ComparedToSource {

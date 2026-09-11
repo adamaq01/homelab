@@ -1,4 +1,4 @@
-amends "../../utils/ExternalSecret.pkl"
+amends ".../utils/ExternalSecret.pkl"
 
 name = "unifi-api-key-secret"
 secrets {

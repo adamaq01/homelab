@@ -6,7 +6,7 @@
 /// three actual secrets (shared token, this side's Noise private key, the server's Noise public
 /// key) are fetched from OpenBao via `secretsExternalSecret` below. An initContainer renders the
 /// real config file from that Secret's values onto a shared `emptyDir` before the `rathole`
-/// container starts. Seed the three values once with (see `../openbao/app.pkl`'s bootstrap step 5):
+/// container starts. Seed the three values once with (see `.../secrets/openbao/app.pkl`'s bootstrap step 5):
 ///
 /// bao kv put secret/rathole \
 ///   token=<shared token, from rathole-token.txt> \
@@ -14,7 +14,7 @@
 ///   remote-public-key=<the server's public key, from rathole-server-keys.txt>
 module chart
 
-import "../../utils/ExternalSecret.pkl"
+import ".../utils/ExternalSecret.pkl"
 import "../traefik/app.pkl" as traefik
 import "@k8s/api/apps/v1/Deployment.pkl"
 import "app.pkl"

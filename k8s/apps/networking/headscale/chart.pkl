@@ -15,7 +15,7 @@
 /// GitOps-tracked here.
 ///
 /// Headplane's cookie-signing secret is fetched from OpenBao via `headplaneSecretsExternalSecret`
-/// below, seeded once with (see `../openbao/app.pkl`'s bootstrap step 5):
+/// below, seeded once with (see `.../secrets/openbao/app.pkl`'s bootstrap step 5):
 ///
 /// bao kv put secret/headplane cookie-secret="$(openssl rand -hex 16)"
 ///

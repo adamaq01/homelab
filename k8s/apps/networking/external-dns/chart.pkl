@@ -1,7 +1,7 @@
 /// The same underlying Cloudflare API token as `../cert-manager/chart.pkl`'s
 /// `cloudflareApiTokenExternalSecret`, fetched again here since ExternalSecret output is
 /// namespace-scoped and this instance runs in its own `external-dns` namespace.
-amends "../../utils/ExternalSecret.pkl"
+amends ".../utils/ExternalSecret.pkl"
 
 name = "cloudflare-api-token-secret"
 secrets {

@@ -10,7 +10,7 @@ local version = "1.21.1"
 local webhookVersion = "0.10.12"
 
 // This Application's manifests come from two sources at once (ArgoCD's multi-source support,
-// see `../openbao/app.pkl`): this Helm chart, and `chart.pkl`'s hand-written
+// see `.../secrets/openbao/app.pkl`): this Helm chart, and `chart.pkl`'s hand-written
 // `unifi-api-key-secret` ExternalSecret. The webhook sidecar consumes it via `UNIFI_API_KEY`
 // (Settings > Control Plane > Integrations > Create API Key, on the router).
 sources = new Listing {
