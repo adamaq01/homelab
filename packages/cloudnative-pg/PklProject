@@ -1,0 +1,17 @@
+amends "pkl:Project"
+
+package {
+  name = "cloudnative-pg"
+  baseUri = "package://local/homelab/packages/cloudnative-pg"
+  version = "0.1.0"
+  packageZipUrl = "https://local/homelab/packages/cloudnative-pg.zip"
+}
+
+dependencies {
+  ["k8s"] {
+    uri = "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.4.1"
+  }
+  ["k8s.contrib.crd"] {
+    uri = "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6"
+  }
+}

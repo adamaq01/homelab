@@ -1,0 +1,6 @@
+amends ".../app.pkl"
+
+// Conventional upstream namespace for the operator (also the raw manifest's own hardcoded
+// `Namespace` resource, see `chart.pkl`), distinct from `tns-csi` (no direct API coupling between
+// the CSI driver and the Postgres operator, just grouped under `apps/storage/` for organization).
+namespace = "cnpg-system"

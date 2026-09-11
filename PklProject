@@ -18,4 +18,5 @@ dependencies {
   ["external-dns"] = import("packages/external-dns/PklProject")
   ["external-secrets"] = import("packages/external-secrets/PklProject")
   ["openbao"] = import("packages/openbao/PklProject")
+  ["cloudnative-pg"] = import("packages/cloudnative-pg/PklProject")
 }

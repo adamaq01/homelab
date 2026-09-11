@@ -1,0 +1,10 @@
+/// Installed from the same raw upstream release manifest `packages/cloudnative-pg/_generate.pkl`
+/// generates CRD types from (rather than the separately-versioned Helm chart), so there's exactly
+/// one upstream source of truth for both.
+amends "@manifest/generate.pkl"
+
+// renovate: datasource=github-releases packageName=cloudnative-pg/cloudnative-pg
+local version = "v1.30.0"
+local versionNoV = version.replaceFirst("v", "")
+
+source = "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/\(version)/cnpg-\(versionNoV).yaml"

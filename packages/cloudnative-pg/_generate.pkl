@@ -1,0 +1,13 @@
+amends "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6#/generate.pkl"
+
+// renovate: datasource=github-releases packageName=cloudnative-pg/cloudnative-pg
+local version = "v1.30.0"
+local versionNoV = version.replaceFirst("v", "")
+
+// The full operator install manifest (CRDs plus Deployment/RBAC/etc.), not a CRD-only bundle:
+// upstream doesn't publish one separately for this project. The generator only picks out
+// `kind: CustomResourceDefinition` documents, so the rest is ignored.
+source = "https://github.com/cloudnative-pg/cloudnative-pg/releases/download/\(version)/cnpg-\(versionNoV).yaml"
+baseApiGroup = "postgresql.cnpg.io"
+
+k8sImportPath = "@k8s"

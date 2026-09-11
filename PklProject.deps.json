@@ -99,6 +99,11 @@
       "uri": "projectpackage://local/homelab/packages/traefik@0.1.0",
       "path": "packages/traefik"
     },
+    "package://local/homelab/packages/cloudnative-pg@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/cloudnative-pg@0.1.0",
+      "path": "packages/cloudnative-pg"
+    },
     "package://local/homelab/packages/gateway-api@0": {
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/gateway-api@0.1.0",
