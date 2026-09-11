@@ -4,9 +4,26 @@
 amends "@manifest/Patch.pkl"
 
 import "@k8s/api/core/v1/ConfigMap.pkl"
+import ".../app.pkl"
 
 patch = new Mixin<ConfigMap> {
   data = new Mapping {
+    ["admin.enabled"] = "false"
+    ["url"] = "https://\(app.primaryHostname)"
+    ["additionalUrls"] = """
+      - https://\(app.aliasHostname)
+      """
     ["webhook.maxPayloadSizeMB"] = "1"
+    ["oidc.config"] = """
+      name: Zitadel
+      issuer: https://auth.\(app.rootDomain)
+      clientID: $argocd-zitadel-oidc:zitadel-client-id
+      clientSecret: $argocd-zitadel-oidc:zitadel-client-secret
+      requestedScopes:
+        - openid
+        - profile
+        - email
+      logoutURL: https://auth.\(app.rootDomain)/oidc/v1/end_session
+      """
   }
 }

@@ -1,0 +1,13 @@
+amends "@manifest/Patch.pkl"
+
+import "@k8s/api/core/v1/ConfigMap.pkl"
+
+patch = new Mixin<ConfigMap> {
+  data = new Mapping {
+    ["scopes"] = "[groups]"
+    ["policy.csv"] = """
+      g, argocd_administrators, role:admin
+    """
+    ["policy.default"] = "role:denied"
+  }
+}

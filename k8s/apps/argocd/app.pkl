@@ -1,1 +1,4 @@
-amends ".../app.pkl"
+extends ".../app.pkl"
+
+primaryHostname: String = "argocd.\(module.ingressDomain)"
+aliasHostname: String = "argocd.\(module.ingressAliasDomain)"

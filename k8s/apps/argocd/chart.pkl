@@ -4,6 +4,7 @@ import "@gateway-api/HTTPRoute.pkl"
 import "@traefik-crds/Middleware.pkl"
 import "app.pkl"
 import ".../networking/traefik/app.pkl" as traefik
+import "oidc-secret.pkl" as oidcSecret
 
 // renovate: datasource=github-releases packageName=argoproj/argo-cd
 local version = "v3.5.2"
@@ -25,8 +26,8 @@ local httpRoute: HTTPRoute = new {
       }
     }
     hostnames {
-      "argocd.\(app.ingressDomain)"
-      "argocd.\(app.ingressAliasDomain)"
+      app.primaryHostname
+      app.aliasHostname
     }
     rules {
       new {
@@ -104,4 +105,5 @@ value {
   httpRoute
   webhookHttpRoute
   argocdWebhookStripPrefix
+  oidcSecret.resource
 }
