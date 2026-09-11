@@ -4,10 +4,6 @@ import "@argocd/Application.pkl"
 import "@openbao/Values.pkl"
 import "../tns-csi/app.pkl" as tns_csi
 
-// Disabled for the duration of the secrets-namespace migration (docs/pvc-namespace-migration.md).
-// Re-enable once the migration is verified.
-autoSync = false
-
 namespace = "secrets"
 
 // renovate: datasource=helm packageName=openbao registryUrl=https://openbao.github.io/openbao-helm

@@ -3,10 +3,6 @@ amends ".../app.pkl"
 import "../traefik/app.pkl" as traefik
 import "../tns-csi/app.pkl" as tns_csi
 
-// Disabled for the duration of the media-namespace migration (docs/pvc-namespace-migration.md).
-// Re-enable once the migration is verified.
-autoSync = false
-
 namespace = "media"
 
 // renovate: datasource=helm packageName=jellyfin registryUrl=https://jellyfin.github.io/jellyfin-helm
