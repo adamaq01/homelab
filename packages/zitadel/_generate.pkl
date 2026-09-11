@@ -1,0 +1,38 @@
+/// Generates a single Pkl module from the ZITADEL Helm chart's `values.schema.json`, exposing its
+/// properties as the module's own top-level properties (matching how `.../system/zitadel/app.pkl`
+/// constructs `helm.valuesObject` by amending an imported module, the same pattern
+/// `packages/openbao/_generate.pkl`/`packages/traefik/_generate.pkl` use).
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/zitadel/_generate.pkl --project-dir packages/zitadel -m packages/zitadel
+/// ```
+module zitadel.generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+
+// renovate: datasource=github-tags packageName=zitadel/zitadel-charts extractVersion=^zitadel-(?<version>.*)$
+version = "10.0.6"
+
+sourceUri = "https://raw.githubusercontent.com/zitadel/zitadel-charts/zitadel-\(version)/charts/zitadel/values.schema.json"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+local parsedRootSchema = Parser.parse(read(sourceUri)) as JsonSchema
+
+output {
+  files {
+    ["Values.pkl"] {
+      text = (new ModuleGenerator {
+        rootSchema = parsedRootSchema
+        baseUri = schemaBaseUri
+        moduleName = "Values"
+        existingTypes = Map()
+      }).moduleNode.output.text
+    }
+  }
+}

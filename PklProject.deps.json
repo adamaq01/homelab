@@ -15,16 +15,16 @@
         "sha256": "0520f82219c074d2f4b69ab9c57a4a1c1d0b3c4acc1e5d12749e72e0d567d9bf"
       }
     },
-    "package://local/homelab/packages/talos@0": {
+    "package://local/homelab/packages/manifest@0": {
       "type": "local",
-      "uri": "projectpackage://local/homelab/packages/talos@0.1.0",
-      "path": "packages/talos"
+      "uri": "projectpackage://local/homelab/packages/manifest@0.1.0",
+      "path": "packages/manifest"
     },
-    "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.syntax@1": {
+    "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib@2": {
       "type": "remote",
-      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.syntax@1.2.1",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/k8s.contrib@2.0.0",
       "checksums": {
-        "sha256": "cf1b59a7abeece233736845643297aaea09da7bfb85e21d9377e62301050e178"
+        "sha256": "69c34b9c34ee3d41d23f2888849e6a367634e889250fc78f9c17d686077dbf82"
       }
     },
     "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.uri@1": {
@@ -32,6 +32,18 @@
       "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.uri@1.0.4",
       "checksums": {
         "sha256": "5fe81aa62c57285a570262a31c07e3525fe234f3f2c3db7caf1de8bd15e2f24f"
+      }
+    },
+    "package://local/homelab/packages/cert-manager@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/cert-manager@0.1.0",
+      "path": "packages/cert-manager"
+    },
+    "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6",
+      "checksums": {
+        "sha256": "eac7bd1d523c46335ab241d746c0c0a878f4d46d226815cb66d21dd83e480795"
       }
     },
     "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema.contrib@1": {
@@ -48,45 +60,18 @@
         "sha256": "4ba370be1d8b424dff1b5a0597a2892af8c07a0c54f91373cd6cacb174494445"
       }
     },
+    "package://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.syntax@1": {
+      "type": "remote",
+      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/pkl.experimental.syntax@1.2.1",
+      "checksums": {
+        "sha256": "cf1b59a7abeece233736845643297aaea09da7bfb85e21d9377e62301050e178"
+      }
+    },
     "package://pkg.pkl-lang.org/pkl-pantry/org.json_schema@1": {
       "type": "remote",
       "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/org.json_schema@1.1.1",
       "checksums": {
         "sha256": "b2d4ca9f04918a47a5d53f5a744dbe8e8cd782e0a3726fbd26f85ccc6dbd1379"
-      }
-    },
-    "package://local/homelab/packages/openbao@0": {
-      "type": "local",
-      "uri": "projectpackage://local/homelab/packages/openbao@0.1.0",
-      "path": "packages/openbao"
-    },
-    "package://local/homelab/packages/external-dns@0": {
-      "type": "local",
-      "uri": "projectpackage://local/homelab/packages/external-dns@0.1.0",
-      "path": "packages/external-dns"
-    },
-    "package://local/homelab/packages/manifest@0": {
-      "type": "local",
-      "uri": "projectpackage://local/homelab/packages/manifest@0.1.0",
-      "path": "packages/manifest"
-    },
-    "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib@2": {
-      "type": "remote",
-      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/k8s.contrib@2.0.0",
-      "checksums": {
-        "sha256": "69c34b9c34ee3d41d23f2888849e6a367634e889250fc78f9c17d686077dbf82"
-      }
-    },
-    "package://local/homelab/packages/cert-manager@0": {
-      "type": "local",
-      "uri": "projectpackage://local/homelab/packages/cert-manager@0.1.0",
-      "path": "packages/cert-manager"
-    },
-    "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4": {
-      "type": "remote",
-      "uri": "projectpackage://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6",
-      "checksums": {
-        "sha256": "eac7bd1d523c46335ab241d746c0c0a878f4d46d226815cb66d21dd83e480795"
       }
     },
     "package://local/homelab/packages/argocd@0": {
@@ -98,11 +83,6 @@
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/traefik@0.1.0",
       "path": "packages/traefik"
-    },
-    "package://local/homelab/packages/cloudnative-pg@0": {
-      "type": "local",
-      "uri": "projectpackage://local/homelab/packages/cloudnative-pg@0.1.0",
-      "path": "packages/cloudnative-pg"
     },
     "package://local/homelab/packages/gateway-api@0": {
       "type": "local",
@@ -123,6 +103,31 @@
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/external-secrets@0.1.0",
       "path": "packages/external-secrets"
+    },
+    "package://local/homelab/packages/talos@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/talos@0.1.0",
+      "path": "packages/talos"
+    },
+    "package://local/homelab/packages/openbao@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/openbao@0.1.0",
+      "path": "packages/openbao"
+    },
+    "package://local/homelab/packages/external-dns@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/external-dns@0.1.0",
+      "path": "packages/external-dns"
+    },
+    "package://local/homelab/packages/cloudnative-pg@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/cloudnative-pg@0.1.0",
+      "path": "packages/cloudnative-pg"
+    },
+    "package://local/homelab/packages/zitadel@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/zitadel@0.1.0",
+      "path": "packages/zitadel"
     }
   }
 }

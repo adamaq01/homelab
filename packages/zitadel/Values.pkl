@@ -1,0 +1,1402 @@
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/zitadel/zitadel-charts/zitadel-10.0.6/charts/zitadel/values.schema.json>.
+///
+/// WARN: The root schema describes open-ended properties, but this is not possible to describe at the
+/// module level.
+module Values
+
+/// Affinity rules for pod scheduling. Use for advanced pod placement strategies like co-locating pods on
+/// the same node (pod affinity), spreading pods across zones (pod anti-affinity), or preferring certain
+/// nodes (node affinity). Ref:
+/// https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+affinity: Dynamic?
+
+/// (map[string]string) Annotations to add to the ZITADEL Deployment resource. Use this for integration
+/// with tools like ArgoCD, Flux, or external monitoring systems.
+annotations: Dynamic?
+
+cleanupJob: CleanupJob?
+
+configMap: ConfigMap?
+
+/// ([]EnvVar) Additional environment variables for the ZITADEL container. Use this to pass configuration
+/// that isn't available through configmapConfig or secretConfig, or to inject values from other
+/// Kubernetes resources like ConfigMaps or Secrets. ZITADEL environment variables follow the pattern
+/// ZITADEL_<SECTION>_<KEY>. Ref:
+/// https://zitadel.com/docs/self-hosting/manage/configure#configure-by-environment-variables
+env: Listing<Dynamic>?
+
+/// Name of a Kubernetes Secret containing environment variables to inject into the ZITADEL container.
+/// All key-value pairs in the secret will be available as environment variables. This is useful for
+/// managing multiple ZITADEL configuration values in a single secret, especially when using external
+/// secret management tools like External Secrets Operator or Sealed Secrets. Ref:
+/// https://zitadel.com/docs/self-hosting/manage/configure#configure-by-environment-variables
+envVarsSecret: String?
+
+/// ([]Container) Sidecar containers to run alongside the main ZITADEL container in the Deployment pod.
+/// Use this for logging agents, monitoring sidecars, service meshes, or database proxies (e.g.,
+/// cloud-sql-proxy for Google Cloud SQL). These containers share the pod's network namespace and can
+/// access the same volumes as the main container.
+extraContainers: Listing<Dynamic>?
+
+/// ([]object) Additional Kubernetes manifests to deploy alongside the chart. This allows you to include
+/// custom resources without creating a separate chart. Supports Helm templating syntax including
+/// .Release, .Values, and template functions. Use this for secrets, configmaps, network policies, or any
+/// other resources that ZITADEL depends on.
+extraManifests: Listing?
+
+/// ([]VolumeMount) Additional volume mounts for the main ZITADEL container. Use this to mount volumes
+/// defined in extraVolumes into the container filesystem. Common use cases include mounting custom CA
+/// certificates, configuration files, or shared data between containers.
+extraVolumeMounts: Listing<Dynamic>?
+
+/// ([]Volume) Additional volumes to add to ZITADEL pods. These volumes can be referenced by
+/// extraVolumeMounts to make data available to the ZITADEL container or sidecar containers. Supports all
+/// Kubernetes volume types: secrets, configMaps, persistentVolumeClaims, emptyDir, hostPath, etc.
+extraVolumes: Listing<Dynamic>?
+
+/// Completely override the generated resource names (release-name + chart-name). Takes precedence over
+/// nameOverride. Use this when you need full control over resource naming, such as when migrating from
+/// another chart.
+fullnameOverride: String?
+
+gateway: Gateway?
+
+image: Image?
+
+/// ([]LocalObjectReference) References to secrets containing Docker registry credentials for pulling
+/// private ZITADEL images. Each entry should be the name of an existing secret of type
+/// kubernetes.io/dockerconfigjson. Example: imagePullSecrets: - name: my-registry-secret
+imagePullSecrets: Listing<Dynamic>?
+
+/// Global container registry override for tool images (e.g., wait4x, kubectl). When set, this registry
+/// is prepended to tool image repositories for compatibility with CRI-O v1.34+ which enforces fully
+/// qualified image names. If left empty, defaults to "docker.io".
+imageRegistry: String?
+
+ingress: Ingress?
+
+initJob: InitJob?
+
+livenessProbe: LoginLivenessProbe?
+
+login: Login?
+
+metrics: ItemMetrics?
+
+/// Override the "zitadel" portion of resource names. Useful when the default naming would conflict with
+/// existing resources or when deploying multiple instances with different configurations.
+nameOverride: String?
+
+/// (map[string]string) Node labels for pod assignment. Pods will only be scheduled on nodes that have
+/// all the specified labels. Use this to target specific node pools (e.g., high-memory nodes, nodes in
+/// specific zones). Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+nodeSelector: Dynamic?
+
+pdb: ItemPdb?
+
+/// (map[string]string) Additional labels to add to ZITADEL pods beyond the standard Helm labels. Useful
+/// for organizing pods with custom label selectors, network policies, or pod security policies.
+podAdditionalLabels: Dynamic?
+
+/// (map[string]string) Annotations to add to ZITADEL pods. Use this for integrations like Prometheus
+/// scraping, Istio sidecar injection, Vault agent injection, or any other annotation-based
+/// configuration. Example: podAnnotations: prometheus.io/scrape: "true" sidecar.istio.io/inject: "true"
+podAnnotations: Dynamic?
+
+podSecurityContext: Dynamic?
+
+postgresql: Postgresql?
+
+readinessProbe: ItemReadinessProbe?
+
+/// Number of ZITADEL pod replicas. While a single replica is fine for testing, production environments
+/// should use 3 or more to prevent downtime during rolling updates, node failures, and ensure high
+/// availability.
+replicaCount: Int?
+
+/// CPU and memory resource requests and limits for the ZITADEL container. Setting appropriate resources
+/// ensures predictable performance and prevents resource starvation. Requests affect scheduling; limits
+/// enforce caps. Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources: Dynamic?
+
+securityContext: Dynamic?
+
+service: ItemService?
+
+serviceAccount: ItemServiceAccount?
+
+setupJob: SetupJob?
+
+startupProbe: ItemStartupProbe?
+
+/// ([]Toleration) Tolerations allow pods to be scheduled on nodes with matching taints. Taints are used
+/// to repel pods from nodes; tolerations allow exceptions. Ref:
+/// https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: Listing<Dynamic>?
+
+tools: Tools?
+
+/// ([]TopologySpreadConstraint) Topology spread constraints control how pods are distributed across
+/// topology domains (e.g., zones, nodes, regions) for high availability. Unlike affinity, these
+/// constraints provide more granular control over pod distribution. Ref:
+/// https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+topologySpreadConstraints: Listing<Dynamic>?
+
+zitadel: Zitadel?
+
+class CleanupJob {
+  /// Maximum time in seconds for the cleanup job to complete. After this deadline, the job is terminated
+  /// even if still running.
+  activeDeadlineSeconds: Int?
+
+  /// (map[string]string) Annotations for the cleanup job. The post-delete hook ensures this runs on helm
+  /// uninstall, and the delete policy removes the job after completion.
+  annotations: Annotations?
+
+  /// Number of retries before marking the cleanup job as failed.
+  backoffLimit: Int?
+
+  /// Enable the cleanup job to remove secrets created by the setup job. Set to false if you want to
+  /// preserve secrets across reinstalls.
+  enabled: Boolean?
+
+  /// (map[string]string) Additional labels to add to cleanup job pods.
+  podAdditionalLabels: Dynamic?
+
+  /// (map[string]string) Additional annotations to add to cleanup job pods.
+  podAnnotations: Dynamic?
+
+  /// Resource limits and requests for the cleanup job container. Keep minimal as this job only runs
+  /// kubectl delete commands.
+  resources: Dynamic?
+}
+
+/// (map[string]string) Annotations for the cleanup job. The post-delete hook ensures this runs on helm
+/// uninstall, and the delete policy removes the job after completion.
+class Annotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class ConfigMap {
+  /// (map[string]string) Annotations for the ZITADEL ConfigMap. The default Helm hooks ensure the
+  /// ConfigMap is created before the deployment and recreated on upgrades to pick up configuration
+  /// changes.
+  annotations: ConfigMapAnnotations?
+}
+
+/// (map[string]string) Annotations for the ZITADEL ConfigMap. The default Helm hooks ensure the
+/// ConfigMap is created before the deployment and recreated on upgrades to pick up configuration
+/// changes.
+class ConfigMapAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class Gateway {
+  grpcRoute: GrpcRoute?
+
+  httpRoute: HttpRoute?
+}
+
+class GrpcRoute {
+  /// (map[string]string) Annotations to apply to the GRPCRoute resource.
+  annotations: Dynamic?
+
+  /// If true, creates a GRPCRoute resource for the ZITADEL gRPC API.
+  enabled: Boolean?
+
+  /// ([]GRPCRouteFilter) Filters to apply to all rules. These define processing steps for gRPC requests,
+  /// such as header modification or mirroring. Ref:
+  /// https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GRPCRouteFilter
+  filters: Listing<Filter>?
+
+  /// Hostnames for the GRPCRoute. If empty, defaults to ExternalDomain.
+  hostnames: Listing<String>?
+
+  /// (map[string]string) Additional labels to apply to the GRPCRoute resource.
+  labels: Dynamic?
+
+  /// ([]GRPCRouteMatch) Matches to apply to the GRPCRoute rule. If empty, the route matches all gRPC
+  /// requests per the Gateway API spec. Some implementations (e.g. Cilium) may require explicit matches
+  /// to correctly prioritize GRPCRoute over HTTPRoute when both share the same hostname. Ref:
+  /// https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GRPCRouteMatch
+  matches: Listing<Match>?
+
+  /// References to Gateway resources that this route should be attached to. Example: parentRefs: - name:
+  /// my-gateway
+  parentRefs: Listing<ParentRef>?
+}
+
+class Filter {
+  type: String?
+}
+
+class Match {
+  headers: Listing<Header>?
+
+  method: Method?
+}
+
+class Header {
+  name: String?
+
+  type: String?
+
+  value: String?
+}
+
+class Method {
+  method: String?
+
+  service: String?
+
+  type: String?
+}
+
+class ParentRef {
+  name: String?
+
+  namespace: String?
+
+  port: Int?
+
+  sectionName: String?
+}
+
+class HttpRoute {
+  /// (map[string]string) Annotations to apply to the HTTPRoute resource.
+  annotations: Dynamic?
+
+  /// If true, creates an HTTPRoute resource for the ZITADEL service.
+  enabled: Boolean?
+
+  /// ([]HTTPRouteFilter) Filters to apply to all rules. These define processing steps for requests, such
+  /// as header modification or URL rewrites. Ref:
+  /// https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteFilter
+  filters: Listing<Filter>?
+
+  /// Hostnames for the HTTPRoute. If empty, defaults to ExternalDomain.
+  hostnames: Listing<String>?
+
+  /// (map[string]string) Additional labels to apply to the HTTPRoute resource.
+  labels: Dynamic?
+
+  /// References to Gateway resources that this route should be attached to. Each entry must include at
+  /// least a `name` field matching an existing Gateway. Example: parentRefs: - name: my-gateway
+  /// sectionName: https
+  parentRefs: Listing<ParentRef>?
+
+  /// Path matching rules for the HTTPRoute. Each entry generates a separate rule.
+  paths: Listing<HttpRoutePath>?
+
+  /// Timeouts for HTTP requests routed via this HTTPRoute. Ref:
+  /// https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteTimeouts
+  timeouts: Mapping<String, String>?
+}
+
+class HttpRoutePath {
+  path: String?
+
+  pathType: ("Exact"|"PathPrefix"|"RegularExpression")?
+}
+
+class Image {
+  /// Image pull policy. Use "Always" for mutable tags like "latest", or "IfNotPresent" for immutable
+  /// version tags to reduce network traffic.
+  pullPolicy: String?
+
+  /// Docker image repository for ZITADEL. The default uses GitHub Container Registry. Change this if
+  /// using a private registry or mirror.
+  repository: String?
+
+  /// Image tag. Defaults to the chart's appVersion if not specified. Use a specific version tag (e.g.,
+  /// "v2.45.0") for production deployments to ensure reproducibility and controlled upgrades.
+  tag: String?
+}
+
+class Ingress {
+  /// (map[string]string) Annotations to apply to the Ingress resource.
+  annotations: Dynamic?
+
+  /// The name of the IngressClass resource to use for this Ingress. Ref:
+  /// https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class
+  className: String?
+
+  /// A chart-specific setting to enable logic for different controllers. Use "aws" to generate AWS
+  /// ALB-specific annotations and resources. Use "nginx" to inject the
+  /// nginx.ingress.kubernetes.io/backend-protocol annotation.
+  controller: String?
+
+  /// If true, creates an Ingress resource for the ZITADEL service.
+  enabled: Boolean?
+
+  /// A list of host rules for the Ingress. Each host can have multiple paths.
+  hosts: Listing<IngressHost>?
+
+  /// ([]IngressTLS) TLS configuration for the Ingress. This allows you to secure the endpoint with HTTPS
+  /// by referencing a secret that contains the TLS certificate and key.
+  tls: Listing<Dynamic>?
+}
+
+class IngressHost {
+  paths: Listing<Path>?
+}
+
+class Path {
+  path: String?
+
+  pathType: String?
+}
+
+class InitJob {
+  /// Maximum time in seconds for the init job to complete. The job is terminated if it exceeds this
+  /// deadline, regardless of backoffLimit.
+  activeDeadlineSeconds: Int?
+
+  /// (map[string]string) Annotations for the init job. The Helm hooks ensure this job runs before the
+  /// main deployment and is recreated on each upgrade.
+  annotations: InitJobAnnotations?
+
+  /// Number of retries before marking the init job as failed. Increase this if the database might take
+  /// longer to become available.
+  backoffLimit: Int?
+
+  command: String?
+
+  /// Enable or disable the init job. Set to false after the initial installation if you want to manage
+  /// database initialization externally or if no database changes are expected during upgrades.
+  enabled: Boolean?
+
+  /// ([]Container) Sidecar containers to run alongside the init container. Useful for logging, proxies
+  /// (e.g., cloud-sql-proxy), or other supporting services.
+  extraContainers: Listing<Dynamic>?
+
+  /// ([]Container) Init containers to run before the main init container. Useful for waiting on
+  /// additional dependencies or performing pre-initialization tasks.
+  initContainers: Listing<Dynamic>?
+
+  /// (map[string]string) Additional labels to add to init job pods.
+  podAdditionalLabels: Dynamic?
+
+  /// (map[string]string) Additional annotations to add to init job pods.
+  podAnnotations: Dynamic?
+
+  /// CPU and memory resource requests and limits for the init job container. The init job typically
+  /// requires minimal resources as it only runs SQL commands against the database.
+  resources: Dynamic?
+}
+
+/// (map[string]string) Annotations for the init job. The Helm hooks ensure this job runs before the main
+/// deployment and is recreated on each upgrade.
+class InitJobAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class LoginLivenessProbe {
+  /// Enable or disable the liveness probe.
+  enabled: Boolean?
+
+  /// Number of consecutive failures before restarting the container.
+  failureThreshold: Int?
+
+  /// Seconds to wait before starting liveness checks after container start.
+  initialDelaySeconds: Int?
+
+  /// How often (in seconds) to perform the liveness check.
+  periodSeconds: Int?
+}
+
+class Login {
+  /// Affinity rules for pod scheduling. Use for advanced pod placement strategies like co-locating pods
+  /// or spreading across zones. Ref:
+  /// https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  affinity: Dynamic?
+
+  /// (map[string]string) Annotations to add to the Login UI Deployment resource.
+  annotations: Dynamic?
+
+  autoscaling: Autoscaling?
+
+  configMap: LoginConfigMap?
+
+  /// Custom environment variables for the Login UI ConfigMap. These override the default values which
+  /// configure the login service key path, audience, API URL, and custom request headers. Only set this
+  /// if you need to customize the Login UI behavior beyond the defaults.
+  customConfigmapConfig: String?
+
+  /// Enable or disable the Login UI deployment. When disabled, ZITADEL uses its built-in login interface
+  /// instead of the separate Login UI application.
+  enabled: Boolean?
+
+  /// ([]EnvVar) Additional environment variables for the Login UI container. Use this to pass
+  /// configuration that isn't available through customConfigmapConfig.
+  env: Listing<Dynamic>?
+
+  /// ([]Container) Sidecar containers to run alongside the Login UI container. Useful for logging
+  /// agents, proxies, or other supporting services.
+  extraContainers: Listing<Dynamic>?
+
+  /// ([]VolumeMount) Additional volume mounts for the Login UI container. Use this to mount custom
+  /// certificates, configuration files, or other data into the container.
+  extraVolumeMounts: Listing<Dynamic>?
+
+  /// ([]Volume) Additional volumes for the Login UI pod. Define volumes here that are referenced by
+  /// extraVolumeMounts.
+  extraVolumes: Listing<Dynamic>?
+
+  /// Completely override the generated resource names. Takes precedence over nameOverride when set.
+  fullnameOverride: String?
+
+  gateway: LoginGateway?
+
+  image: LoginImage?
+
+  /// ([]LocalObjectReference) References to secrets containing Docker registry credentials for pulling
+  /// private images. Each entry should be the name of an existing secret.
+  imagePullSecrets: Listing<Dynamic>?
+
+  ingress: LoginIngress?
+
+  /// ([]Container) Init containers to run before the Login UI container starts. Useful for waiting on
+  /// dependencies or performing setup tasks.
+  initContainers: Listing<Dynamic>?
+
+  livenessProbe: LoginLivenessProbe?
+
+  /// Name of an existing Kubernetes Secret containing the login service keypair. The secret must contain
+  /// keys "tls.crt" (RSA public certificate) and "tls.key" (RSA private key). When set, the chart skips
+  /// auto-generating a keypair and uses this secret instead. Useful for cert-manager or external secret
+  /// operators. Note: the keypair must be RSA (the login container signs JWTs using RS256).
+  loginServiceKeySecretName: String?
+
+  metrics: Metrics?
+
+  /// Override the "login" portion of resource names. Useful when the default naming conflicts with
+  /// existing resources.
+  nameOverride: String?
+
+  /// (map[string]string) Node labels for pod assignment. Pods will only be scheduled on nodes with
+  /// matching labels. Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  nodeSelector: Dynamic?
+
+  pdb: Pdb?
+
+  /// (map[string]string) Additional labels to add to Login UI pods beyond the standard Helm labels.
+  /// Useful for organizing pods with custom label selectors.
+  podAdditionalLabels: Dynamic?
+
+  /// (map[string]string) Annotations to add to Login UI pods. Useful for integrations like Prometheus
+  /// scraping, Istio sidecar injection, or Vault agent injection.
+  podAnnotations: Dynamic?
+
+  /// Optional pod-level security context overrides for Login UI pods. If left empty, the chart-wide
+  /// podSecurityContext defined below is used instead. Use this to customize security settings
+  /// specifically for the Login UI. Ref:
+  /// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  podSecurityContext: Dynamic?
+
+  readinessProbe: ReadinessProbe?
+
+  /// Number of Login UI pod replicas. A single replica is fine for testing, but production environments
+  /// should use 3 or more for high availability during rolling updates and node failures.
+  replicaCount: Int?
+
+  /// CPU and memory resource requests and limits for the Login UI container. Ref:
+  /// https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: Dynamic?
+
+  /// Number of old ReplicaSets to retain for rollback purposes. Set to 0 to disable rollback capability
+  /// and save cluster resources.
+  revisionHistoryLimit: Int?
+
+  /// Optional container-level security context overrides for the Login UI container. If left empty, the
+  /// chart-wide securityContext defined below is used instead. Use this to customize security settings
+  /// specifically for the Login UI container. Ref:
+  /// https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  securityContext: Dynamic?
+
+  service: Service?
+
+  serviceAccount: ServiceAccount?
+
+  startupProbe: StartupProbe?
+
+  /// ([]Toleration) Tolerations allow pods to be scheduled on nodes with matching taints. Ref:
+  /// https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  tolerations: Listing<Dynamic>?
+
+  /// ([]TopologySpreadConstraint) Topology spread constraints control how pods are distributed across
+  /// topology domains (e.g., zones, nodes) for high availability. Ref:
+  /// https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+  topologySpreadConstraints: Listing<Dynamic>?
+}
+
+class Autoscaling {
+  /// (map[string]string) Annotations applied to the HPA object.
+  annotations: Dynamic?
+
+  /// Configures the scaling behavior for scaling up and down. Use this to control how quickly the HPA
+  /// scales pods in response to metric changes. Ref:
+  /// https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior
+  behavior: Dynamic?
+
+  /// If true, enables the Horizontal Pod Autoscaler for the login deployment. This will automatically
+  /// override the `replicaCount` value.
+  enabled: Boolean?
+
+  /// The maximum number of pod replicas.
+  maxReplicas: Int?
+
+  /// ([]MetricSpec) Advanced scaling based on custom metrics exposed by Zitadel. To use these for
+  /// scaling, you MUST have a metrics server (e.g., Prometheus) and a metrics adapter (e.g.,
+  /// prometheus-adapter) running in your cluster. Ref:
+  /// https://github.com/kubernetes-sigs/prometheus-adapter
+  metrics: Listing<Dynamic>?
+
+  /// The minimum number of pod replicas.
+  minReplicas: Int?
+
+  /// The target average CPU utilization percentage.
+  targetCPU: Number?
+
+  /// The target average memory utilization percentage.
+  targetMemory: Number?
+}
+
+class LoginConfigMap {
+  /// (map[string]string) Annotations for the Login UI ConfigMap. The default hooks ensure the ConfigMap
+  /// is created before the deployment and recreated on upgrades.
+  annotations: LoginConfigMapAnnotations?
+}
+
+/// (map[string]string) Annotations for the Login UI ConfigMap. The default hooks ensure the ConfigMap is
+/// created before the deployment and recreated on upgrades.
+class LoginConfigMapAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class LoginGateway {
+  httpRoute: GatewayHttpRoute?
+}
+
+class GatewayHttpRoute {
+  /// (map[string]string) Annotations to apply to the HTTPRoute resource.
+  annotations: Dynamic?
+
+  /// If true, creates an HTTPRoute resource for the Login UI service.
+  enabled: Boolean?
+
+  /// ([]HTTPRouteFilter) Filters to apply to all rules. These define processing steps for requests, such
+  /// as header modification or URL rewrites. Ref:
+  /// https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteFilter
+  filters: Listing<Filter>?
+
+  /// Hostnames for the HTTPRoute. If empty, defaults to ExternalDomain.
+  hostnames: Listing<String>?
+
+  /// (map[string]string) Additional labels to apply to the HTTPRoute resource.
+  labels: Dynamic?
+
+  /// References to Gateway resources that this route should be attached to. Example: parentRefs: - name:
+  /// my-gateway
+  parentRefs: Listing<ParentRef>?
+
+  /// Path matching rules for the HTTPRoute. Each entry generates a separate rule.
+  paths: Listing<HttpRoutePath>?
+
+  /// Timeouts for HTTP requests routed via this HTTPRoute. Ref:
+  /// https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteTimeouts
+  timeouts: Mapping<String, String>?
+}
+
+class LoginImage {
+  /// Image pull policy. Use "Always" for mutable tags like "latest", or "IfNotPresent" for immutable
+  /// tags.
+  pullPolicy: String?
+
+  /// Docker image repository for the Login UI.
+  repository: String?
+
+  /// Image tag. Defaults to the chart's appVersion if not specified. Use a specific version tag for
+  /// production deployments to ensure reproducibility.
+  tag: String?
+}
+
+class LoginIngress {
+  /// (map[string]string) Annotations to apply to the Login UI Ingress resource.
+  annotations: Dynamic?
+
+  /// The name of the IngressClass resource to use for this Ingress. Ref:
+  /// https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class
+  className: String?
+
+  /// A chart-specific setting to enable logic for different controllers. Use "aws" to generate AWS
+  /// ALB-specific annotations.
+  controller: String?
+
+  /// If true, creates an Ingress resource for the Login UI service.
+  enabled: Boolean?
+
+  /// A list of host rules for the Ingress. The default path targets the login UI.
+  hosts: Listing<IngressHost>?
+
+  /// ([]IngressTLS) TLS configuration for the Ingress. Secure the login UI with HTTPS by referencing a
+  /// secret containing the TLS certificate and key.
+  tls: Listing<Dynamic>?
+}
+
+class Metrics {
+  /// Enable metrics scraping annotations on Login UI pods. When true, adds prometheus.io/* annotations
+  /// that enable automatic discovery by Prometheus.
+  enabled: Boolean?
+
+  serviceMonitor: ServiceMonitor?
+}
+
+class ServiceMonitor {
+  /// (map[string]string) Additional labels to add to the ServiceMonitor. Use this to match Prometheus
+  /// Operator's serviceMonitorSelector if configured.
+  additionalLabels: Dynamic?
+
+  /// Create a ServiceMonitor resource for Prometheus Operator integration. The Prometheus community Helm
+  /// chart (kube-prometheus-stack) installs this operator. To allow discovery across all namespaces,
+  /// set: prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+  enabled: Boolean?
+
+  /// If true, use metric labels from the Login UI instead of relabeling them to match Prometheus
+  /// conventions.
+  honorLabels: Boolean?
+
+  /// If true, preserve original scrape timestamps from the Login UI instead of using Prometheus server
+  /// time.
+  honorTimestamps: Boolean?
+
+  /// ([]RelabelConfig) Relabeling rules applied to individual metrics. Use to rename metrics, drop
+  /// expensive metrics, or modify metric labels.
+  metricRelabellings: Listing?
+
+  /// Namespace where the ServiceMonitor should be created. If null, uses the release namespace. Set this
+  /// if Prometheus watches a specific namespace.
+  namespace: String?
+
+  /// HTTP proxy URL for scraping. Use if Prometheus needs to access the Login UI through a proxy.
+  proxyUrl: String?
+
+  /// ([]RelabelConfig) Relabeling rules applied before ingestion. Use to modify, filter, or drop labels
+  /// before metrics are stored.
+  relabellings: Listing?
+
+  /// HTTP scheme to use for scraping. Set to "https" if the Login UI has internal TLS enabled. If null,
+  /// defaults to "http".
+  scheme: String?
+
+  /// How often Prometheus should scrape metrics from the Login UI. If null, uses Prometheus's default
+  /// scrape interval (typically 30s).
+  scrapeInterval: String?
+
+  /// Timeout for scrape requests. If null, uses Prometheus's default timeout. Should be less than
+  /// scrapeInterval.
+  scrapeTimeout: String?
+
+  /// TLS configuration for scraping HTTPS endpoints. Configure this if the Login UI has internal TLS
+  /// enabled and you need to verify certificates.
+  tlsConfig: Dynamic?
+}
+
+class Pdb {
+  /// (map[string]string) Additional annotations to apply to the Pod Disruption Budget resource.
+  annotations: Dynamic?
+
+  /// Enable or disable the Pod Disruption Budget for Login UI pods.
+  enabled: Boolean?
+
+  /// Maximum number of pods that can be unavailable during disruptions. Cannot be used together with
+  /// minAvailable.
+  maxUnavailable: (Int|String)?
+
+  /// Minimum number of pods that must remain available during disruptions. Cannot be used together with
+  /// maxUnavailable.
+  minAvailable: (Int|String)?
+}
+
+class ReadinessProbe {
+  /// Enable or disable the readiness probe.
+  enabled: Boolean?
+
+  /// Number of consecutive failures before marking the pod as not ready.
+  failureThreshold: Int?
+
+  /// Seconds to wait before starting readiness checks after container start.
+  initialDelaySeconds: Int?
+
+  /// How often (in seconds) to perform the readiness check.
+  periodSeconds: Int?
+}
+
+class Service {
+  /// (map[string]string) Annotations to add to the Service resource.
+  annotations: Dynamic?
+
+  /// Application protocol hint for ingress controllers and service meshes. Helps with protocol detection
+  /// and routing decisions.
+  appProtocol: String?
+
+  /// Fixed cluster IP address for ClusterIP services. Leave empty for automatic assignment. Only
+  /// applicable when type is "ClusterIP".
+  clusterIP: String?
+
+  /// Traffic policy for LoadBalancer services. "Cluster" distributes traffic to all nodes, "Local" only
+  /// routes to nodes with pods. Only applicable when type is "LoadBalancer".
+  externalTrafficPolicy: String?
+
+  /// (map[string]string) Labels to add to the Service resource.
+  labels: Dynamic?
+
+  /// Port number the service exposes. Clients connect to this port.
+  port: Int?
+
+  /// Protocol identifier used in port naming (e.g., "http", "https", "grpc").
+  protocol: String?
+
+  /// HTTP scheme for health checks and internal communication.
+  scheme: String?
+
+  /// Service type. Use "ClusterIP" for internal access, "NodePort" for node-level access, or
+  /// "LoadBalancer" for cloud provider load balancers.
+  type: String?
+}
+
+class ServiceAccount {
+  /// (map[string]string) Annotations for the Login UI service account. The default Helm hooks ensure it
+  /// exists before pods are created. Add annotations here for cloud provider integrations (e.g., AWS IAM
+  /// roles, GCP Workload Identity).
+  annotations: ServiceAccountAnnotations?
+
+  /// Whether to create a dedicated service account for the Login UI. Set to false to use an existing
+  /// service account or the default account.
+  create: Boolean?
+
+  /// The name of the service account to use. If not set and create is true, a name is generated using
+  /// the fullname template.
+  name: String?
+}
+
+/// (map[string]string) Annotations for the Login UI service account. The default Helm hooks ensure it
+/// exists before pods are created. Add annotations here for cloud provider integrations (e.g., AWS IAM
+/// roles, GCP Workload Identity).
+class ServiceAccountAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class StartupProbe {
+  /// Enable or disable the startup probe. When enabled, liveness and readiness probes are disabled until
+  /// the startup probe succeeds.
+  enabled: Boolean?
+
+  /// Number of consecutive failures before marking startup as failed and restarting the container.
+  failureThreshold: Int?
+
+  /// How often (in seconds) to perform the startup check.
+  periodSeconds: Int?
+}
+
+class ItemMetrics {
+  /// Enable metrics scraping annotations on ZITADEL pods. When true, adds prometheus.io/* annotations
+  /// that enable automatic discovery by Prometheus.
+  enabled: Boolean?
+
+  serviceMonitor: MetricsServiceMonitor?
+}
+
+class MetricsServiceMonitor {
+  /// (map[string]string) Additional labels to add to the ServiceMonitor. Use this to match Prometheus
+  /// Operator's serviceMonitorSelector if configured.
+  additionalLabels: Dynamic?
+
+  enabled: Boolean?
+
+  /// If true, use metric labels from ZITADEL instead of relabeling them to match Prometheus conventions.
+  honorLabels: Boolean?
+
+  /// If true, preserve original scrape timestamps from ZITADEL instead of using Prometheus server time.
+  honorTimestamps: Boolean?
+
+  /// ([]RelabelConfig) Relabeling rules applied to individual metrics. Use to rename metrics, drop
+  /// expensive metrics, or modify metric labels.
+  metricRelabellings: Listing?
+
+  /// Namespace where the ServiceMonitor should be created. If null, uses the release namespace. Set this
+  /// if Prometheus watches a specific namespace.
+  namespace: String?
+
+  /// HTTP proxy URL for scraping. Use if Prometheus needs to access ZITADEL through a proxy.
+  proxyUrl: String?
+
+  /// ([]RelabelConfig) Relabeling rules applied before ingestion. Use to modify, filter, or drop labels
+  /// before metrics are stored.
+  relabellings: Listing?
+
+  /// HTTP scheme to use for scraping. Set to "https" if ZITADEL has internal TLS enabled. If null,
+  /// defaults to "http".
+  scheme: String?
+
+  /// How often Prometheus should scrape metrics from ZITADEL. If null, uses Prometheus's default scrape
+  /// interval (typically 30s).
+  scrapeInterval: String?
+
+  /// Timeout for scrape requests. If null, uses Prometheus's default timeout. Should be less than
+  /// scrapeInterval.
+  scrapeTimeout: String?
+
+  /// TLS configuration for scraping HTTPS endpoints. Configure this if ZITADEL has internal TLS enabled
+  /// and you need to verify certificates.
+  tlsConfig: Dynamic?
+}
+
+class ItemPdb {
+  /// (map[string]string) Additional annotations to apply to the Pod Disruption Budget resource.
+  annotations: Dynamic?
+
+  /// Enable or disable the Pod Disruption Budget for ZITADEL pods
+  enabled: Boolean?
+
+  /// Maximum number of pods that can be unavailable during disruptions. Cannot be used together with
+  /// minAvailable.
+  maxUnavailable: (Int|String)?
+
+  /// Minimum number of pods that must remain available during disruptions. Cannot be used together with
+  /// maxUnavailable.
+  minAvailable: (Int|String)?
+}
+
+class Postgresql {
+  auth: Auth?
+
+  /// Deploy a PostgreSQL instance as a subchart. Enables one-command full-stack install.
+  enabled: Boolean?
+
+  primary: Primary?
+}
+
+class Auth {
+  /// Database name to create for ZITADEL.
+  database: String?
+
+  /// Password for the ZITADEL application user. Change this for anything beyond a local quickstart.
+  password: String?
+
+  /// Password for the PostgreSQL superuser (postgres). Change this for anything beyond a local
+  /// quickstart.
+  postgresPassword: String?
+
+  /// Username for the ZITADEL application user.
+  username: String?
+}
+
+class Primary {
+  persistence: Persistence?
+}
+
+class Persistence {
+  /// Enable persistent storage for PostgreSQL data. Set to true if you want data to survive pod
+  /// restarts.
+  enabled: Boolean?
+}
+
+class ItemReadinessProbe {
+  /// Enable or disable the readiness probe.
+  enabled: Boolean?
+
+  /// Number of consecutive failures before marking the pod as not ready.
+  failureThreshold: Int?
+
+  /// Seconds to wait before starting readiness checks after container start. Set higher if ZITADEL needs
+  /// time to initialize before accepting traffic.
+  initialDelaySeconds: Int?
+
+  /// How often (in seconds) to perform the readiness check.
+  periodSeconds: Int?
+}
+
+class ItemService {
+  /// (map[string]string) Annotations to add to the Service resource. The default annotation tells
+  /// Traefik to use HTTP/2 when communicating with ZITADEL backends.
+  annotations: ServiceAnnotations?
+
+  /// Application protocol hint for ingress controllers and service meshes. "kubernetes.io/h2c" indicates
+  /// HTTP/2 over cleartext (without TLS).
+  appProtocol: String?
+
+  /// Fixed cluster IP address for ClusterIP services. Leave empty for automatic assignment by
+  /// Kubernetes. Only applicable when type is "ClusterIP". Setting a fixed IP is useful when other
+  /// services need a stable endpoint.
+  clusterIP: String?
+
+  /// Traffic policy for LoadBalancer and NodePort services. "Cluster" distributes traffic across all
+  /// nodes (default), "Local" only routes to nodes with pods, preserving client source IP but
+  /// potentially causing uneven load distribution.
+  externalTrafficPolicy: String?
+
+  /// (map[string]string) Labels to add to the Service resource. Use for organizing services or matching
+  /// service selectors in network policies.
+  labels: Dynamic?
+
+  /// Port number the service exposes. Clients and ingress controllers connect to this port. ZITADEL uses
+  /// 8080 by default for its HTTP/2 server.
+  port: Int?
+
+  /// Protocol identifier used in port naming. ZITADEL uses HTTP/2 (h2c) for both REST API and gRPC
+  /// traffic on the same port.
+  protocol: String?
+
+  /// HTTP scheme for health checks and internal communication. Use "HTTP" when TLS termination happens
+  /// at the ingress/load balancer, or "HTTPS" when ZITADEL is configured with internal TLS.
+  scheme: String?
+
+  /// Service type. Use "ClusterIP" for internal-only access (typical when using an ingress controller),
+  /// "NodePort" for direct node-level access, or "LoadBalancer" for cloud provider load balancers.
+  type: String?
+}
+
+/// (map[string]string) Annotations to add to the Service resource. The default annotation tells Traefik
+/// to use HTTP/2 when communicating with ZITADEL backends.
+class ServiceAnnotations {
+  `traefik.ingress.kubernetes.io/service.serversscheme`: String?
+}
+
+class ItemServiceAccount {
+  /// (map[string]string) Annotations to add to the service account. The default Helm hooks ensure the
+  /// service account exists before pods are created. Add annotations here for cloud provider
+  /// integrations (e.g., AWS IAM roles, GCP Workload Identity).
+  annotations: ItemServiceAccountAnnotations?
+
+  /// Whether to create a dedicated service account for ZITADEL. Set to false if you want to use an
+  /// existing service account or the default account.
+  create: Boolean?
+
+  /// The name of the service account to use. If not set and create is true, a name is generated using
+  /// the fullname template. Set this to use a specific existing service account when create is false.
+  name: String?
+}
+
+/// (map[string]string) Annotations to add to the service account. The default Helm hooks ensure the
+/// service account exists before pods are created. Add annotations here for cloud provider integrations
+/// (e.g., AWS IAM roles, GCP Workload Identity).
+class ItemServiceAccountAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class SetupJob {
+  /// Maximum time in seconds for the setup job to complete. The job is terminated if it exceeds this
+  /// deadline. Increase this for slow environments.
+  activeDeadlineSeconds: Int?
+
+  /// ([]string) Additional command-line arguments to pass to the ZITADEL setup command. The default
+  /// enables projection initialization for better startup performance.
+  additionalArgs: Listing<String>?
+
+  /// (map[string]string) Annotations for the setup job. The Helm hooks ensure this job runs after the
+  /// init job (weight "2" > "1") and before the main deployment.
+  annotations: SetupJobAnnotations?
+
+  /// Number of retries before marking the setup job as failed.
+  backoffLimit: Int?
+
+  /// ([]Container) Sidecar containers to run alongside the setup container. Useful for logging, proxies
+  /// (e.g., cloud-sql-proxy), or other supporting services.
+  extraContainers: Listing<Dynamic>?
+
+  /// ([]Container) Init containers to run before the main setup container. Useful for waiting on
+  /// additional dependencies or performing pre-setup tasks.
+  initContainers: Listing<Dynamic>?
+
+  machinekeyWriter: MachinekeyWriter?
+
+  /// (map[string]string) Additional labels to add to setup job pods.
+  podAdditionalLabels: Dynamic?
+
+  /// (map[string]string) Additional annotations to add to setup job pods.
+  podAnnotations: Dynamic?
+
+  /// CPU and memory resource requests and limits for the setup job container. The setup job performs
+  /// more work than init, including generating keys and creating initial data.
+  resources: Dynamic?
+}
+
+/// (map[string]string) Annotations for the setup job. The Helm hooks ensure this job runs after the init
+/// job (weight "2" > "1") and before the main deployment.
+class SetupJobAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class MachinekeyWriter {
+  image: MachinekeyWriterImage?
+
+  /// CPU and memory resource requests and limits for the machinekey writer container. This container
+  /// only runs kubectl commands and needs minimal resources.
+  resources: Dynamic?
+}
+
+class MachinekeyWriterImage {
+  /// Override the default kubectl image repository. Leave empty to use the value from
+  /// tools.kubectl.image.repository.
+  repository: String?
+
+  /// Override the default kubectl image tag. Leave empty to use the value from tools.kubectl.image.tag
+  /// (which defaults to cluster version).
+  tag: String?
+}
+
+class ItemStartupProbe {
+  /// Enable or disable the startup probe. When enabled, liveness and readiness probes are disabled until
+  /// the startup probe succeeds.
+  enabled: Boolean?
+
+  /// Number of consecutive failures before marking startup as failed and restarting the container. With
+  /// periodSeconds=1 and failureThreshold=30, the container has 30 seconds to start.
+  failureThreshold: Int?
+
+  /// How often (in seconds) to perform the startup check.
+  periodSeconds: Int?
+}
+
+class Tools {
+  kubectl: Kubectl?
+
+  wait4x: Wait4x?
+}
+
+class Kubectl {
+  image: KubectlImage?
+}
+
+class KubectlImage {
+  /// The pull policy for the kubectl image. If left empty, Kubernetes applies its default policy
+  /// depending on whether the tag is mutable or fixed.
+  pullPolicy: String?
+
+  /// The name of the image repository that contains the kubectl image. The chart automatically prepends
+  /// the registry (docker.io by default) for compatibility with CRI-O v1.34+ which enforces fully
+  /// qualified names.
+  repository: String?
+
+  /// The image tag to use for the kubectl image. It should be left empty to automatically default to the
+  /// Kubernetes cluster version
+  tag: String?
+}
+
+class Wait4x {
+  image: Wait4xImage?
+
+  /// CPU and memory resource requests and limits for wait4x init containers. These resources apply to
+  /// all init containers using the wait4x tool, such as wait-for-zitadel. Setting equal requests and
+  /// limits enables the "Guaranteed" QoS class when combined with resource settings on the main
+  /// container. Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  resources: Dynamic?
+}
+
+class Wait4xImage {
+  /// The pull policy for the wait4x image. If left empty, the chart defaults to the Kubernetes default
+  /// pull policy for the given tag.
+  pullPolicy: String?
+
+  /// The name of the image repository that contains the wait4x image. The chart automatically prepends
+  /// the registry (docker.io by default) for compatibility with CRI-O v1.34+ which enforces fully
+  /// qualified names.
+  repository: String?
+
+  /// The image tag to use for the wait4x image. Leave empty to require the user to set a specific
+  /// version explicitly.
+  tag: String?
+}
+
+class Zitadel {
+  autoscaling: ZitadelAutoscaling?
+
+  /// The key within the configSecretName secret that contains the ZITADEL configuration YAML. The
+  /// default "config-yaml" matches the expected format.
+  configSecretKey: String?
+
+  /// Name of an existing Kubernetes Secret containing ZITADEL configuration. Use this when you want to
+  /// manage ZITADEL configuration externally (e.g., via External Secrets Operator, Sealed Secrets, or
+  /// GitOps). The secret should contain YAML configuration in the same format as configmapConfig.
+  configSecretName: String?
+
+  /// ZITADEL runtime configuration written to a Kubernetes ConfigMap. These values are passed directly
+  /// to the ZITADEL binary and control its behavior. For the complete list of available configuration
+  /// options, see: https://github.com/zitadel/zitadel/blob/main/cmd/defaults.yaml
+  configmapConfig: ConfigmapConfig?
+
+  /// Name of a Kubernetes Secret containing the admin user's client certificate for mutual TLS (mTLS)
+  /// authentication to the database. The secret must contain keys "tls.crt" (certificate) and "tls.key"
+  /// (private key). Used by the init job for database setup operations that require elevated privileges.
+  dbSslAdminCrtSecret: String?
+
+  /// PEM-encoded CA certificate for verifying the database server's TLS certificate. Use this when your
+  /// PostgreSQL server uses a self-signed certificate or a certificate signed by a private CA. The
+  /// certificate is stored in a Kubernetes Secret and mounted into ZITADEL pods at
+  /// /db-ssl-ca-crt/ca.crt. Either provide the certificate inline here, or reference an existing secret
+  /// using dbSslCaCrtSecret instead.
+  dbSslCaCrt: String?
+
+  /// (map[string]string) Annotations for the dbSslCaCrt Secret when created from the inline certificate.
+  /// The default Helm hooks ensure the secret exists before pods start.
+  dbSslCaCrtAnnotations: DbSslCaCrtAnnotations?
+
+  /// Name of an existing Kubernetes Secret containing the database CA certificate at key "ca.crt". Use
+  /// this instead of dbSslCaCrt when the certificate is managed externally (e.g., by cert-manager or an
+  /// operator). The secret must exist in the same namespace as the ZITADEL release.
+  dbSslCaCrtSecret: String?
+
+  /// Name of a Kubernetes Secret containing the application user's client certificate for mutual TLS
+  /// (mTLS) authentication to the database. The secret must contain keys "tls.crt" (certificate) and
+  /// "tls.key" (private key). Used by the main ZITADEL deployment and setup job for normal database
+  /// operations.
+  dbSslUserCrtSecret: String?
+
+  debug: Debug?
+
+  /// ([]Container) Global sidecar containers added to all ZITADEL workloads (Deployment, init job, setup
+  /// job, and debug pod when enabled). Use this for shared services like database proxies (e.g.,
+  /// cloud-sql-proxy) that all workloads need to connect to the database.
+  extraContainers: Listing<Dynamic>?
+
+  /// ([]Container) Global init containers added to all ZITADEL workloads (Deployment, init job, setup
+  /// job, and debug pod when enabled). Use this for shared dependencies like database readiness checks
+  /// or certificate initialization that all workloads need.
+  initContainers: Listing<Dynamic>?
+
+  /// ZITADEL's masterkey for symmetric encryption of sensitive data like private keys and tokens. Must
+  /// be exactly 32 bytes. Using printable ASCII characters is recommended (alphanumeric). Do NOT use
+  /// multi-byte Unicode characters, as the key length is measured in bytes, not characters. Generate
+  /// with: tr -dc A-Za-z0-9 </dev/urandom | head -c 32 IMPORTANT: Store this value securely. Loss of the
+  /// masterkey means loss of all encrypted data. Either set this value or use masterkeySecretName.
+  masterkey: String?
+
+  /// (map[string]string) Annotations for the masterkey Secret when created from zitadel.masterkey. The
+  /// secret is created once on install and is immutable.
+  masterkeyAnnotations: MasterkeyAnnotations?
+
+  /// Name of an existing Kubernetes Secret containing the masterkey at key "masterkey". Use this for
+  /// production deployments to avoid storing the masterkey in values files. The secret must exist before
+  /// chart installation. Note: Either zitadel.masterkey or zitadel.masterkeySecretName must be set.
+  masterkeySecretName: String?
+
+  /// Optional overrides for the pod security context used by Zitadel pods. If left empty, the chart-wide
+  /// podSecurityContext defined below is used.
+  podSecurityContext: Dynamic?
+
+  /// Number of old ReplicaSets to retain for rollback purposes Set to 0 to not keep any old ReplicaSets
+  revisionHistoryLimit: Int?
+
+  /// Sensitive ZITADEL configuration values written to a Kubernetes Secret instead of a ConfigMap. Use
+  /// this for database passwords, API keys, SMTP credentials, and other values that should not be stored
+  /// in plain text. The secret is mounted alongside the ConfigMap and both are merged by ZITADEL at
+  /// startup. Structure follows the same format as configmapConfig. See all options:
+  /// https://github.com/zitadel/zitadel/blob/main/cmd/defaults.yaml Example: secretConfig: Database:
+  /// Postgres: User: Password: "my-secure-password"
+  secretConfig: Dynamic?
+
+  /// (map[string]string) Annotations for the secretConfig Secret. The default Helm hooks ensure the
+  /// secret is created before the deployment and recreated on upgrades.
+  secretConfigAnnotations: SecretConfigAnnotations?
+
+  /// Optional overrides for the container security context used by Zitadel pods. If left empty, the
+  /// chart-wide securityContext defined below is used.
+  securityContext: Dynamic?
+
+  selfSignedCert: SelfSignedCert?
+
+  /// Name of a Kubernetes Secret containing the TLS certificate for ZITADEL's internal HTTPS server. The
+  /// secret must contain keys "tls.crt" (certificate) and "tls.key" (private key). Use this when ZITADEL
+  /// should serve HTTPS directly instead of relying on TLS termination at an ingress controller or load
+  /// balancer. Requires configmapConfig.TLS.Enabled to be true.
+  serverSslCrtSecret: String?
+}
+
+class ZitadelAutoscaling {
+  /// (map[string]string) Annotations applied to the HPA object.
+  annotations: Dynamic?
+
+  /// Configures the scaling behavior for scaling up and down. See:
+  /// https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior
+  behavior: Dynamic?
+
+  /// If true, enables the Horizontal Pod Autoscaler for the Zitadel deployment. This will automatically
+  /// override the `replicaCount` value.
+  enabled: Boolean?
+
+  /// The maximum number of pod replicas.
+  maxReplicas: Int?
+
+  /// ([]MetricSpec) Advanced scaling based on custom metrics exposed by Zitadel. Zitadel exposes
+  /// standard Go runtime metrics. To use these for scaling, you MUST have a metrics server (e.g.,
+  /// Prometheus) and a metrics adapter (e.g., prometheus-adapter) running in your cluster. Ref:
+  /// https://github.com/kubernetes-sigs/prometheus-adapter
+  metrics: Listing<Dynamic>?
+
+  /// The minimum number of pod replicas.
+  minReplicas: Int?
+
+  /// The target average CPU utilization percentage.
+  targetCPU: Number?
+
+  /// The target average memory utilization percentage.
+  targetMemory: Number?
+}
+
+/// ZITADEL runtime configuration written to a Kubernetes ConfigMap. These values are passed directly to
+/// the ZITADEL binary and control its behavior. For the complete list of available configuration
+/// options, see: https://github.com/zitadel/zitadel/blob/main/cmd/defaults.yaml
+class ConfigmapConfig {
+  ExternalDomain: String?
+
+  ExternalSecure: Boolean?
+
+  FirstInstance: FirstInstance?
+
+  Machine: ConfigmapConfigMachine?
+
+  TLS: TLS?
+}
+
+class FirstInstance {
+  MachineKeyPath: String?
+
+  Org: Org?
+
+  PatPath: String?
+
+  Skip: Boolean?
+}
+
+class Org {
+  Machine: Machine?
+
+  Skip: Boolean?
+}
+
+class Machine {
+  Machine: MachineMachine?
+
+  MachineKey: MachineKey?
+
+  Pat: Pat?
+}
+
+class MachineMachine {
+  Name: String?
+
+  Username: String?
+}
+
+class MachineKey {
+  ExpirationDate: String?
+
+  Type: Int?
+}
+
+class Pat {
+  ExpirationDate: String?
+}
+
+class ConfigmapConfigMachine {
+  Identification: Identification?
+}
+
+class Identification {
+  Hostname: TLS?
+
+  Webhook: TLS?
+}
+
+class TLS {
+  Enabled: Boolean?
+}
+
+/// (map[string]string) Annotations for the dbSslCaCrt Secret when created from the inline certificate.
+/// The default Helm hooks ensure the secret exists before pods start.
+class DbSslCaCrtAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class Debug {
+  /// (map[string]string) Annotations for the debug pod. The Helm hooks ensure it's created during
+  /// install/upgrade and cleaned up appropriately.
+  annotations: DebugAnnotations?
+
+  /// Enable or disable the debug pod. Only enable for troubleshooting; disable in production
+  /// environments.
+  enabled: Boolean?
+
+  /// ([]Container) Sidecar containers to run alongside the debug container.
+  extraContainers: Listing<Dynamic>?
+
+  /// ([]Container) Init containers to run before the debug container starts.
+  initContainers: Listing<Dynamic>?
+}
+
+/// (map[string]string) Annotations for the debug pod. The Helm hooks ensure it's created during
+/// install/upgrade and cleaned up appropriately.
+class DebugAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+/// (map[string]string) Annotations for the masterkey Secret when created from zitadel.masterkey. The
+/// secret is created once on install and is immutable.
+class MasterkeyAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+/// (map[string]string) Annotations for the secretConfig Secret. The default Helm hooks ensure the secret
+/// is created before the deployment and recreated on upgrades.
+class SecretConfigAnnotations {
+  `helm.sh/hook`: String?
+
+  `helm.sh/hook-delete-policy`: String?
+
+  `helm.sh/hook-weight`: String?
+}
+
+class SelfSignedCert {
+  additionalDnsName: String?
+
+  /// Enable generation of a self-signed TLS certificate.
+  enabled: Boolean?
+}

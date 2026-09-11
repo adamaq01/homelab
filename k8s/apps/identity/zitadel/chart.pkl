@@ -1,0 +1,70 @@
+/// Hand-written manifests supplementing `app.pkl`'s Helm source, folded into this same Application
+/// via ArgoCD's multi-source (`sources`) support rather than a separate Application:
+///
+/// - The `Cluster` (CloudNativePG) backing ZITADEL's Postgres database. Owned here, in ZITADEL's
+///   own app directory, rather than centralized under `.../storage/cloudnative-pg/`: each app that
+///   needs its own database owns that database's lifecycle (matching `.../secrets/openbao/app.pkl`'s
+///   embedded `ClusterSecretStore`).
+/// - The masterkey `ExternalSecret`, sourced from OpenBao (seeded with `bao kv put secret/zitadel
+///   masterkey=<32-byte-random-string>` — see `.../secrets/openbao/app.pkl`'s bootstrap step 5. Must
+///   be exactly 32 bytes, printable ASCII recommended: `tr -dc A-Za-z0-9 </dev/urandom | head -c 32`).
+///
+/// Both are marked as `PreSync` hooks rather than left as regular Application resources: ArgoCD
+/// runs `PreSync` hooks — and waits for them to apply — strictly before the main Sync phase, which
+/// is where the rest of the Application's resources land (the Helm source's init/setup Jobs
+/// included, since those carry no hook annotations of their own). Without this, the setup Job can
+/// be created — and start trying to connect — before the `Cluster` object (or the masterkey Secret
+/// ESO generates from the `ExternalSecret` below) even exists.
+module chart
+
+import "@cloudnative-pg/v1/Cluster.pkl"
+import ".../utils/ExternalSecret.pkl"
+import ".../storage/tns-csi/app.pkl" as tns_csi
+import "app.pkl"
+
+local hookAnnotationKey = "argocd.argoproj.io/hook"
+
+database: Cluster = new {
+  metadata {
+    name = app.dbClusterName
+    annotations {
+      [hookAnnotationKey] = "PreSync"
+    }
+  }
+  spec {
+    instances = 1
+    storage {
+      size = "10Gi"
+      storageClass = tns_csi.postgresStorageClassName
+    }
+    bootstrap {
+      initdb {
+        database = "zitadel"
+        owner = "zitadel"
+      }
+    }
+  }
+}
+
+masterkeySecret = (new ExternalSecret {
+  name = app.masterkeySecretName
+  secrets {
+    ["zitadel"] {
+      "masterkey"
+    }
+  }
+}.resource) {
+  metadata {
+    annotations {
+      [hookAnnotationKey] = "PreSync"
+    }
+  }
+}
+
+output {
+  value = new Listing {
+    database
+    masterkeySecret
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

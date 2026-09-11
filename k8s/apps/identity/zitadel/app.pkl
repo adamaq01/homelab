@@ -1,0 +1,101 @@
+extends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+import "@zitadel/Values.pkl"
+import ".../networking/traefik/app.pkl" as traefik
+
+// renovate: datasource=helm packageName=zitadel registryUrl=https://charts.zitadel.com
+local version = "10.0.6"
+
+local hostname = "auth.\(module.rootDomain)"
+
+// Referenced by `chart.pkl`'s `Cluster` (CloudNativePG) — the auto-generated app-user Secret this
+// produces (`\(dbClusterName)-app`, with a ready-made `uri` key) is wired into the Helm values
+// below via `ZITADEL_DATABASE_POSTGRES_DSN`.
+dbClusterName: String = "zitadel-db"
+
+// Referenced by `chart.pkl`'s masterkey `ExternalSecret`. Must contain a `masterkey` key — ZITADEL's
+// symmetric encryption key for private keys/tokens, generated once and never rotated.
+masterkeySecretName: String = "zitadel-masterkey"
+
+/// This Application's manifests come from two sources at once (ArgoCD's multi-source support): this
+/// Helm chart, and `chart.pkl`'s hand-written `Cluster`/`ExternalSecret`, both landing in the same
+/// Application rather than being split across separate ones (matching `.../secrets/openbao/app.pkl`).
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://charts.zitadel.com"
+    chart = "zitadel"
+    targetRevision = version
+    helm {
+      valuesObject = (new Values {
+        zitadel {
+          configmapConfig {
+            ExternalDomain = hostname
+            // Port is inferred from this (443) — ZITADEL's own default when unset.
+            ExternalSecure = true
+          }
+          // Postgres 14+ backend, provided by CloudNativePG (`chart.pkl`'s `Cluster`) rather than
+          // the chart's own bundled Bitnami `postgresql` subchart (left at its default `enabled:
+          // false`) — keeps the same operator/DB pattern used elsewhere in this repo.
+          masterkeySecretName = module.masterkeySecretName
+        }
+        env {
+          new {
+            name = "ZITADEL_DATABASE_POSTGRES_DSN"
+            valueFrom {
+              secretKeyRef {
+                name = "\(dbClusterName)-app"
+                key = "uri"
+              }
+            }
+          }
+        }
+        gateway {
+          httpRoute {
+            enabled = true
+            annotations {
+              [module.publicAnnotationKey] = ""
+            }
+            parentRefs {
+              new {
+                name = traefik.gatewayName
+                namespace = traefik.namespace
+                sectionName = "websecure"
+              }
+            }
+            hostnames {
+              hostname
+            }
+          }
+        }
+        login {
+          // The chart's own default ("kubernetes.io/http") isn't one of the appProtocol values
+          // Traefik's Gateway API provider recognizes, which makes it reject the backendRef
+          // entirely ("unsupported application protocol kubernetes.io/http"). Plain "http" is.
+          service {
+            appProtocol = "http"
+          }
+          gateway {
+            httpRoute {
+              enabled = true
+              annotations {
+                [module.publicAnnotationKey] = ""
+              }
+              parentRefs {
+                new {
+                  name = traefik.gatewayName
+                  namespace = traefik.namespace
+                  sectionName = "websecure"
+                }
+              }
+              hostnames {
+                hostname
+              }
+            }
+          }
+        }
+      }).toDynamic()
+    }
+  }
+  module.directorySource
+}
