@@ -9,27 +9,27 @@
 ///   masterkey=<32-byte-random-string>` — see `.../secrets/openbao/app.pkl`'s bootstrap step 5. Must
 ///   be exactly 32 bytes, printable ASCII recommended: `tr -dc A-Za-z0-9 </dev/urandom | head -c 32`).
 ///
-/// Both are marked as `PreSync` hooks rather than left as regular Application resources: ArgoCD
-/// runs `PreSync` hooks — and waits for them to apply — strictly before the main Sync phase, which
-/// is where the rest of the Application's resources land (the Helm source's init/setup Jobs
-/// included, since those carry no hook annotations of their own). Without this, the setup Job can
-/// be created — and start trying to connect — before the `Cluster` object (or the masterkey Secret
-/// ESO generates from the `ExternalSecret` below) even exists.
+/// Both get an earlier `sync-wave` (-2) than everything else in the Application: ArgoCD applies
+/// every resource from every source together in ascending wave order, so this guarantees the
+/// `Cluster` object (and the masterkey Secret ESO generates from the `ExternalSecret` below) land
+/// before anything else. `app.pkl`'s init/setup Jobs sit in between (-1) — after these, but still
+/// before the chart's main Deployment/Service (left at the chart's default, unannotated wave 0) —
+/// so migrations run against a ready database without the main workload racing them and
+/// crash-looping in the meantime. A `PreSync` hook was tried first instead of `sync-wave`, but
+/// hooks are exempt from this Application's `ApplyOutOfSyncOnly=true` sync option (see
+/// `.../app.pkl`) and so get reapplied on every single sync regardless of whether anything actually
+/// changed — `sync-wave` doesn't have that downside, since it's just an ordering hint on an
+/// otherwise ordinarily-diffed resource.
 module chart
 
-import "@cloudnative-pg/v1/Cluster.pkl"
-import ".../utils/ExternalSecret.pkl"
 import ".../storage/tns-csi/app.pkl" as tns_csi
-import "app.pkl"
-
-local hookAnnotationKey = "argocd.argoproj.io/hook"
+import ".../utils/ExternalSecret.pkl"
+import ".../zitadel/app.pkl" as zitadel
+import "@cloudnative-pg/v1/Cluster.pkl"
 
 database: Cluster = new {
   metadata {
-    name = app.dbClusterName
-    annotations {
-      [hookAnnotationKey] = "PreSync"
-    }
+    name = zitadel.dbClusterName
   }
   spec {
     instances = 1
@@ -46,20 +46,14 @@ database: Cluster = new {
   }
 }
 
-masterkeySecret = (new ExternalSecret {
-  name = app.masterkeySecretName
+masterkeySecret = new ExternalSecret {
+  name = zitadel.masterkeySecretName
   secrets {
     ["zitadel"] {
       "masterkey"
     }
   }
-}.resource) {
-  metadata {
-    annotations {
-      [hookAnnotationKey] = "PreSync"
-    }
-  }
-}
+}.resource
 
 output {
   value = new Listing {
