@@ -15,6 +15,11 @@ local version = "0.17.6-fork.3"
 // `jellyfin/app.pkl`), which must set it explicitly since it isn't the cluster's default.
 nvmeofStorageClassName: String = "tns-csi-nvmeof"
 
+// A second NVMe-oF storage class tuned for Postgres (e.g. `.../storage/cloudnative-pg/app.pkl`'s
+// `Cluster` resources) instead of the general-purpose one above — see `storageClasses` below for
+// why the general class's settings are a poor fit for a database's access pattern.
+postgresStorageClassName: String = "tns-csi-nvmeof-postgres"
+
 // Published as an OCI artifact rather than a classic Helm repo index.
 source {
   repoURL = "ghcr.io/adamaq01/charts"
@@ -73,6 +78,38 @@ source {
               volblocksize = "64K"
               sparse = "true"
               sync = "disabled"
+            }
+          }
+        }
+        new {
+          name = module.postgresStorageClassName
+          enabled = true
+          protocol = "nvmeof"
+          isDefault = false
+          pool = "k8s"
+          server = module.nasDomain
+          transport = "tcp"
+          port = "4420"
+          fsType = "ext4"
+          reclaimPolicy = "Retain"
+          volumeBindingMode = "Immediate"
+          allowVolumeExpansion = true
+          nameTemplate = "{{ .PVCNamespace }}-{{ .PVCName }}"
+          parameters {
+            zfs {
+              compression = "lz4"
+              // Matches Postgres's own page size (8KB): the general class's 64K volblocksize means
+              // every single-page write Postgres does (each WAL flush, each heap/index page) turns
+              // into a 64K read-modify-write on the zvol, amplifying both write volume and latency.
+              volblocksize = "8K"
+              sparse = "true"
+              // Unlike the general class, left at ZFS's default (respects the client's own fsync
+              // calls) rather than "disabled": Postgres relies on fsync completing before it
+              // acknowledges a commit (WAL durability). "disabled" makes those fsyncs return
+              // immediately without hitting stable storage, so a node crash/power loss can silently
+              // lose the last few seconds of committed transactions — an acceptable trade for other
+              // workloads' throughput, not for a database's durability guarantee.
+              sync = "standard"
             }
           }
         }
