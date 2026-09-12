@@ -1,0 +1,26 @@
+/// Hand-written manifest supplementing `app.pkl`'s Helm source, folded into this same
+/// Application via ArgoCD's multi-source (`sources`) support.
+///
+/// Credentials/connection info for the remote seedbox mounted read-only into Jellyfin's media
+/// library (see `app.pkl`'s `rclone-mount` sidecar). `remote-path` is the single directory on the
+/// seedbox exposed as `/media/seedbox`.
+///
+///    bao kv put secret/jellyfin-seedbox \
+///      host=<seedbox hostname> \
+///      port=<seedbox ssh port, usually 22> \
+///      username=<seedbox ssh username> \
+///      password=<seedbox ssh password> \
+///      remote-path=<absolute path on the seedbox to mount>
+amends ".../utils/ExternalSecret.pkl"
+
+name = "jellyfin-seedbox"
+
+secrets {
+  ["jellyfin-seedbox"] {
+    "host"
+    "port"
+    "username"
+    "password"
+    "remote-path"
+  }
+}

@@ -1,5 +1,7 @@
 amends ".../app.pkl"
 
+import "@argocd/Application.pkl"
+import "@k8s/api/core/v1/PodSpec.pkl"
 import ".../networking/traefik/app.pkl" as traefik
 import ".../storage/tns-csi/app.pkl" as tns_csi
 
@@ -12,52 +14,185 @@ local version = "3.2.0"
 // renovate: datasource=docker packageName=jellyfin/jellyfin
 local jellyfinVersion = "12.0"
 
+// renovate: datasource=docker packageName=rclone/rclone
+local rcloneVersion = "1.70.3"
+
 local hostname = "\(module.name).\(module.rootDomain)"
 
-// Media storage isn't wired up yet (see `docs/architecture.md`'s "Open / undecided" section), so
-// `persistence.media` falls back to an emptyDir below.
-source {
-  repoURL = "https://jellyfin.github.io/jellyfin-helm"
-  chart = "jellyfin"
-  targetRevision = version
-  path = null
-  helm {
-    valuesObject = new {
-      image {
-        tag = jellyfinVersion
-      }
-      jellyfin {
-        // Without this, Jellyfin advertises its in-cluster pod IP/port to clients doing network
-        // discovery instead of the public hostname.
-        env {
+/// Credentials/connection info for the remote seedbox (see `manifests/secrets.pkl`).
+local seedboxSecretName = "jellyfin-seedbox"
+
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://jellyfin.github.io/jellyfin-helm"
+    chart = "jellyfin"
+    targetRevision = version
+    helm {
+      valuesObject = new {
+        image {
+          tag = jellyfinVersion
+        }
+        jellyfin {
+          // Without this, Jellyfin advertises its in-cluster pod IP/port to clients doing
+          // network discovery instead of the public hostname.
+          env {
+            new {
+              name = "JELLYFIN_PublishedServerUrl"
+              value = "https://\(hostname)"
+            }
+          }
+        }
+        persistence {
+          config {
+            storageClass = tns_csi.nvmeofStorageClassName
+          }
+          // Local bulk media storage isn't wired up yet (see `docs/architecture.md`'s "Open /
+          // undecided" section: `tns-csi` only serves NVMe-oF today, not the plain NFS share
+          // bulk media needs), so this falls back to an emptyDir. The remote seedbox mounted
+          // below is the only media source for now.
+          media {
+            enabled = false
+          }
+        }
+        // Mounts the remote seedbox (over SFTP) read-only at `/media/seedbox`, via an
+        // `rclone mount` sidecar rather than the chart's own `persistence.media` (which has no
+        // SFTP/rclone volume type). `rclone-config` renders an rclone remote config from
+        // `jellyfin-seedbox`'s OpenBao-sourced credentials (`manifests/secrets.pkl`) — the
+        // password has to be "obscured" via `rclone obscure` before it can go in a config file,
+        // so this can't just be env vars passed straight to `rclone mount`. `seedbox-mount` is
+        // shared between the two containers with propagation set so the sidecar's FUSE mount
+        // becomes visible to Jellyfin's own container (the "sidecar mounts, main container
+        // reads" pattern — see https://github.com/rclone/rclone/wiki/Mount-as-a-sidecar).
+        extraInitContainers {
+          new PodSpec.Container {
+            name = "rclone-config"
+            image = "rclone/rclone:\(rcloneVersion)"
+            command {
+              "sh"
+              "-c"
+              #"""
+              set -eu
+              obscured="$(rclone obscure "$SEEDBOX_PASSWORD")"
+              cat > /rclone-config/rclone.conf <<EOF
+              [seedbox]
+              type = ftp
+              host = $SEEDBOX_HOST
+              port = $SEEDBOX_PORT
+              user = $SEEDBOX_USERNAME
+              pass = $obscured
+              explicit_tls = true
+              no_check_certificate = true
+              EOF
+              """#
+            }
+            env {
+              new { name = "SEEDBOX_HOST"; valueFrom { secretKeyRef { name = seedboxSecretName; key = "host" } } }
+              new { name = "SEEDBOX_PORT"; valueFrom { secretKeyRef { name = seedboxSecretName; key = "port" } } }
+              new {
+                name = "SEEDBOX_USERNAME"
+                valueFrom { secretKeyRef { name = seedboxSecretName; key = "username" } }
+              }
+              new {
+                name = "SEEDBOX_PASSWORD"
+                valueFrom { secretKeyRef { name = seedboxSecretName; key = "password" } }
+              }
+            }
+            volumeMounts {
+              new { name = "rclone-config"; mountPath = "/rclone-config" }
+            }
+          }
+        }
+        extraContainers {
+          new PodSpec.Container {
+            name = "rclone-mount"
+            image = "rclone/rclone:\(rcloneVersion)"
+            // `rclone/rclone`'s default entrypoint is the `rclone` binary itself.
+            args {
+              "-vv"
+              "mount"
+              "seedbox:$(SEEDBOX_REMOTE_PATH)"
+              "/media/seedbox"
+              "--config=/rclone-config/rclone.conf"
+              "--allow-other"
+              "--gid=1000"
+              "--uid=1000"
+              "--allow-non-empty"
+              "--dir-cache-time=72h"
+              "--vfs-cache-mode=full"
+              "--vfs-cache-max-age=6h"
+              "--vfs-cache-max-size=10G"
+              "--vfs-read-chunk-size=32M"
+              "--vfs-read-ahead=100M"
+            }
+            env {
+              new {
+                name = "SEEDBOX_REMOTE_PATH"
+                valueFrom { secretKeyRef { name = seedboxSecretName; key = "remote-path" } }
+              }
+            }
+            // Needed for the FUSE mount below; see the sidecar-mount doc linked above.
+            securityContext {
+              privileged = true
+            }
+            volumeMounts {
+              new { name = "rclone-config"; mountPath = "/rclone-config"; readOnly = true }
+              new { name = "fuse"; mountPath = "/dev/fuse" }
+              new {
+                name = "seedbox-mount"
+                mountPath = "/media/seedbox"
+                // Propagates this container's own FUSE mount outward so `volumeMounts` below
+                // (Jellyfin's main container) can see it.
+                mountPropagation = "Bidirectional"
+              }
+            }
+          }
+        }
+        // Extra mount on Jellyfin's own (chart-defined) container, receiving the sidecar's FUSE
+        // mount above.
+        volumeMounts {
           new {
-            name = "JELLYFIN_PublishedServerUrl"
-            value = "https://\(hostname)"
+            name = "seedbox-mount"
+            mountPath = "/media/seedbox"
+            mountPropagation = "HostToContainer"
+          }
+        }
+        // Extra volumes shared with the two containers above.
+        volumes {
+          new { name = "rclone-config"; emptyDir {} }
+          new { name = "seedbox-mount"; emptyDir {} }
+          new { name = "fuse"; hostPath { path = "/dev/fuse"; type = "CharDevice" } }
+        }
+        httpRoute {
+          enabled = true
+          annotations {
+            [module.publicAnnotationKey] = ""
+          }
+          parentRefs {
+            new {
+              name = traefik.gatewayName
+              namespace = traefik.namespace
+              sectionName = "websecure"
+            }
+          }
+          hostnames {
+            hostname
           }
         }
       }
-      persistence {
-        config {
-          storageClass = tns_csi.nvmeofStorageClassName
-        }
-        media {
-          enabled = false
-        }
-      }
-      httpRoute {
-        enabled = true
-        annotations {
-          [module.publicAnnotationKey] = ""
-        }
-        parentRefs {
-          new {
-            name = traefik.gatewayName
-            namespace = traefik.namespace
-            sectionName = "websecure"
-          }
-        }
-        hostnames {
-          hostname
+    }
+  }
+  module.directorySource
+}
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // The `rclone-mount` sidecar above runs privileged with a hostPath `/dev/fuse` mount
+          // (needed for the FUSE mount itself), which the default PodSecurity "baseline" level
+          // blocks (see `../../storage/tns-csi/app.pkl` for the original precedent).
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
         }
       }
     }
