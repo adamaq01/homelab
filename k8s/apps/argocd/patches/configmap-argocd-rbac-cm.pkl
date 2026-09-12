@@ -6,7 +6,7 @@ patch = new Mixin<ConfigMap> {
   data = new Mapping {
     ["scopes"] = "[groups]"
     ["policy.csv"] = """
-      g, argocd_administrators, role:admin
+      g, argocd-admins, role:admin
     """
     ["policy.default"] = "role:denied"
   }

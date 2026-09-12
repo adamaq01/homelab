@@ -1,0 +1,15 @@
+/// Hand-written manifests for VoidAuth (<https://voidauth.app>), backed by one Postgres
+/// database.
+///
+/// After deploy, retrieve the initial `auth_admin` password-reset link with
+/// `kubectl logs -n voidauth deploy/voidauth`.
+module chart
+
+output {
+  value = new Listing {
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

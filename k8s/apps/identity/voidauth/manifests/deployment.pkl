@@ -1,0 +1,126 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../argocd/app.pkl" as argocd
+
+// renovate: datasource=docker packageName=voidauth/voidauth
+local version = "1.15.1"
+
+metadata {
+  name = "voidauth"
+}
+
+spec {
+  replicas = 1
+  strategy {
+    // A second replica would race the first over the same Postgres-backed session/OIDC state
+    // during a rollout; Recreate avoids that at the cost of a brief outage.
+    type = "Recreate"
+  }
+  selector {
+    matchLabels {
+      ["app"] = app.name
+    }
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = app.name
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "voidauth"
+          image = "voidauth/voidauth:\(version)"
+          ports {
+            new { containerPort = 3000 }
+          }
+          env {
+            new {
+              name = "APP_URL"
+              value = "https://\(app.hostname)"
+            }
+            new {
+              name = "TRUSTED_PROXIES"
+              value = app.podSubnet
+            }
+            new {
+              name = "DB_ADAPTER"
+              value = "postgres"
+            }
+            new {
+              name = "DB_HOST"
+              value = "\(app.dbClusterName)-rw.\(app.namespace).svc.cluster.local"
+            }
+            new {
+              name = "DB_USER"
+              valueFrom {
+                secretKeyRef {
+                  name = "\(app.dbClusterName)-app"
+                  key = "user"
+                }
+              }
+            }
+            new {
+              name = "DB_PASSWORD"
+              valueFrom {
+                secretKeyRef {
+                  name = "\(app.dbClusterName)-app"
+                  key = "password"
+                }
+              }
+            }
+            new {
+              name = "DB_NAME"
+              valueFrom {
+                secretKeyRef {
+                  name = "\(app.dbClusterName)-app"
+                  key = "dbname"
+                }
+              }
+            }
+            new {
+              name = "STORAGE_KEY"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "storage-key"
+                }
+              }
+            }
+            new {
+              name = "OIDC_argocd_CLIENT_DISPLAY_NAME"
+              value = "ArgoCD"
+            }
+            new {
+              name = "OIDC_argocd_CLIENT_HOMEPAGE_URL"
+              value = "https://\(argocd.primaryHostname)"
+            }
+            new {
+              name = "OIDC_argocd_CLIENT_SECRET"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "client-secret"
+                }
+              }
+            }
+            new {
+              name = "OIDC_argocd_CLIENT_REDIRECT_URLS"
+              value = "https://\(argocd.primaryHostname)/auth/callback, https://\(argocd.aliasHostname)/auth/callback"
+            }
+            new {
+              name = "OIDC_argocd_CLIENT_POST_LOGOUT_URLS"
+              value = "https://\(argocd.primaryHostname)"
+            }
+            new {
+              name = "OIDC_argocd_CLIENT_GROUPS"
+              value = "argocd-admins"
+            }
+          }
+        }
+      }
+    }
+  }
+}

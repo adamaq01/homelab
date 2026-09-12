@@ -1,0 +1,25 @@
+amends "@cloudnative-pg/v1/Cluster.pkl"
+
+import ".../app.pkl"
+import ".../storage/tns-csi/app.pkl" as tns_csi
+
+metadata {
+  name = app.dbClusterName
+  annotations {
+    ["argocd.argoproj.io/sync-wave"] = "-1"
+  }
+}
+
+spec {
+  instances = 1
+  storage {
+    size = "5Gi"
+    storageClass = tns_csi.postgresStorageClassName
+  }
+  bootstrap {
+    initdb {
+      database = "voidauth"
+      owner = "voidauth"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+extends ".../app.pkl"
+
+hostname: String = "auth.\(module.rootDomain)"
+
+dbClusterName: String = "voidauth-db"
+
+/// Holds VoidAuth's own `STORAGE_KEY` plus the ArgoCD OIDC client secret.
+secretName: String = "voidauth-secrets"

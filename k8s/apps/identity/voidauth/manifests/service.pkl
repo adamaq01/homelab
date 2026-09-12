@@ -1,0 +1,21 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = "voidauth"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = app.name
+  }
+  ports {
+    new {
+      port = 3000
+      targetPort = 3000
+      protocol = "TCP"
+    }
+  }
+}

@@ -19,3 +19,6 @@ ingressDomain: String = "\(clusterName).\(domain)"
 /// Shorter alias for [ingressDomain], kept purely for convenience since no global service collides
 /// with it today.
 ingressAliasDomain: String = "\(clusterName).\(rootDomain)"
+
+/// CIDR every Pod IP is drawn from cluster-wide.
+podSubnet: String = "10.244.0.0/16"

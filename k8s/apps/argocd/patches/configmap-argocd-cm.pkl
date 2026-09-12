@@ -5,6 +5,7 @@ amends "@manifest/Patch.pkl"
 
 import "@k8s/api/core/v1/ConfigMap.pkl"
 import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
 
 patch = new Mixin<ConfigMap> {
   data = new Mapping {
@@ -15,15 +16,15 @@ patch = new Mixin<ConfigMap> {
       """
     ["webhook.maxPayloadSizeMB"] = "1"
     ["oidc.config"] = """
-      name: Zitadel
-      issuer: https://auth.\(app.rootDomain)
-      clientID: $argocd-zitadel-oidc:zitadel-client-id
-      clientSecret: $argocd-zitadel-oidc:zitadel-client-secret
+      name: VoidAuth
+      issuer: https://\(voidauth.hostname)/oidc
+      clientID: argocd
+      clientSecret: $argocd-voidauth-oidc:client-secret
       requestedScopes:
         - openid
         - profile
         - email
-      logoutURL: https://auth.\(app.rootDomain)/oidc/v1/end_session
+        - groups
       """
   }
 }
