@@ -33,7 +33,9 @@ spec {
       containers {
         new {
           name = "voidauth"
-          image = "voidauth/voidauth:\(version)"
+          image = "ghcr.io/adamaq01/voidauth:latest"
+          imagePullPolicy = "Always"
+          // image = "voidauth/voidauth:\(version)"
           ports {
             new { containerPort = 3000 }
             new { containerPort = 3890 }
