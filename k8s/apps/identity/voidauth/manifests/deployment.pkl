@@ -40,6 +40,9 @@ spec {
             new { containerPort = 3000 }
             new { containerPort = 3890 }
           }
+          volumeMounts {
+            new { name = "config"; mountPath = "/app/config" }
+          }
           env {
             new {
               name = "APP_URL"
@@ -174,6 +177,14 @@ spec {
               name = "OIDC_argocd_CLIENT_GROUPS"
               value = "argocd-admins"
             }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "config"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
           }
         }
       }
