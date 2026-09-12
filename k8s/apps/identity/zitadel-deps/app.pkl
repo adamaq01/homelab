@@ -1,3 +1,0 @@
-amends ".../app.pkl"
-
-namespace = "zitadel"
