@@ -13,8 +13,15 @@ spec {
   }
   ports {
     new {
+      name = "http"
       port = 3000
       targetPort = 3000
+      protocol = "TCP"
+    }
+    new {
+      name = "ldap"
+      port = 3890
+      targetPort = 3890
       protocol = "TCP"
     }
   }

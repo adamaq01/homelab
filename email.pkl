@@ -1,0 +1,6 @@
+/// Shared, non-sensitive SMTP connection settings for services that send mail.
+module email
+
+smtpHost: String = "mail.adamaq01.fr"
+smtpPort: Int = 465
+smtpSecure: Boolean = true

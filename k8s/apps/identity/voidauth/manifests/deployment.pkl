@@ -2,6 +2,7 @@ amends "@k8s/api/apps/v1/Deployment.pkl"
 
 import ".../app.pkl"
 import ".../argocd/app.pkl" as argocd
+import ".../email.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
 local version = "1.15.1"
@@ -35,6 +36,7 @@ spec {
           image = "voidauth/voidauth:\(version)"
           ports {
             new { containerPort = 3000 }
+            new { containerPort = 3890 }
           }
           env {
             new {
@@ -86,6 +88,58 @@ spec {
                 secretKeyRef {
                   name = app.secretName
                   key = "storage-key"
+                }
+              }
+            }
+            new {
+              name = "SMTP_HOST"
+              value = email.smtpHost
+            }
+            new {
+              name = "SMTP_PORT"
+              value = "\(email.smtpPort)"
+            }
+            new {
+              name = "SMTP_SECURE"
+              value = "\(email.smtpSecure)"
+            }
+            new {
+              name = "SMTP_FROM"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "email-address"
+                }
+              }
+            }
+            new {
+              name = "SMTP_USER"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "email-address"
+                }
+              }
+            }
+            new {
+              name = "SMTP_PASS"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "email-password"
+                }
+              }
+            }
+            new {
+              name = "LDAP_ENABLED"
+              value = "true"
+            }
+            new {
+              name = "LDAP_BIND_PASSWORD"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "ldap-bind-password"
                 }
               }
             }
