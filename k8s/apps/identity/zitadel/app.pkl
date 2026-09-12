@@ -49,7 +49,7 @@ source {
           }
           gateway {
             httpRoute {
-              enabled = true
+              enabled = false
               annotations {
                 [module.publicAnnotationKey] = ""
               }
@@ -74,7 +74,7 @@ source {
             }
             gateway {
               httpRoute {
-                enabled = true
+                enabled = false
                 annotations {
                   [module.publicAnnotationKey] = ""
                 }
