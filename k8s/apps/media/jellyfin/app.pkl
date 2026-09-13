@@ -17,10 +17,6 @@ local jellyfinVersion = "12.0"
 // renovate: datasource=docker packageName=rclone/rclone
 local rcloneVersion = "1.70.3"
 
-// renovate: datasource=github-releases packageName=AumGupta/abyss-jellyfin extractVersion=^v(?<version>.+)$
-local abyssVersion = "v1.2.3"
-local abyssCdnBase = "https://cdn.jsdelivr.net/gh/AumGupta/abyss-jellyfin@\(abyssVersion)"
-
 local hostname = "\(module.name).\(module.rootDomain)"
 
 /// Credentials/connection info for the remote seedbox (see `manifests/secrets.pkl`).
@@ -105,35 +101,6 @@ sources = new Listing {
               new { name = "rclone-config"; mountPath = "/rclone-config" }
             }
           }
-          // Installs the "Abyss" theme (https://github.com/AumGupta/abyss-jellyfin) declaratively:
-          // the upstream project's own installer is an interactive script that has to be run by
-          // hand inside a live container and calls back into Jellyfin's own API, which doesn't fit
-          // a GitOps flow. Instead, this copies the image's baked-in `jellyfin-web` directory into
-          // a fresh `emptyDir` every pod start, drops the theme's spotlight assets alongside it,
-          // and patches `index.html` to pull in the theme's CSS and the spotlight loader script —
-          // functionally identical to what the installer does, just re-applied on every start
-          // instead of persisted, so there's nothing to redo after an image upgrade.
-          new PodSpec.Container {
-            name = "abyss-theme"
-            image = "jellyfin/jellyfin:\(jellyfinVersion)"
-            command {
-              "sh"
-              "-c"
-              #"""
-              set -eu
-              cp -a /jellyfin/jellyfin-web/. /web/
-              mkdir -p /web/ui
-              curl -fsSL "\#(abyssCdnBase)/scripts/spotlight/spotlight.html" -o /web/ui/spotlight.html
-              curl -fsSL "\#(abyssCdnBase)/scripts/spotlight/spotlight.css" -o /web/ui/spotlight.css
-              curl -fsSL "\#(abyssCdnBase)/scripts/spotlight/spotlight-loader.js" -o /web/ui/spotlight-loader.js
-              sed -i 's#</head>#<style>@import url("\#(abyssCdnBase)/abyss.css");</style></head>#' /web/index.html
-              sed -i 's#</body>#<script src="ui/spotlight-loader.js"></script></body>#' /web/index.html
-              """#
-            }
-            volumeMounts {
-              new { name = "jellyfin-web"; mountPath = "/web" }
-            }
-          }
         }
         extraContainers {
           new PodSpec.Container {
@@ -180,24 +147,20 @@ sources = new Listing {
             }
           }
         }
-        // Extra mounts on Jellyfin's own (chart-defined) container: the seedbox mount (receiving
-        // the `rclone-mount` sidecar's FUSE mount above) and the theme-patched web root (receiving
-        // `abyss-theme`'s output, overriding the image's own baked-in `jellyfin-web` at the same
-        // path).
+        // Extra mount on Jellyfin's own (chart-defined) container, receiving the sidecar's FUSE
+        // mount above.
         volumeMounts {
           new {
             name = "seedbox-mount"
             mountPath = "/media/seedbox"
             mountPropagation = "HostToContainer"
           }
-          new { name = "jellyfin-web"; mountPath = "/jellyfin/jellyfin-web" }
         }
-        // Extra volumes shared with the containers above.
+        // Extra volumes shared with the two containers above.
         volumes {
           new { name = "rclone-config"; emptyDir {} }
           new { name = "seedbox-mount"; emptyDir {} }
           new { name = "fuse"; hostPath { path = "/dev/fuse"; type = "CharDevice" } }
-          new { name = "jellyfin-web"; emptyDir {} }
         }
         httpRoute {
           enabled = true
