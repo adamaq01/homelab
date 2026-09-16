@@ -24,5 +24,9 @@ data {
       issuer: https://\(voidauth.hostname)/oidc
       client_id: headplane
       client_secret_path: /etc/headplane/secrets/headplane-client-secret
+
+    integration:
+      agent:
+        enabled: true
     """
 }
