@@ -3,6 +3,8 @@ amends "@k8s/api/apps/v1/Deployment.pkl"
 import ".../app.pkl"
 import ".../argocd/app.pkl" as argocd
 import ".../email.pkl"
+import ".../networking/headscale/app.pkl" as headscale
+import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
 local version = "1.15.1"
@@ -43,141 +45,87 @@ spec {
           volumeMounts {
             new { name = "config"; mountPath = "/app/config" }
           }
-          env {
-            new {
-              name = "APP_URL"
-              value = "https://\(app.hostname)"
-            }
-            new {
-              name = "TRUSTED_PROXIES"
-              value = app.podSubnet
-            }
-            new {
-              name = "DB_ADAPTER"
-              value = "postgres"
-            }
-            new {
-              name = "DB_HOST"
-              value = "\(app.dbClusterName)-rw.\(app.namespace).svc.cluster.local"
-            }
-            new {
-              name = "DB_USER"
-              valueFrom {
-                secretKeyRef {
-                  name = "\(app.dbClusterName)-app"
-                  key = "user"
-                }
+
+          env =
+            new Mapping {
+              default = (_) -> new EnvVar.SecretKeySelector {}
+              ["APP_URL"] = "https://\(app.hostname)"
+              ["TRUSTED_PROXIES"] = app.podSubnet
+              ["STORAGE_KEY"] {
+                name = app.secretName
+                key = "storage-key"
               }
-            }
-            new {
-              name = "DB_PASSWORD"
-              valueFrom {
-                secretKeyRef {
-                  name = "\(app.dbClusterName)-app"
-                  key = "password"
-                }
+
+              ["DB_ADAPTER"] = "postgres"
+              ["DB_HOST"] = "\(app.dbClusterName)-rw.\(app.namespace).svc.cluster.local"
+              ["DB_USER"] {
+                name = "\(app.dbClusterName)-app"
+                key = "user"
               }
-            }
-            new {
-              name = "DB_NAME"
-              valueFrom {
-                secretKeyRef {
-                  name = "\(app.dbClusterName)-app"
-                  key = "dbname"
-                }
+              ["DB_PASSWORD"] {
+                name = "\(app.dbClusterName)-app"
+                key = "password"
               }
-            }
-            new {
-              name = "STORAGE_KEY"
-              valueFrom {
-                secretKeyRef {
-                  name = app.secretName
-                  key = "storage-key"
-                }
+              ["DB_NAME"] {
+                name = "\(app.dbClusterName)-app"
+                key = "dbname"
               }
-            }
-            new {
-              name = "SMTP_HOST"
-              value = email.smtpHost
-            }
-            new {
-              name = "SMTP_PORT"
-              value = "\(email.smtpPort)"
-            }
-            new {
-              name = "SMTP_SECURE"
-              value = "\(email.smtpSecure)"
-            }
-            new {
-              name = "SMTP_FROM"
-              valueFrom {
-                secretKeyRef {
-                  name = app.secretName
-                  key = "email-address"
-                }
+
+              ["SMTP_HOST"] = email.smtpHost
+              ["SMTP_PORT"] = "\(email.smtpPort)"
+              ["SMTP_SECURE"] = "\(email.smtpSecure)"
+              ["SMTP_FROM"] {
+                name = app.secretName
+                key = "email-address"
               }
-            }
-            new {
-              name = "SMTP_USER"
-              valueFrom {
-                secretKeyRef {
-                  name = app.secretName
-                  key = "email-address"
-                }
+              ["SMTP_USER"] {
+                name = app.secretName
+                key = "email-address"
               }
-            }
-            new {
-              name = "SMTP_PASS"
-              valueFrom {
-                secretKeyRef {
-                  name = app.secretName
-                  key = "email-password"
-                }
+              ["SMTP_PASS"] {
+                name = app.secretName
+                key = "email-password"
               }
-            }
-            new {
-              name = "LDAP_ENABLED"
-              value = "true"
-            }
-            new {
-              name = "LDAP_BIND_PASSWORD"
-              valueFrom {
-                secretKeyRef {
-                  name = app.secretName
-                  key = "ldap-bind-password"
-                }
+
+              ["LDAP_ENABLED"] = "true"
+              ["LDAP_BIND_PASSWORD"] {
+                name = app.secretName
+                key = "ldap-bind-password"
               }
-            }
-            new {
-              name = "OIDC_argocd_CLIENT_DISPLAY_NAME"
-              value = "ArgoCD"
-            }
-            new {
-              name = "OIDC_argocd_CLIENT_HOMEPAGE_URL"
-              value = "https://\(argocd.primaryHostname)"
-            }
-            new {
-              name = "OIDC_argocd_CLIENT_SECRET"
-              valueFrom {
-                secretKeyRef {
-                  name = app.secretName
-                  key = "client-secret"
-                }
+
+              ["OIDC_argocd_CLIENT_DISPLAY_NAME"] = "ArgoCD"
+              ["OIDC_argocd_CLIENT_HOMEPAGE_URL"] = "https://\(argocd.primaryHostname)"
+              ["OIDC_argocd_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "argocd-client-secret"
               }
-            }
-            new {
-              name = "OIDC_argocd_CLIENT_REDIRECT_URLS"
-              value = "https://\(argocd.primaryHostname)/auth/callback, https://\(argocd.aliasHostname)/auth/callback"
-            }
-            new {
-              name = "OIDC_argocd_CLIENT_POST_LOGOUT_URLS"
-              value = "https://\(argocd.primaryHostname)"
-            }
-            new {
-              name = "OIDC_argocd_CLIENT_GROUPS"
-              value = "argocd-admins"
-            }
-          }
+              ["OIDC_argocd_CLIENT_REDIRECT_URLS"] =
+                "https://\(argocd.primaryHostname)/auth/callback, https://\(argocd.aliasHostname)/auth/callback"
+              ["OIDC_argocd_CLIENT_POST_LOGOUT_URLS"] = "https://\(argocd.primaryHostname)"
+              ["OIDC_argocd_CLIENT_GROUPS"] = "argocd-admins"
+
+              ["OIDC_headscale_CLIENT_DISPLAY_NAME"] = "Headscale"
+              ["OIDC_headscale_CLIENT_HOMEPAGE_URL"] = "https://\(headscale.hostname)"
+              ["OIDC_headscale_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "headscale-client-secret"
+              }
+              ["OIDC_headscale_CLIENT_REDIRECT_URLS"] =
+                "https://\(headscale.hostname)/oidc/callback"
+              ["OIDC_headscale_CLIENT_POST_LOGOUT_URLS"] = "https://\(headscale.hostname)"
+              ["OIDC_headscale_CLIENT_GROUPS"] = "headscale-users"
+
+              ["OIDC_headplane_CLIENT_DISPLAY_NAME"] = "Headplane"
+              ["OIDC_headplane_CLIENT_HOMEPAGE_URL"] = "https://\(headscale.hostname)/admin"
+              ["OIDC_headplane_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "headplane-client-secret"
+              }
+              ["OIDC_headplane_CLIENT_REDIRECT_URLS"] =
+                "https://\(headscale.hostname)/admin/oidc/callback"
+              ["OIDC_headplane_CLIENT_POST_LOGOUT_URLS"] = "https://\(headscale.hostname)/admin"
+              ["OIDC_headplane_CLIENT_GROUPS"] = "headplane-admins"
+            } |> envMapToListing
         }
       }
       volumes {
@@ -186,6 +134,24 @@ spec {
           persistentVolumeClaim {
             claimName = import("pvc.pkl").metadata.name!!
           }
+        }
+      }
+    }
+  }
+}
+
+local envMapToListing = (envMap: Mapping<String, String | *EnvVar.SecretKeySelector>) -> new Listing<
+  EnvVar,
+> {
+  for (key, val in envMap) {
+    new {
+      name = key
+      when (val is String) {
+        value = val
+      }
+      when (val is EnvVar.SecretKeySelector) {
+        valueFrom {
+          secretKeyRef = val
         }
       }
     }

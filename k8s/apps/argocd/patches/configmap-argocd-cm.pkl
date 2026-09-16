@@ -19,7 +19,7 @@ patch = new Mixin<ConfigMap> {
       name: VoidAuth
       issuer: https://\(voidauth.hostname)/oidc
       clientID: argocd
-      clientSecret: $argocd-voidauth-oidc:client-secret
+      clientSecret: $argocd-voidauth-oidc:argocd-client-secret
       requestedScopes:
         - openid
         - profile

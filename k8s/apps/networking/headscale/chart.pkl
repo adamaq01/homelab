@@ -22,6 +22,26 @@
 /// Must be exactly 32 characters (Headplane's own schema rejects anything else), hence
 /// `-hex 16` (16 bytes = 32 hex chars).
 ///
+/// Headplane also needs a Headscale API key (`headscale.api_key_path`, see
+/// `manifests/headplane/config-map.pkl`) for its own server-side calls to Headscale's API —
+/// required once OIDC is enabled, independent of any individual user's login method. Unlike the
+/// other secrets here, this one isn't a "generate once" value: Headscale API keys expire, so it
+/// needs periodic manual regeneration and re-seeding:
+///
+/// kubectl exec -n headscale deploy/headscale -- headscale apikeys create --expiration 999d
+/// kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/headplane headscale-api-key=<key printed above>
+///
+/// then trigger a rollout of the headplane Deployment (ExternalSecret refresh + config reload
+/// aren't enough on their own, since the key is read once at process start).
+///
+/// Both apps also get SSO login via VoidAuth (see `manifests/headscale/config-map.pkl` and
+/// `manifests/headplane/config-map.pkl`). Their OIDC client secrets are shared values, minted
+/// once and read from OpenBao path `secret/voidauth` by both VoidAuth and this chart's
+/// `headscaleSecretsExternalSecret`/`headplaneSecretsExternalSecret` below.
+///
+/// Headscale is gated to VoidAuth security group `headscale-users`; Headplane's admin UI is
+/// gated to `headplane-admins`.
+///
 /// To log into Headplane, generate a Headscale API key and use it as the login credential:
 ///
 /// kubectl exec -n headscale deploy/headscale -- headscale apikeys create
@@ -47,6 +67,20 @@ headplaneSecretsExternalSecret =
     secrets {
       ["headplane"] {
         "cookie-secret"
+        "headscale-api-key"
+      }
+      ["voidauth"] {
+        "headplane-client-secret"
+      }
+    }
+  }.resource
+
+headscaleSecretsExternalSecret =
+  new ExternalSecret {
+    name = app.headscaleSecretName
+    secrets {
+      ["voidauth"] {
+        "headscale-client-secret"
       }
     }
   }.resource
@@ -54,6 +88,7 @@ headplaneSecretsExternalSecret =
 output {
   value = new Listing {
     headplaneSecretsExternalSecret
+    headscaleSecretsExternalSecret
     for (_, resource in import*("manifests/**.pkl")) {
       resource
     }

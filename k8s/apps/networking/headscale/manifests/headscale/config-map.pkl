@@ -1,6 +1,7 @@
 amends "@k8s/api/core/v1/ConfigMap.pkl"
 
 import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
 
 /// Base domain for MagicDNS node names (e.g. `mynode.\(tailnetDomain)`). Must differ from
 /// [app.hostname]. Doesn't need a real DNS record: Headscale pushes it to mesh clients as an
@@ -57,5 +58,13 @@ data {
     log:
       level: info
       format: text
+
+    oidc:
+      issuer: https://\(voidauth.hostname)/oidc
+      client_id: headscale
+      client_secret_path: /etc/headscale/secrets/headscale-client-secret
+      scope: ["openid", "profile", "email", "groups"]
+      allowed_groups:
+        - headscale-users
     """
 }

@@ -27,6 +27,14 @@ spec {
       labels {
         ["app"] = app.headplaneAppLabel
       }
+      annotations {
+        // ConfigMap changes don't trigger a rollout on their own (kubelet just updates the
+        // mounted file in place); hashing content into a pod-template annotation forces one
+        // whenever either mounted config actually changes. Headscale's own config is included
+        // since Headplane mounts it too (see `headscale-config` volume below).
+        ["checksum/config"] = import("config-map.pkl").data["config.yaml"].md5
+        ["checksum/headscale-config"] = import(".../headscale/config-map.pkl").data["config.yaml"].md5
+      }
     }
     spec {
       containers {

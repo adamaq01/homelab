@@ -10,3 +10,7 @@ headplaneAppLabel: String = "headplane"
 /// Secret Headplane's cookie-signing key is stored in. See chart.pkl's doc comment for how it's
 /// seeded.
 headplaneSecretName: String = "headplane-secrets"
+
+/// Secret Headscale's own OIDC client secret (for SSO login via VoidAuth) is stored in. See
+/// chart.pkl's doc comment for how it's seeded.
+headscaleSecretName: String = "headscale-secrets"

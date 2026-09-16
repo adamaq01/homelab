@@ -23,6 +23,12 @@ spec {
       labels {
         ["app"] = app.headscaleAppLabel
       }
+      annotations {
+        // ConfigMap changes don't trigger a rollout on their own (kubelet just updates the
+        // mounted file in place); hashing its content into a pod-template annotation forces one
+        // whenever `config.yaml` actually changes.
+        ["checksum/config"] = import("config-map.pkl").data["config.yaml"].md5
+      }
     }
     spec {
       containers {
@@ -36,6 +42,7 @@ spec {
           volumeMounts {
             new { name = "config"; mountPath = "/etc/headscale" }
             new { name = "data"; mountPath = "/var/lib/headscale" }
+            new { name = "secrets"; mountPath = "/etc/headscale/secrets"; readOnly = true }
           }
         }
       }
@@ -50,6 +57,12 @@ spec {
           name = "data"
           persistentVolumeClaim {
             claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "secrets"
+          secret {
+            secretName = app.headscaleSecretName
           }
         }
       }
