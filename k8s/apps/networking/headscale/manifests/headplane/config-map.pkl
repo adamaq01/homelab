@@ -16,7 +16,7 @@ data {
       cookie_secret_path: /etc/headplane/secrets/cookie-secret
 
     headscale:
-      url: http://headscale.\(app.namespace).svc.cluster.local:8080
+      url: https://\(app.hostname)
       config_path: /etc/headscale-ro/config.yaml
       api_key_path: /etc/headplane/secrets/headscale-api-key
 

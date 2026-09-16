@@ -48,6 +48,18 @@ spec {
     }
     new {
       matches {
+        new { path { type = "Exact"; value = "/admin/hp_ssh.wasm" } }
+        new { path { type = "Exact"; value = "/admin/wasm_exec.js" } }
+      }
+      backendRefs {
+        new {
+          name = import("service.pkl").metadata.name!!
+          port = 3000
+        }
+      }
+    }
+    new {
+      matches {
         new { path { type = "PathPrefix"; value = "/admin" } }
       }
       filters {
