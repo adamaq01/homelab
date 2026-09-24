@@ -1,0 +1,24 @@
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+oidcSecretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["voidauth"] {
+        "wallos-client-secret"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    oidcSecretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

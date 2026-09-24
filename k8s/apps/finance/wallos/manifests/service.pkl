@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "wallos-service"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "wallos"
+  }
+  ports {
+    new {
+      port = 80
+      targetPort = 80
+      protocol = "TCP"
+    }
+  }
+}

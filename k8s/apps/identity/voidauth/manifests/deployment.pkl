@@ -4,6 +4,7 @@ import ".../app.pkl"
 import ".../argocd/app.pkl" as argocd
 import ".../email.pkl"
 import ".../networking/headscale/app.pkl" as headscale
+import ".../finance/wallos/app.pkl" as wallos
 import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
@@ -125,6 +126,16 @@ spec {
                 "https://\(headscale.hostname)/admin/oidc/callback"
               ["OIDC_headplane_CLIENT_POST_LOGOUT_URLS"] = "https://\(headscale.hostname)/admin"
               ["OIDC_headplane_CLIENT_GROUPS"] = "headplane-admins"
+
+              ["OIDC_wallos_CLIENT_DISPLAY_NAME"] = "Wallos"
+              ["OIDC_wallos_CLIENT_HOMEPAGE_URL"] = "https://\(wallos.hostname)"
+              ["OIDC_wallos_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "wallos-client-secret"
+              }
+              ["OIDC_wallos_CLIENT_REDIRECT_URLS"] =
+                "https://\(wallos.hostname)/, https://\(wallos.aliasHostname)/"
+              ["OIDC_wallos_CLIENT_POST_LOGOUT_URLS"] = "https://\(wallos.hostname)"
             } |> envMapToListing
         }
       }

@@ -1,0 +1,76 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+
+// renovate: datasource=docker packageName=bellamy/wallos
+local version = "5.8.1"
+
+local appLabel = "wallos"
+
+metadata {
+  name = "wallos"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  strategy {
+    // ReadWriteOnce PVC: a second pod scheduled elsewhere couldn't mount it anyway.
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "wallos"
+          image = "bellamy/wallos:\(version)"
+          ports {
+            new { containerPort = 80 }
+          }
+          env {
+            new { name = "TZ"; value = "Europe/Paris" }
+
+            new { name = "OIDC_ENABLED"; value = "true" }
+            new { name = "OIDC_PROVIDER_NAME"; value = "VoidAuth" }
+            new { name = "OIDC_CLIENT_ID"; value = "wallos" }
+            new { name = "OIDC_CLIENT_SECRET_FILE"; value = "/etc/wallos/secrets/wallos-client-secret" }
+            new { name = "OIDC_ISSUER"; value = "https://\(voidauth.hostname)/oidc" }
+            new { name = "OIDC_REDIRECT_URL"; value = "https://\(app.hostname)/" }
+            new { name = "OIDC_AUTO_CREATE_USER"; value = "true" }
+            new { name = "OIDC_DISABLE_PASSWORD_LOGIN"; value = "true" }
+
+            new { name = "SSRF_ALLOWLIST"; value = voidauth.hostname }
+          }
+          volumeMounts {
+            new { name = "data"; mountPath = "/var/www/html/db"; subPath = "db" }
+            new { name = "data"; mountPath = "/var/www/html/images/uploads/logos"; subPath = "logos" }
+            new { name = "secrets"; mountPath = "/etc/wallos/secrets"; readOnly = true }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "secrets"
+          secret {
+            secretName = app.secretName
+          }
+        }
+      }
+    }
+  }
+}
