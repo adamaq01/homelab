@@ -148,24 +148,4 @@ documents {
     name = module.controlPlaneVIP
     link = throw("Override this placeholder with the node's real network interface name")
   }
-  // Bootstrap ArgoCD in the cluster
-  (KubeInlineManifestConfig) {
-    name = "argocd-namespace"
-    manifest =
-      new Namespace {
-        metadata {
-          name = "argocd"
-        }
-      }
-        .output
-        .text
-  }
-  (KubeInlineManifestConfig) {
-    name = "argocd"
-    manifest = import(".../k8s/apps/argocd/chart.pkl").output.text
-  }
-  (KubeInlineManifestConfig) {
-    name = "argocd-bootstrap"
-    manifest = import(".../k8s/chart.pkl").output.text
-  }
 }
