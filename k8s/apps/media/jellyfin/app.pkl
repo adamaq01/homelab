@@ -45,6 +45,7 @@ sources = new Listing {
         persistence {
           config {
             storageClass = tns_csi.nvmeofStorageClassName
+            size = "20Gi"
           }
           // Local bulk media storage isn't wired up yet (see `docs/architecture.md`'s "Open /
           // undecided" section: `tns-csi` only serves NVMe-oF today, not the plain NFS share
