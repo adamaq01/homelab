@@ -1,0 +1,10 @@
+/// Options applied only when producing disk images.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module DiskImageCustomization
+
+/// Disk-image sector size in bytes. An omitted or zero value uses 512 bytes.
+///
+/// Default if undefined: `512`
+sectorSize: Int(isPositive)?

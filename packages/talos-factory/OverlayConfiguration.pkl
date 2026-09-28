@@ -1,0 +1,14 @@
+/// Board overlay selected for image generation.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module OverlayConfiguration
+
+/// Overlay container image or catalog image name.
+image: String(!isEmpty)
+
+/// Overlay implementation name.
+name: String(!isEmpty)
+
+/// Free-form options interpreted by the selected overlay implementation.
+options: Mapping<String, Any>?

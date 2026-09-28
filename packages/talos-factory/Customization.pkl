@@ -1,0 +1,30 @@
+/// Talos image build customizations.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module Customization
+
+import "MetaValue.pkl"
+import "SystemExtensions.pkl"
+import "SecureBootCustomization.pkl"
+import "DiskImageCustomization.pkl"
+
+/// YAML-encoded Talos machine configuration documents embedded in the image.
+embeddedMachineConfiguration: String?
+
+/// Additional arguments appended to the kernel command line.
+extraKernelArgs: Listing<String>?
+
+/// Initial Talos META key-value entries.
+meta: Listing<MetaValue>?
+
+systemExtensions: SystemExtensions?
+
+/// Bootloader selection. `auto` lets the imager choose the appropriate bootloader.
+///
+/// Default if undefined: `"auto"`
+bootloader: ("auto"|"dual-boot"|"grub"|"sd-boot")?
+
+secureboot: SecureBootCustomization?
+
+diskImage: DiskImageCustomization?

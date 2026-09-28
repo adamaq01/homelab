@@ -1,0 +1,8 @@
+/// Official Talos system extensions to install into the image.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module SystemExtensions
+
+/// Catalog names resolved automatically to versions compatible with Talos.
+officialExtensions: Listing<String(!isEmpty)>?

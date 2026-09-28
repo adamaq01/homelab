@@ -1,0 +1,16 @@
+/// Secure Boot options used when producing a Secure Boot image.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module SecureBootCustomization
+
+/// How systemd-boot enrolls Secure Boot keys on first boot. `if-safe` automatically enrolls only in a
+/// virtual machine; `force` enables unattended enrollment on bare metal.
+///
+/// Default if undefined: `"if-safe"`
+enrollKeys: ("off"|"manual"|"if-safe"|"force")?
+
+/// Include well-known UEFI certificates in the auto-enrollment database.
+///
+/// Default if undefined: `false`
+includeWellKnownCertificates: Boolean?

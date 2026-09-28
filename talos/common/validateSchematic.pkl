@@ -1,0 +1,35 @@
+/// Checks a [Schematic]'s system extensions and overlay (if set) against Image Factory's live
+/// catalog for [talosVersion]. Hand-written since this hits a live HTTP catalog, not the OpenAPI
+/// schema that `packages/talos-factory` generates types from.
+module validateSchematic
+
+import "pkl:json"
+import "@talos-factory/Schematic.pkl"
+
+const local function fetchNames(path: String): List<String> =
+  (new json.Parser {}.parse(read("https://factory.talos.dev\(path)")) as Listing)
+    .toList()
+    .map((e) -> if (e is String) e else (e as Dynamic).name as String)
+
+local function assertKnown(kind: String, used: List<String>, available: List<String>): Boolean =
+  let (notFound = used.filter((name) -> !available.contains(name)))
+    if (notFound.isEmpty)
+      true
+    else
+      throw("Unknown \(kind): \(notFound.join(", ")). Available: \(available.join(", "))")
+
+function validate(schematic: Schematic, talosVersion: String): Schematic =
+  let (extensionNames = schematic.customization?.systemExtensions?.officialExtensions?.toList() ?? List())
+  let (overlay = schematic.overlay)
+    if (extensionNames.isEmpty && overlay == null)
+      schematic
+    else
+      let (_ = assertKnown("Talos version", List(talosVersion), fetchNames("/versions")))
+      let (_ = assertKnown("system extension", extensionNames, fetchNames("/version/\(talosVersion)/extensions/official")))
+      let (_ =
+        if (overlay == null)
+          true
+        else
+          assertKnown("overlay", List(overlay.name), fetchNames("/version/\(talosVersion)/overlays/official"))
+      )
+        schematic

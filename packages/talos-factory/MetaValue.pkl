@@ -1,0 +1,11 @@
+/// Initial Talos META entry.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module MetaValue
+
+/// Unsigned 8-bit META key.
+key: UInt8
+
+/// META value stored under the key.
+value: String

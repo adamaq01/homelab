@@ -1,5 +1,16 @@
 amends "pkl:Project"
 
+evaluatorSettings {
+  externalResourceReaders {
+    ["talos-factory+http"] {
+      executable = "pkl-reader-talos-factory"
+    }
+    ["talos-factory+https"] {
+      executable = "pkl-reader-talos-factory"
+    }
+  }
+}
+
 dependencies {
   ["k8s"] {
     uri = "package://pkg.pkl-lang.org/pkl-k8s/k8s@1.4.1"
@@ -9,6 +20,7 @@ dependencies {
   }
   ["argocd"] = import("packages/argocd/PklProject")
   ["talos"] = import("packages/talos/PklProject")
+  ["talos-factory"] = import("packages/talos-factory/PklProject")
   ["manifest"] = import("packages/manifest/PklProject")
   ["metallb"] = import("packages/metallb/PklProject")
   ["gateway-api"] = import("packages/gateway-api/PklProject")

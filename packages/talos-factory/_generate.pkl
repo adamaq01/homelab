@@ -1,0 +1,134 @@
+/// Generates Pkl modules for `Schematic` and its dependencies from Image Factory's OpenAPI
+/// schema, restricted to the closure of types `Schematic` needs (the full schema also describes
+/// unrelated Factory API objects, e.g. tokens).
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/talos-factory/_generate.pkl --project-dir packages/talos-factory -m packages/talos-factory
+/// ```
+module generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@syntax/ModuleNode.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+import "@org.json_schema.contrib/internal/Type.pkl"
+import "@org.json_schema.contrib/internal/utils.pkl"
+import "pkl:yaml"
+
+// renovate: datasource=github-releases packageName=siderolabs/image-factory extractVersion=^v(?<version>.*)$
+version = "v1.7.1"
+
+sourceUri = "https://raw.githubusercontent.com/siderolabs/image-factory/\(version)/api/openapi/components/schemas.yaml"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+/// Rewrites OpenAPI's `$ref` conventions (`./schemas.yaml#/Name`, `#/Name`) to JSON Schema's
+/// `#/$defs/Name`, which `org.json_schema.contrib`'s ref resolver expects.
+local function normalizeRefs(key: String?, value: Any): Any =
+  if (value is Mapping)
+    value.toMap().entries.fold(Map(), (acc, entry) -> acc.put(entry.first, normalizeRefs(entry.first, entry.second))).toMapping()
+  else if (value is Listing)
+    value.toList().map((elem) -> normalizeRefs(null, elem)).toListing()
+  else if (key == "$ref" && value is String)
+    "#/$defs/\(value.split("/").last)"
+  else
+    value
+
+// schemas.yaml is a flat map of component name to schema, not one document with a `$defs`
+// section; wrapping it as `$defs` and round-tripping through JSON lets `Parser.parse` (JSON-only)
+// read it.
+local rawComponents = normalizeRefs(null, new yaml.Parser { useMapping = true }.parse(read(sourceUri))) as Mapping
+
+local parsedRootSchema =
+  Parser.parse(new JsonRenderer {}.renderValue(new Mapping { ["$defs"] = rawComponents })) as JsonSchema
+
+local allDefs: Map<String, JsonSchema.Schema> = parsedRootSchema.$defs!!.toMap()
+
+local function localNameOf(key: String): String = utils.pascalCase(key)
+
+local function filePathFor(key: String): String = "\(localNameOf(key)).pkl"
+
+local function directRefKeys(schema: JsonSchema.Schema): Set<String> =
+  if (schema is Boolean)
+    Set()
+  else
+    utils.findMatchingSubschemas(schema, (s) -> s.$ref != null)
+      .values
+      .toList()
+      .map((s) -> s.$ref!!.split("/").last)
+      .toSet()
+
+/// `Schematic` plus everything it references, transitively.
+local function closureOf(pending: Set<String>, found: Set<String>): Set<String> =
+  let (remaining = pending.filter((k) -> !found.contains(k)))
+    if (remaining.isEmpty)
+      found
+    else
+      closureOf(remaining.fold(Set(), (acc, k) -> acc + directRefKeys(allDefs[k])), found + remaining)
+
+local relevantKeys: Set<String> = closureOf(Set("Schematic"), Set())
+
+// noinspection TypeMismatch
+local globalTypes: Type.TypeNames =
+  relevantKeys.fold(Map(), (acc: Type.TypeNames, key) ->
+    acc.put(allDefs[key], new Type { name = localNameOf(key); moduleName = localNameOf(key) })
+  )
+
+// Every module exposes its schema as its own top-level properties (no wrapping class), so
+// ModuleGenerator's `Module.Type` cross-reference needs de-qualifying to just `Type`.
+local function postProcess(text: String, key: String): String =
+  directRefKeys(allDefs[key]).toList().fold(text, (acc, refKey) ->
+    let (name = localNameOf(refKey))
+      acc.replaceAll("\(name).\(name)", name)
+  )
+
+// noinspection TypeMismatch
+local function generateModule(key: String): ModuleGenerator =
+  let (refKeys = directRefKeys(allDefs[key]))
+    new ModuleGenerator {
+      rootSchema = allDefs[key]
+      baseUri = schemaBaseUri
+      moduleName = localNameOf(key)
+      existingTypes = refKeys.fold(Map(), (acc: Type.TypeNames, refKey) ->
+        acc.put(allDefs[refKey], globalTypes[allDefs[refKey]])
+      )
+      moduleNode {
+        imports = new Listing {
+          for (refKey in refKeys) {
+            new ModuleNode.ImportNode { value = "\(localNameOf(refKey)).pkl" }
+          }
+        }
+      }
+    }
+
+// This repo's own `schematicId` resolution, spliced onto the generated `Schematic` module so
+// it's the only file consumers import.
+local schematicIdGlue = """
+
+local encodedRequest =
+  new JsonRenderer {}
+    .renderValue(this)
+    .base64
+    .dropLastWhile((char) -> char == "=") // base64 raw encoding
+    .replaceAll("+", "-") // base64 url encoding
+    .replaceAll("/", "_")
+
+/// Resolved via the `talos-factory+http(s):` external reader (`tools/pkl-reader-talos-factory`).
+hidden fixed schematicId: String =
+  read("talos-factory+https://factory.talos.dev/schematics?request=\\(encodedRequest)").text.trim()
+"""
+
+output {
+  files {
+    for (key in relevantKeys) {
+      [filePathFor(key)] {
+        text =
+          let (generated = postProcess(generateModule(key).moduleNode.output.text, key))
+            if (key == "Schematic") generated + schematicIdGlue else generated
+      }
+    }
+  }
+}

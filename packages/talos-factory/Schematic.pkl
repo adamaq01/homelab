@@ -1,0 +1,28 @@
+/// Requested Talos image customization. Unknown fields are rejected.
+///
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/siderolabs/image-factory/v1.7.1/api/openapi/components/schemas.yaml>.
+module Schematic
+
+import "Customization.pkl"
+import "OverlayConfiguration.pkl"
+
+/// Enterprise-only owner identity. When authentication is enabled, the factory sets this to the
+/// authenticated identity and rejects a conflicting supplied value.
+owner: String?
+
+customization: Customization?
+
+overlay: OverlayConfiguration?
+
+local encodedRequest =
+  new JsonRenderer {}
+    .renderValue(this)
+    .base64
+    .dropLastWhile((char) -> char == "=") // base64 raw encoding
+    .replaceAll("+", "-") // base64 url encoding
+    .replaceAll("/", "_")
+
+/// Resolved via the `talos-factory+http(s):` external reader (`tools/pkl-reader-talos-factory`).
+hidden fixed schematicId: String =
+  read("talos-factory+https://factory.talos.dev/schematics?request=\(encodedRequest)").text.trim()
