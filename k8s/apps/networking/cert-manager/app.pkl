@@ -11,7 +11,7 @@ apiTokenSecretKey: String = "api-token"
 /// Traefik's Gateway public listener.
 rootCertSecretName: String = "public-adamaq01-fr-tls"
 
-/// Secret the `domain` wildcard Certificate (see chart.pkl) is stored in. Covers the LAN's literal
+/// Secret the `lanDomain` wildcard Certificate (see chart.pkl) is stored in. Covers the LAN's literal
 /// hosts, not Kubernetes ingress.
 homeCertSecretName: String = "home-adamaq01-fr-tls"
 
