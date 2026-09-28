@@ -1,11 +1,12 @@
 open module cluster
 
-extends "common.pkl"
-
 import "pkl:reflect"
+import ".../common.pkl"
 import "../common/SecretsBundle.pkl"
+import "../common/validateSchematic.pkl"
 import "../documents.pkl" as documentsModule
 import "../secrets.pkl" as secretsModule
+import "@talos-factory/Schematic.pkl"
 import "@talos/block/FilesystemTrimConfigV1Alpha1.pkl" as FilesystemTrimConfig
 import "@talos/block/VolumeConfigV1Alpha1.pkl" as VolumeConfig
 import "@talos/cluster/DiscoveryIdentityConfigV1Alpha1.pkl" as DiscoveryIdentityConfig
@@ -19,6 +20,7 @@ import "@talos/k8s/KubeletConfigV1Alpha1.pkl" as KubeletConfig
 import "@talos/network/HostnameConfigV1Alpha1.pkl" as HostnameConfig
 import "@talos/network/ResolverConfigV1Alpha1.pkl" as ResolverConfig
 import "@talos/runtime/SecurityProfileConfigV1Alpha1.pkl" as SecurityProfileConfig
+import "@talos/runtime/SysctlConfigV1Alpha1.pkl" as SysctlConfig
 import "@talos/runtime/UnattendedInstallConfigV1Alpha1.pkl" as UnattendedInstallConfig
 import "@talos/v1alpha1/Config.pkl" as Config
 
@@ -34,6 +36,24 @@ hidden hostname: String = relativePath.last
 hidden nodeType: "controlplane" | "worker" = relativePath.dropLast(1).last
 
 hidden secrets: SecretsBundle = secretsModule.bundle
+
+// renovate: datasource=github-releases packageName=siderolabs/talos extractVersion=^v(?<version>.*)$
+talosVersion: String = "v1.14.1"
+
+// renovate: datasource=github-releases packageName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
+kubernetesVersion: String = "v1.37.1"
+
+schematic: Schematic = new { customization {} }
+
+hidden validatedSchematic: Schematic = validateSchematic.validate(schematic, module.talosVersion)
+
+installerType: String = "metal-installer"
+
+diskSelector: String = throw("Override this placeholder with a real disk selector")
+
+controlPlaneVIP: String = "192.168.2.251"
+
+nodeSubnet: String = "192.168.2.0/24"
 
 documents: documentsModule.Documents = new {
   (Config) {
@@ -60,7 +80,7 @@ documents: documentsModule.Documents = new {
       when (nodeType == "controlplane") {
         etcd {
           advertisedSubnets {
-            "192.168.2.0/24"
+            module.nodeSubnet
           }
           ca {
             crt = secrets.certs.etcd.crt
@@ -79,14 +99,12 @@ documents: documentsModule.Documents = new {
     clusterSecret = secrets.cluster.secret
   }
   (UnattendedInstallConfig) {
-    kind = "UnattendedInstallConfig" // TODO: Fix
-    installer { // TODO: Derive schematic ID from a schematic definition
-      image =
-        "factory.talos.dev/metal-installer/376567988ad370138ad8b2698212367b8edcb69b5fd68c80be1f2ec7d603b4ba:v1.14.0"
+    installer {
+      image = "factory.talos.dev/\(module.installerType)/\(validatedSchematic.schematicId):\(module.talosVersion)"
     }
     provisioning {
       diskSelector {
-        match = throw("Override this placeholder with a real disk selector")
+        match = module.diskSelector
       }
       wipe = false
     }
@@ -110,29 +128,61 @@ documents: documentsModule.Documents = new {
   (SecurityProfileConfig) {
     workloadIsolation = true
   }
+  (SysctlConfig) {
+    params {
+      // BBR congestion control, paired with the fq qdisc it requires.
+      ["net.core.default_qdisc"] = "fq"
+      ["net.ipv4.tcp_congestion_control"] = "bbr"
+      // Larger TCP buffers for the NVMe-oF/storage traffic to TrueNAS and general throughput.
+      ["net.core.rmem_max"] = "67108864"
+      ["net.core.wmem_max"] = "67108864"
+      ["net.ipv4.tcp_rmem"] = "4096 131072 67108864"
+      ["net.ipv4.tcp_wmem"] = "4096 65536 67108864"
+      ["net.ipv4.tcp_slow_start_after_idle"] = "0"
+      ["net.ipv4.tcp_fastopen"] = "3"
+      ["net.ipv4.tcp_mtu_probing"] = "1"
+    }
+  }
   (HostnameConfig) {
     hostname = module.hostname
   }
   (KubeClusterConfig) {
-    clusterName = module.clusterName
-    endpoint = module.k8sControlPlaneEndpoint
+    clusterName = common.clusterName
+    endpoint = common.k8sControlPlaneEndpoint
   }
   (KubeNodeConfig) {
     nodeIP {
       validSubnets {
-        "192.168.2.0/24"
+        module.nodeSubnet
       }
     }
   }
   (KubeletConfig) {
-    image = "ghcr.io/siderolabs/kubelet:v1.37.0-rc.1"
-    config {}
+    image = "ghcr.io/siderolabs/kubelet:\(module.kubernetesVersion)"
+    config {
+      systemReserved {
+        cpu = "100m"
+        memory = "256Mi"
+        ["ephemeral-storage"] = "1Gi"
+      }
+      kubeReserved {
+        cpu = "200m"
+        memory = "1536Mi"
+        ["ephemeral-storage"] = "1Gi"
+      }
+      evictionHard {
+        ["memory.available"] = "512Mi"
+        ["nodefs.available"] = "10%"
+        ["nodefs.inodesFree"] = "5%"
+        ["imagefs.available"] = "15%"
+      }
+    }
     defaultRuntimeSeccompProfileEnabled = true
   }
   (KubeNetworkConfig) {
     dnsDomain = "cluster.local"
     podSubnets {
-      module.podSubnet
+      common.podSubnet
     }
     serviceSubnets {
       "10.96.0.0/12"

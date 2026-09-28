@@ -1,5 +1,0 @@
-open module common
-
-extends ".../common.pkl"
-
-controlPlaneVIP = "192.168.2.251"

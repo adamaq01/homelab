@@ -1,5 +1,6 @@
 extends "..."
 
+import ".../common.pkl"
 import "@k8s/api/core/v1/Namespace.pkl"
 import "@talos/k8s/KubeAdmissionControlConfigV1Alpha1.pkl" as KubeAdmissionControlConfig
 import "@talos/k8s/KubeAggregatorCAConfigV1Alpha1.pkl" as KubeAggregatorCAConfig
@@ -20,6 +21,8 @@ import "@talos/network/Layer2VIPConfigV1Alpha1.pkl" as Layer2VIPConfig
 
 allowScheduling: Boolean = false
 
+vipLink: String = throw("Override this placeholder with the node's real network interface name")
+
 documents {
   [[this is KubeNodeConfig]] {
     labels {
@@ -36,7 +39,7 @@ documents {
   }
   (KubeAggregatorCAConfig) {
     // Unlike `Config.machine.ca`/`cluster.etcd.ca` (base64), this document's `issuingCA`/`acceptedCAs`
-    // want the raw PEM text — see the field docstrings in the generated `@talos` schema.
+    // want the raw PEM text; see the field docstrings in the generated `@talos` schema.
     issuingCA {
       cert = module.secrets.certs.k8saggregator.crt.base64Decoded
       key = module.secrets.certs.k8saggregator.key.base64Decoded
@@ -120,21 +123,21 @@ documents {
   (KubeServiceAccountConfig) {
     issuer {
       privateKey = module.secrets.certs.k8sserviceaccount.key.base64Decoded
-      issuerURL = module.k8sControlPlaneEndpoint
+      issuerURL = common.k8sControlPlaneEndpoint
     }
   }
   (KubeAPIServerConfig) {
-    image = "registry.k8s.io/kube-apiserver:v1.37.0-rc.1"
+    image = "registry.k8s.io/kube-apiserver:\(module.kubernetesVersion)"
   }
   (KubeControllerManagerConfig) {
-    image = "registry.k8s.io/kube-controller-manager:v1.37.0-rc.1"
+    image = "registry.k8s.io/kube-controller-manager:\(module.kubernetesVersion)"
   }
   (KubeSchedulerConfig) {
-    image = "registry.k8s.io/kube-scheduler:v1.37.0-rc.1"
+    image = "registry.k8s.io/kube-scheduler:\(module.kubernetesVersion)"
     config {}
   }
   (KubeProxyConfig) {
-    image = "registry.k8s.io/kube-proxy:v1.37.0-rc.1"
+    image = "registry.k8s.io/kube-proxy:\(module.kubernetesVersion)"
     config {}
   }
   (KubeFlannelCNIConfig) {
@@ -146,6 +149,6 @@ documents {
   }
   (Layer2VIPConfig) {
     name = module.controlPlaneVIP
-    link = throw("Override this placeholder with the node's real network interface name")
+    link = module.vipLink
   }
 }
