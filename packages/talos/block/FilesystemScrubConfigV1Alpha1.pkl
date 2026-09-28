@@ -7,7 +7,7 @@
 /// time.\n
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module block.FilesystemScrubConfigV1Alpha1
 
 extends ".../TalosDocument.pkl"

@@ -1,7 +1,7 @@
 /// VethPeerConfig is the configuration for the peer end of a veth pair.
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module network.VethPeerConfig
 
 extends ".../TalosObject.pkl"

@@ -31,7 +31,7 @@ import "@org.json_schema.contrib/internal/Type.pkl"
 import "@org.json_schema.contrib/internal/utils.pkl"
 
 // renovate: datasource=github-releases packageName=siderolabs/talos extractVersion=^v(?<version>.*)$
-version = "v1.14.0"
+version = "v1.14.1"
 
 sourceUri = "https://raw.githubusercontent.com/siderolabs/talos/\(version)/pkg/machinery/config/schemas/config.schema.json"
 

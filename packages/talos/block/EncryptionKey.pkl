@@ -1,7 +1,7 @@
 /// EncryptionKey represents configuration for disk encryption key.
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module block.EncryptionKey
 
 extends ".../TalosObject.pkl"

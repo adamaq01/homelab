@@ -1,7 +1,7 @@
 /// MachineConfig represents the machine-specific config values.
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module v1alpha1.MachineConfig
 
 extends ".../TalosObject.pkl"

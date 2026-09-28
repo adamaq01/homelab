@@ -5,7 +5,7 @@
 /// announcements for IPv4.\n
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module network.Layer2VIPConfigV1Alpha1
 
 extends ".../TalosDocument.pkl"

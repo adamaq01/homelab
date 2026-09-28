@@ -4,7 +4,7 @@
 /// behavior.\nVirtual IP will be announced from only one node at a time using Hetzner Cloud APIs.\n
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module network.HCloudVIPConfigV1Alpha1
 
 extends ".../TalosDocument.pkl"

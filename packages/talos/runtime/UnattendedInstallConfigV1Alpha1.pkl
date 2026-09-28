@@ -1,7 +1,7 @@
 /// UnattendedInstallConfig is an UnattendedInstallConfig config document.
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module runtime.UnattendedInstallConfigV1Alpha1
 
 extends ".../TalosDocument.pkl"
@@ -11,7 +11,7 @@ import "ProvisioningSpec.pkl"
 
 apiVersion = "v1alpha1"
 
-kind = "UnattendedInstall"
+kind = "UnattendedInstallConfig"
 
 /// reboot
 ///

@@ -1,7 +1,7 @@
 /// BGPImportRoute selects routes learned by another BGP instance for one-way import.
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module network.BGPImportRoute
 
 extends ".../TalosObject.pkl"

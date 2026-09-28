@@ -1,7 +1,7 @@
 /// Config defines the v1alpha1.Config Talos machine configuration document.
 ///
 /// This module was generated from JSON Schema from
-/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.0/pkg/machinery/config/schemas/config.schema.json>.
+/// <https://raw.githubusercontent.com/siderolabs/talos/v1.14.1/pkg/machinery/config/schemas/config.schema.json>.
 module v1alpha1.Config
 
 extends ".../TalosObject.pkl"
