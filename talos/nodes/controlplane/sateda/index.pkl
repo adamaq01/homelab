@@ -1,13 +1,40 @@
 amends "..."
 
-import "@talos/runtime/UnattendedInstallConfigV1Alpha1.pkl" as UnattendedInstallConfig
+import "@talos/network/LinkAliasConfigV1Alpha1.pkl" as LinkAliasConfig
+import "@talos/network/LinkConfigV1Alpha1.pkl" as LinkConfig
+import "@talos/network/DHCPv4ConfigV1Alpha1.pkl" as DHCPv4Config
 
-documents {
-  [[this is UnattendedInstallConfig]] {
-    provisioning {
-      diskSelector {
-        match = "disk.dev_path == \"/dev/sda\""
+allowScheduling = true
+
+diskSelector = "disk.dev_path == \"/dev/sda\""
+
+vipLink = "net0"
+
+schematic {
+  customization {
+    systemExtensions {
+      officialExtensions {
+        "siderolabs/amd-ucode"
+        "siderolabs/amdgpu"
       }
     }
+    extraKernelArgs {
+      "amd_pstate=active"
+    }
+  }
+}
+
+documents {
+  (LinkAliasConfig) {
+    name = "net0"
+    selector {
+      match = "mac(link.permanent_addr) == \"e0:51:d8:20:56:cf\""
+    }
+  }
+  (LinkConfig) {
+    name = "net0"
+  }
+  (DHCPv4Config) {
+    name = "net0"
   }
 }
