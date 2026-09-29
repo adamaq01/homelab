@@ -1,0 +1,26 @@
+amends ".../app.pkl"
+
+namespace = "node-feature-discovery"
+
+// renovate: datasource=helm packageName=node-feature-discovery registryUrl=oci://registry.k8s.io/nfd/charts
+local version = "0.19.0"
+
+source {
+  repoURL = "oci://registry.k8s.io/nfd/charts/node-feature-discovery"
+  targetRevision = version
+  path = "."
+}
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // The worker DaemonSet mounts hostPath volumes (/proc, /sys, /boot, etc.) to detect
+          // hardware features, which the default PodSecurity "baseline" level blocks.
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
+        }
+      }
+    }
+  }
+}

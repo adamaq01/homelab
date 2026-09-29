@@ -1,0 +1,18 @@
+amends ".../app.pkl"
+
+namespace = "inteldeviceplugins-system"
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // The GpuDevicePlugin DaemonSet mounts hostPath volumes (/dev, sysfs DRM, kubelet
+          // sockets, CDI) and sets a custom seLinuxOptions type, which the default PodSecurity
+          // "baseline" level blocks.
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+amends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+
+namespace = "inteldeviceplugins-system"
+
+// renovate: datasource=helm packageName=intel-device-plugins-operator registryUrl=https://intel.github.io/helm-charts
+local version = "0.37.0"
+
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://intel.github.io/helm-charts"
+    chart = "intel-device-plugins-operator"
+    targetRevision = version
+  }
+}

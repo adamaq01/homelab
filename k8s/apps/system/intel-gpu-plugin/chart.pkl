@@ -1,0 +1,65 @@
+module chart
+
+import "@node-feature-discovery/v1alpha1/NodeFeatureRule.pkl"
+import "@intel-device-plugins/v1/GpuDevicePlugin.pkl"
+
+// renovate: datasource=docker packageName=intel/intel-gpu-plugin
+local version = "0.37.0"
+
+local gpuLabelRule: NodeFeatureRule = new {
+  metadata {
+    name = "intel-gpu-devices"
+  }
+  spec {
+    rules {
+      new {
+        name = "intel.gpu"
+        labels {
+          ["intel.feature.node.kubernetes.io/gpu"] = "true"
+        }
+        matchFeatures {
+          new {
+            feature = "pci.device"
+            matchExpressions {
+              ["vendor"] { op = "In"; value { "8086" } }
+              ["class"] { op = "In"; value { "0300"; "0380" } }
+            }
+          }
+        }
+        matchAny {
+          new {
+            matchFeatures {
+              new { feature = "kernel.loadedmodule"; matchExpressions { ["i915"] { op = "Exists" } } }
+            }
+          }
+          new {
+            matchFeatures {
+              new { feature = "kernel.enabledmodule"; matchExpressions { ["i915"] { op = "Exists" } } }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+local gpuDevicePlugin: GpuDevicePlugin = new {
+  metadata {
+    name = "gpudeviceplugin"
+  }
+  spec {
+    image = "intel/intel-gpu-plugin:\(version)"
+    nodeSelector {
+      ["intel.feature.node.kubernetes.io/gpu"] = "true"
+    }
+    sharedDevNum = 1
+  }
+}
+
+output {
+  value = new Listing {
+    gpuLabelRule
+    gpuDevicePlugin
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
