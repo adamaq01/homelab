@@ -1,0 +1,6 @@
+extends ".../app.pkl"
+
+namespace = "kube-system"
+
+/// Priority for workloads with a preferred node, letting them preempt default-priority pods.
+priorityClassName: String = "node-preferring"

@@ -1,0 +1,20 @@
+module chart
+
+import "@k8s/api/scheduling/v1/PriorityClass.pkl"
+import "app.pkl"
+
+nodePreferring: PriorityClass = new {
+  metadata {
+    name = app.priorityClassName
+  }
+  value = 1000
+  globalDefault = false
+  description = "Preempts default-priority pods on behalf of workloads with a preferred node."
+}
+
+output {
+  value = new Listing {
+    nodePreferring
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
