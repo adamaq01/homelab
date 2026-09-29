@@ -1,0 +1,62 @@
+amends "..."
+
+import "@talos/network/LinkAliasConfigV1Alpha1.pkl" as LinkAliasConfig
+import "@talos/network/LinkConfigV1Alpha1.pkl" as LinkConfig
+import "@talos/network/BondConfigV1Alpha1.pkl" as BondConfig
+import "@talos/network/DHCPv4ConfigV1Alpha1.pkl" as DHCPv4Config
+
+allowScheduling = true
+
+diskSelector = "disk.dev_path == \"/dev/sda\""
+
+vipLink = "bond0"
+
+schematic {
+  customization {
+    systemExtensions {
+      officialExtensions {
+        "siderolabs/i915"
+        "siderolabs/intel-ucode"
+        "siderolabs/mei"
+      }
+    }
+    extraKernelArgs {
+      "i915.enable_guc=3"
+    }
+  }
+}
+
+documents {
+  // The `net%d` format verb aliases both matched links sequentially (net0, net1, ...) in
+  // hardware-address order. Which of the two 2.5G ports ends up net0 vs net1 doesn't matter,
+  // since both feed the same bond below.
+  (LinkAliasConfig) {
+    name = "net%d"
+    selector {
+      match = "mac(link.permanent_addr) in [\"78:55:36:0d:71:50\", \"78:55:36:0d:71:51\"]"
+    }
+  }
+  (LinkConfig) {
+    name = "net0"
+  }
+  (LinkConfig) {
+    name = "net1"
+  }
+  // 802.3ad (LACP) for combined ~5G throughput plus failover.
+  (BondConfig) {
+    name = "bond0"
+    links {
+      "net0"
+      "net1"
+    }
+    bondMode = "802.3ad"
+    // Without `miimon`, the bonding driver has no link-failure detection at all. `updelay`/
+    // `downdelay` debounce flapping on top of that and must be multiples of `miimon`.
+    miimon = 100
+    updelay = 200
+    downdelay = 200
+  }
+  (DHCPv4Config) {
+    name = "bond0"
+  }
+}
