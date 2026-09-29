@@ -1,0 +1,36 @@
+amends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+
+namespace = "amd-gpu-plugin"
+
+// renovate: datasource=helm packageName=amd-gpu registryUrl=https://rocm.github.io/k8s-device-plugin
+local version = "0.22.0"
+
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://rocm.github.io/k8s-device-plugin"
+    chart = "amd-gpu"
+    targetRevision = version
+    helm {
+      valuesObject = new {
+        // Defaults to false, which would let the DaemonSet run on every node.
+        node_selector_enabled = true
+      }
+    }
+  }
+}
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // The DaemonSet mounts hostPath volumes (/dev, /sys, kubelet device-plugins) to expose
+          // the GPU, which the default PodSecurity "baseline" level blocks.
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
+        }
+      }
+    }
+  }
+}
