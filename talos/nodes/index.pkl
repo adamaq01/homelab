@@ -43,7 +43,16 @@ talosVersion: String = "v1.14.1"
 // renovate: datasource=github-releases packageName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
 kubernetesVersion: String = "v1.37.1"
 
-schematic: Schematic = new { customization {} }
+// `nvme-cli` is needed on every node for `tns-csi`'s NVMe-oF connections.
+schematic: Schematic = new {
+  customization {
+    systemExtensions {
+      officialExtensions {
+        "siderolabs/nvme-cli"
+      }
+    }
+  }
+}
 
 hidden validatedSchematic: Schematic = validateSchematic.validate(schematic, module.talosVersion)
 
