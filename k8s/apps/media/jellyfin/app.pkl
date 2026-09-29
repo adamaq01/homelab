@@ -4,6 +4,7 @@ import "@argocd/Application.pkl"
 import "@k8s/api/core/v1/PodSpec.pkl"
 import ".../networking/traefik/app.pkl" as traefik
 import ".../storage/tns-csi/app.pkl" as tns_csi
+import ".../system/scheduling/app.pkl" as scheduling
 
 namespace = "media"
 
@@ -31,6 +32,15 @@ sources = new Listing {
       valuesObject = new {
         image {
           tag = jellyfinVersion
+        }
+        // Requesting the device-plugin-advertised GPU resource (see `.../system/intel-gpu-plugin`)
+        // already confines scheduling to a GPU node; `priorityClassName` lets it preempt
+        // default-priority pods there if that node is otherwise full.
+        priorityClassName = scheduling.priorityClassName
+        resources {
+          limits {
+            ["gpu.intel.com/i915"] = 1
+          }
         }
         jellyfin {
           // Without this, Jellyfin advertises its in-cluster pod IP/port to clients doing
