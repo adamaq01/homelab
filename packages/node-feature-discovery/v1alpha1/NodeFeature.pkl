@@ -1,0 +1,66 @@
+/// NodeFeature resource holds the features discovered for one node in the cluster.
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/v0.19.0/deployment/base/nfd-crds/nfd-api-crds.yaml>.
+module io.`k8s-sigs`.nfd.v1alpha1.NodeFeature
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "nfd.k8s-sigs.io/v1alpha1"
+
+fixed kind: "NodeFeature"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// Specification of the NodeFeature, containing features discovered for a node.
+spec: Spec
+
+/// Specification of the NodeFeature, containing features discovered for a node.
+class Spec {
+  /// Features is the full "raw" features data that has been discovered.
+  features: Features?
+
+  /// Labels is the set of node labels that are requested to be created.
+  labels: Mapping<String, String>?
+}
+
+/// Features is the full "raw" features data that has been discovered.
+class Features {
+  /// Attributes contains all the attribute-type features of the node.
+  attributes: Mapping<String, Attributes>?
+
+  /// Flags contains all the flag-type features of the node.
+  flags: Mapping<String, Flags>?
+
+  /// Instances contains all the instance-type features of the node.
+  instances: Mapping<String, Instances>?
+}
+
+/// AttributeFeatureSet is a set of features having string value.
+class Attributes {
+  /// Individual features of the feature set.
+  elements: Mapping<String, String>
+}
+
+/// FlagFeatureSet is a set of simple features only containing names without values.
+class Flags {
+  /// Individual features of the feature set.
+  elements: Mapping<String, Dynamic>
+}
+
+/// InstanceFeatureSet is a set of features each of which is an instance having multiple attributes.
+class Instances {
+  /// Individual features of the feature set.
+  elements: Listing<Element>
+}
+
+/// InstanceFeature represents one instance of a complex features, e.g. a device.
+class Element {
+  /// Attributes of the instance feature.
+  attributes: Mapping<String, String>
+}

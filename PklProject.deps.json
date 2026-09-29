@@ -109,6 +109,11 @@
       "uri": "projectpackage://local/homelab/packages/external-secrets@0.1.0",
       "path": "packages/external-secrets"
     },
+    "package://local/homelab/packages/node-feature-discovery@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/node-feature-discovery@0.1.0",
+      "path": "packages/node-feature-discovery"
+    },
     "package://local/homelab/packages/talos@0": {
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/talos@0.1.0",
@@ -128,6 +133,11 @@
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/cloudnative-pg@0.1.0",
       "path": "packages/cloudnative-pg"
+    },
+    "package://local/homelab/packages/intel-device-plugins@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/intel-device-plugins@0.1.0",
+      "path": "packages/intel-device-plugins"
     }
   }
 }

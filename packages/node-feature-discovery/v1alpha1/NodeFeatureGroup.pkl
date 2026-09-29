@@ -1,0 +1,116 @@
+/// NodeFeatureGroup resource holds Node pools by featureGroup
+///
+/// This module was generated from the CustomResourceDefinition at
+/// <https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/v0.19.0/deployment/base/nfd-crds/nfd-api-crds.yaml>.
+module io.`k8s-sigs`.nfd.v1alpha1.NodeFeatureGroup
+
+extends "@k8s/K8sResource.pkl"
+
+import "@k8s/apimachinery/pkg/apis/meta/v1/ObjectMeta.pkl"
+
+fixed apiVersion: "nfd.k8s-sigs.io/v1alpha1"
+
+fixed kind: "NodeFeatureGroup"
+
+/// Standard object's metadata.
+///
+/// More info: <https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata>.
+metadata: ObjectMeta?
+
+/// Spec defines the rules to be evaluated.
+spec: Spec
+
+/// Status of the NodeFeatureGroup after the most recent evaluation of the specification.
+status: Status?
+
+/// Spec defines the rules to be evaluated.
+class Spec {
+  /// List of rules to evaluate to determine nodes that belong in this group.
+  featureGroupRules: Listing<FeatureGroupRule>
+}
+
+/// GroupRule defines a rule for nodegroup filtering.
+class FeatureGroupRule {
+  /// MatchAny specifies a list of matchers one of which must match.
+  matchAny: Listing<MatchAny>?
+
+  /// MatchFeatures specifies a set of matcher terms all of which must match.
+  matchFeatures: Listing<FeatureGroupRuleMatchFeature>?
+
+  /// Name of the rule.
+  name: String
+
+  /// Vars is the variables to store if the rule matches. Variables can be referenced from other rules
+  /// enabling more complex rule hierarchies.
+  vars: Mapping<String, String>?
+
+  /// VarsTemplate specifies a template to expand for dynamically generating multiple variables. Data
+  /// (after template expansion) must be keys with an optional value (<key>[=<value>]) separated by
+  /// newlines.
+  varsTemplate: String?
+}
+
+/// MatchAnyElem specifies one sub-matcher of MatchAny.
+class MatchAny {
+  /// MatchFeatures specifies a set of matcher terms all of which must match.
+  matchFeatures: Listing<FeatureGroupRuleMatchFeature>
+}
+
+/// FeatureMatcherTerm defines requirements against one feature set. All requirements (specified as
+/// MatchExpressions) are evaluated against each element in the feature set.
+class FeatureGroupRuleMatchFeature {
+  /// Feature is the name of the feature set to match against.
+  feature: String
+
+  /// MatchExpressions is the set of per-element expressions evaluated. These match against the value of
+  /// the specified elements.
+  matchExpressions: Mapping<String, MatchFeatureMatchExpressions>?
+
+  /// MatchName in an expression that is matched against the name of each element in the feature set.
+  matchName: MatchFeatureMatchName?
+}
+
+/// MatchExpression specifies an expression to evaluate against a set of input values. It contains an
+/// operator that is applied when matching the input and an array of values that the operator evaluates
+/// the input against.
+class MatchFeatureMatchExpressions {
+  /// Op is the operator to be applied.
+  op: "In"|"NotIn"|"InRegexp"|"Exists"|"DoesNotExist"|"Gt"|"Ge"|"Lt"|"Le"|"GtLt"|"GeLe"|"IsTrue"|"IsFalse"
+
+  /// Type defines the value type for specific operators. The currently supported type is 'version' for
+  /// Gt,Ge,Lt,Le,GtLt,GeLe operators.
+  type: String?
+
+  /// Value is the list of values that the operand evaluates the input against. Value should be empty if
+  /// the operator is Exists, DoesNotExist, IsTrue or IsFalse. Value should contain exactly one element
+  /// if the operator is Gt or Lt and exactly two elements if the operator is GtLt. In other cases Value
+  /// should contain at least one element.
+  value: Listing<String>?
+}
+
+/// MatchName in an expression that is matched against the name of each element in the feature set.
+class MatchFeatureMatchName {
+  /// Op is the operator to be applied.
+  op: "In"|"NotIn"|"InRegexp"|"Exists"|"DoesNotExist"|"Gt"|"Ge"|"Lt"|"Le"|"GtLt"|"GeLe"|"IsTrue"|"IsFalse"
+
+  /// Type defines the value type for specific operators. The currently supported type is 'version' for
+  /// Gt,Ge,Lt,Le,GtLt,GeLe operators.
+  type: String?
+
+  /// Value is the list of values that the operand evaluates the input against. Value should be empty if
+  /// the operator is Exists, DoesNotExist, IsTrue or IsFalse. Value should contain exactly one element
+  /// if the operator is Gt or Lt and exactly two elements if the operator is GtLt. In other cases Value
+  /// should contain at least one element.
+  value: Listing<String>?
+}
+
+/// Status of the NodeFeatureGroup after the most recent evaluation of the specification.
+class Status {
+  /// Nodes is a list of FeatureGroupNode in the cluster that match the featureGroupRules
+  nodes: Listing<Node>?
+}
+
+class Node {
+  /// Name of the node.
+  name: String
+}

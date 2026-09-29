@@ -1,0 +1,9 @@
+amends "package://pkg.pkl-lang.org/pkl-pantry/k8s.contrib.crd@4.2.6#/generate.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/node-feature-discovery
+local version = "v0.19.0"
+
+source = "https://raw.githubusercontent.com/kubernetes-sigs/node-feature-discovery/\(version)/deployment/base/nfd-crds/nfd-api-crds.yaml"
+baseApiGroup = "nfd.k8s-sigs.io"
+
+k8sImportPath = "@k8s"
