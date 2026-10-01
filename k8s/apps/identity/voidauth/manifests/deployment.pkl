@@ -5,6 +5,7 @@ import ".../argocd/app.pkl" as argocd
 import ".../email.pkl"
 import ".../networking/headscale/app.pkl" as headscale
 import ".../finance/wallos/app.pkl" as wallos
+import ".../assets/homebox/app.pkl" as homebox
 import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
@@ -136,6 +137,16 @@ spec {
               ["OIDC_wallos_CLIENT_REDIRECT_URLS"] =
                 "https://\(wallos.hostname)/, https://\(wallos.aliasHostname)/"
               ["OIDC_wallos_CLIENT_POST_LOGOUT_URLS"] = "https://\(wallos.hostname)"
+
+              ["OIDC_homebox_CLIENT_DISPLAY_NAME"] = "Homebox"
+              ["OIDC_homebox_CLIENT_HOMEPAGE_URL"] = "https://\(homebox.hostname)"
+              ["OIDC_homebox_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "homebox-client-secret"
+              }
+              ["OIDC_homebox_CLIENT_REDIRECT_URLS"] =
+                "https://\(homebox.hostname)/api/v1/users/login/oidc/callback"
+              ["OIDC_homebox_CLIENT_GROUPS"] = "homebox-users"
             } |> envMapToListing
         }
       }

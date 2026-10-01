@@ -1,0 +1,91 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+
+// renovate: datasource=docker packageName=ghcr.io/sysadminsmedia/homebox
+local version = "0.26.2"
+
+local appLabel = "homebox"
+
+metadata {
+  name = "homebox"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  strategy {
+    // ReadWriteOnce PVC: a second pod scheduled elsewhere couldn't mount it anyway.
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "homebox"
+          image = "ghcr.io/sysadminsmedia/homebox:\(version)"
+          ports {
+            new { containerPort = 7745 }
+          }
+          env {
+            new { name = "HBOX_MODE"; value = "production" }
+            new { name = "HBOX_LOG_LEVEL"; value = "info" }
+            new { name = "HBOX_OPTIONS_TRUST_PROXY"; value = "true" }
+            new { name = "HBOX_OPTIONS_HOSTNAME"; value = app.hostname }
+            new {
+              name = "HBOX_AUTH_API_KEY_PEPPER"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "api-key-pepper"
+                }
+              }
+            }
+
+            // Only VoidAuth accounts can sign in: local username/password login and
+            // self-registration are both off.
+            new { name = "HBOX_OPTIONS_ALLOW_REGISTRATION"; value = "false" }
+            new { name = "HBOX_OPTIONS_ALLOW_LOCAL_LOGIN"; value = "false" }
+
+            new { name = "HBOX_OIDC_ENABLED"; value = "true" }
+            new { name = "HBOX_OIDC_AUTO_REDIRECT"; value = "true" }
+            new { name = "HBOX_OIDC_ISSUER_URL"; value = "https://\(voidauth.hostname)/oidc" }
+            new { name = "HBOX_OIDC_CLIENT_ID"; value = "homebox" }
+            new { name = "HBOX_OIDC_SCOPE"; value = "openid profile email groups" }
+            new {
+              name = "HBOX_OIDC_CLIENT_SECRET"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "homebox-client-secret"
+                }
+              }
+            }
+            new { name = "HBOX_OIDC_ALLOWED_GROUPS"; value = "homebox-users" }
+            new { name = "HBOX_OIDC_VERIFY_EMAIL"; value = "true" }
+          }
+          volumeMounts {
+            new { name = "data"; mountPath = "/data" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "homebox-service"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "homebox"
+  }
+  ports {
+    new {
+      port = 7745
+      targetPort = 7745
+      protocol = "TCP"
+    }
+  }
+}

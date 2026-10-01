@@ -1,0 +1,6 @@
+extends ".../app.pkl"
+
+hostname: String = "inventory.\(module.rootDomain)"
+
+/// Holds the API key pepper and homebox's VoidAuth OIDC client secret.
+secretName: String = "homebox-secrets"

@@ -1,0 +1,47 @@
+/// Self-hosted homebox (<https://homebox.software>), a home inventory/asset tracker. Single
+/// container, SQLite on a PVC, no separate database needed.
+///
+/// Login goes through VoidAuth via homebox's own native OIDC support; local username/password
+/// login and self-registration are both disabled, so only VoidAuth accounts can sign in.
+///
+/// Seed once with:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/homebox \
+///      api-key-pepper=<32+ random chars, e.g. `openssl rand -base64 32`>
+///
+/// And add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
+/// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
+///      homebox-client-secret=<random string, e.g. `openssl rand -hex 32`>
+///
+/// After deploy, create a `homebox-users` security group in VoidAuth's UI, add the appropriate
+/// users to it, and have them sign in via VoidAuth; OIDC logins auto-provision their homebox
+/// account, so no manual registration step is needed.
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["homebox"] {
+        "api-key-pepper"
+      }
+      ["voidauth"] {
+        "homebox-client-secret"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
