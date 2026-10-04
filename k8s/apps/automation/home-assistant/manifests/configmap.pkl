@@ -10,7 +10,13 @@ local envVarSecretPlaceholder = "!env_var OIDC_CLIENT_SECRET"
 local configuration = new {
   http {
     use_x_forwarded_for = true
-    trusted_proxies { app.podSubnet }
+    // Traefik's pod isn't hostNetwork, but this one is: cross-node traffic to a hostNetwork
+    // destination gets SNAT'd to the sending node's own LAN address rather than keeping the pod
+    // IP, so the node subnet needs trusting here too, not just the pod subnet.
+    trusted_proxies {
+      app.podSubnet
+      app.nodeSubnet
+    }
   }
   default_config = null
   logger {

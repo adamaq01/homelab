@@ -62,8 +62,6 @@ diskSelector: String = throw("Override this placeholder with a real disk selecto
 
 controlPlaneVIP: String = "192.168.2.251"
 
-nodeSubnet: String = "192.168.2.0/24"
-
 documents: documentsModule.Documents = new {
   (Config) {
     version = "v1alpha1"
@@ -89,7 +87,7 @@ documents: documentsModule.Documents = new {
       when (nodeType == "controlplane") {
         etcd {
           advertisedSubnets {
-            module.nodeSubnet
+            common.nodeSubnet
           }
           ca {
             crt = secrets.certs.etcd.crt
@@ -162,7 +160,7 @@ documents: documentsModule.Documents = new {
   (KubeNodeConfig) {
     nodeIP {
       validSubnets {
-        module.nodeSubnet
+        common.nodeSubnet
       }
     }
   }
