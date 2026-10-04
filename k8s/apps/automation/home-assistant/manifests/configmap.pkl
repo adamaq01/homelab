@@ -3,9 +3,15 @@ amends "@k8s/api/core/v1/ConfigMap.pkl"
 import ".../app.pkl"
 import ".../identity/voidauth/app.pkl" as voidauth
 
-// Pkl's `YamlRenderer` always quotes a string starting with `!`, so this placeholder gets
-// swapped back to a literal, unquoted tag after rendering
-local envVarSecretPlaceholder = "!env_var OIDC_CLIENT_SECRET"
+// Pkl's `YamlRenderer` always quotes a string starting with `!`, so every one of these
+// placeholders gets swapped back to a literal, unquoted tag after rendering: HA's YAML loader
+// resolves `!env_var` against the process environment, and `!include` against a file path
+// relative to `/config`, both at config-parse time.
+local function envVarTag(name: String): String = "!env_var \(name)"
+
+local oidcClientSecretTag = envVarTag("OIDC_CLIENT_SECRET")
+local googleProjectIdTag = envVarTag("GOOGLE_PROJECT_ID")
+local googleServiceAccountTag = "!include SERVICE_ACCOUNT.json"
 
 local configuration = new {
   http {
@@ -25,7 +31,7 @@ local configuration = new {
   }
   auth_oidc {
     client_id = "homeassistant"
-    client_secret = envVarSecretPlaceholder
+    client_secret = oidcClientSecretTag
     discovery_url = "https://\(voidauth.hostname)/oidc/.well-known/openid-configuration"
     display_name = "VoidAuth"
     features {
@@ -35,6 +41,10 @@ local configuration = new {
       admin = "home-assistant-admins"
     }
   }
+  google_assistant {
+    project_id = googleProjectIdTag
+    service_account = googleServiceAccountTag
+  }
 }
 
 metadata {
@@ -43,6 +53,9 @@ metadata {
 
 data {
   ["configuration.yaml"] =
-    new YamlRenderer { omitNullProperties = false }.renderDocument(configuration)
-      .replaceAll("'\(envVarSecretPlaceholder)'", envVarSecretPlaceholder)
+    List(oidcClientSecretTag, googleProjectIdTag, googleServiceAccountTag)
+      .fold(
+        new YamlRenderer { omitNullProperties = false }.renderDocument(configuration),
+        (text, tag) -> text.replaceAll("'\(tag)'", tag),
+      )
 }

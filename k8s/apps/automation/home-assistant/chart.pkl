@@ -2,6 +2,15 @@
 ///
 ///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
 ///      home-assistant-client-secret=<random string, e.g. `openssl rand -hex 32`>
+///
+/// And the Google Assistant project ID and service account JSON key file (uploaded whole, see
+/// `manifests/configmap.pkl`'s `!include` usage). `bao kv put`'s `@file` reads from the
+/// machine running `bao` itself, which is the openbao pod, not your local one, so the file's
+/// content has to be piped in over stdin instead:
+///
+///    jq -n --rawfile sa SERVICE_ACCOUNT.json --arg pid <your Google Cloud project ID> \
+///      '{"google-project-id": $pid, "google-service-account-json": $sa}' \
+///      | kubectl exec -i -n secrets openbao-0 -- bao kv put secret/home-assistant -
 module chart
 
 import ".../utils/ExternalSecret.pkl"
@@ -13,6 +22,10 @@ secretsExternalSecret =
     secrets {
       ["voidauth"] {
         "home-assistant-client-secret"
+      }
+      ["home-assistant"] {
+        "google-project-id"
+        "google-service-account-json"
       }
     }
   }.resource

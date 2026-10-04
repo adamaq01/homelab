@@ -90,6 +90,15 @@ spec {
                 }
               }
             }
+            new {
+              name = "GOOGLE_PROJECT_ID"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "google-project-id"
+                }
+              }
+            }
           }
           volumeMounts {
             new { name = "config"; mountPath = "/config" }
@@ -101,6 +110,11 @@ spec {
             new {
               name = "hass-oidc-auth"
               mountPath = "/config/custom_components/hass_oidc_auth"
+            }
+            new {
+              name = "google-service-account"
+              mountPath = "/config/SERVICE_ACCOUNT.json"
+              subPath = "google-service-account-json"
             }
           }
         }
@@ -121,6 +135,18 @@ spec {
         new {
           name = "hass-oidc-auth"
           emptyDir {}
+        }
+        new {
+          name = "google-service-account"
+          secret {
+            secretName = app.secretName
+            items {
+              new {
+                key = "google-service-account-json"
+                path = "google-service-account-json"
+              }
+            }
+          }
         }
       }
     }
