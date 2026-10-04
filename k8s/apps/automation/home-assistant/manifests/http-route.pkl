@@ -5,6 +5,9 @@ import ".../networking/traefik/app.pkl" as traefik
 
 metadata {
   name = "home-assistant"
+  annotations {
+    [app.publicAnnotationKey] = ""
+  }
 }
 
 spec {
