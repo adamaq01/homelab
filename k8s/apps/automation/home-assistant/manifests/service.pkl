@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "home-assistant"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "home-assistant"
+  }
+  ports {
+    new {
+      port = 8123
+      targetPort = 8123
+      protocol = "TCP"
+    }
+  }
+}

@@ -1,0 +1,28 @@
+/// Seed once with:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
+///      home-assistant-client-secret=<random string, e.g. `openssl rand -hex 32`>
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["voidauth"] {
+        "home-assistant-client-secret"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

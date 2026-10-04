@@ -1,0 +1,128 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import "@k8s/api/core/v1/NodeSelectorTerm.pkl"
+
+// renovate: datasource=docker packageName=ghcr.io/home-assistant/home-assistant
+local version = "2026.9.4"
+
+// renovate: datasource=github-releases packageName=christiaangoossens/hass-oidc-auth
+local hassOidcAuthVersion = "v1.2.1"
+
+local appLabel = "home-assistant"
+
+// The release zip has no `hass_oidc_auth/` parent folder inside it.
+local fetchHassOidcAuthScript =
+  """
+  import urllib.request, zipfile, io
+  url = "https://github.com/christiaangoossens/hass-oidc-auth/releases/download/\(hassOidcAuthVersion)/hass-oidc-auth.zip"
+  data = urllib.request.urlopen(url).read()
+  zipfile.ZipFile(io.BytesIO(data)).extractall("/hass-oidc-auth")
+  """
+
+metadata {
+  name = "home-assistant"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  strategy {
+    // ReadWriteOnce PVC: a second pod scheduled elsewhere couldn't mount it anyway.
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      hostNetwork = true
+      dnsPolicy = "ClusterFirstWithHostNet"
+      affinity {
+        nodeAffinity {
+          preferredDuringSchedulingIgnoredDuringExecution {
+            new {
+              weight = 100
+              preference {
+                matchExpressions {
+                  new NodeSelectorTerm.NodeSelectorRequirement {
+                    key = "kubernetes.io/hostname"
+                    operator = "In"
+                    values { "sateda" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      initContainers {
+        new {
+          name = "fetch-hass-oidc-auth"
+          image = "ghcr.io/home-assistant/home-assistant:\(version)"
+          command { "python3"; "-c" }
+          args { fetchHassOidcAuthScript }
+          volumeMounts {
+            new { name = "hass-oidc-auth"; mountPath = "/hass-oidc-auth" }
+          }
+        }
+      }
+      containers {
+        new {
+          name = "home-assistant"
+          image = "ghcr.io/home-assistant/home-assistant:\(version)"
+          ports {
+            new { containerPort = 8123 }
+          }
+          env {
+            new { name = "TZ"; value = "Europe/Paris" }
+            new {
+              name = "OIDC_CLIENT_SECRET"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "home-assistant-client-secret"
+                }
+              }
+            }
+          }
+          volumeMounts {
+            new { name = "config"; mountPath = "/config" }
+            new {
+              name = "configuration-yaml"
+              mountPath = "/config/configuration.yaml"
+              subPath = "configuration.yaml"
+            }
+            new {
+              name = "hass-oidc-auth"
+              mountPath = "/config/custom_components/hass_oidc_auth"
+            }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "config"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "configuration-yaml"
+          configMap {
+            name = import("configmap.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "hass-oidc-auth"
+          emptyDir {}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+amends "@k8s/api/core/v1/ConfigMap.pkl"
+
+import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+
+// Pkl's `YamlRenderer` always quotes a string starting with `!`, so this placeholder gets
+// swapped back to a literal, unquoted tag after rendering
+local envVarSecretPlaceholder = "!env_var OIDC_CLIENT_SECRET"
+
+local configuration = new {
+  http {
+    use_x_forwarded_for = true
+    trusted_proxies { app.podSubnet }
+  }
+  default_config = null
+  logger {
+    // `default` is a reserved property name on Dynamic
+    ["default"] = "info"
+  }
+  auth_oidc {
+    client_id = "homeassistant"
+    client_secret = envVarSecretPlaceholder
+    discovery_url = "https://\(voidauth.hostname)/oidc/.well-known/openid-configuration"
+    display_name = "VoidAuth"
+    features {
+      default_redirect = true
+    }
+    roles {
+      admin = "home-assistant-admins"
+    }
+  }
+}
+
+metadata {
+  name = "home-assistant-config"
+}
+
+data {
+  ["configuration.yaml"] =
+    new YamlRenderer { omitNullProperties = false }.renderDocument(configuration)
+      .replaceAll("'\(envVarSecretPlaceholder)'", envVarSecretPlaceholder)
+}

@@ -1,0 +1,18 @@
+extends ".../app.pkl"
+
+hostname: String = "ha.\(module.rootDomain)"
+
+secretName: String = "home-assistant-secrets"
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // hostNetwork, which the default PodSecurity "baseline" level blocks.
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
+        }
+      }
+    }
+  }
+}

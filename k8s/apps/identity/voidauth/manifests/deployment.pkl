@@ -6,6 +6,7 @@ import ".../email.pkl"
 import ".../networking/headscale/app.pkl" as headscale
 import ".../finance/wallos/app.pkl" as wallos
 import ".../assets/homebox/app.pkl" as homebox
+import ".../automation/home-assistant/app.pkl" as homeAssistant
 import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
@@ -147,6 +148,17 @@ spec {
               ["OIDC_homebox_CLIENT_REDIRECT_URLS"] =
                 "https://\(homebox.hostname)/api/v1/users/login/oidc/callback"
               ["OIDC_homebox_CLIENT_GROUPS"] = "homebox-users"
+
+              // Declared client-id env vars can't contain `_`, hence "homeassistant".
+              ["OIDC_homeassistant_CLIENT_DISPLAY_NAME"] = "Home Assistant"
+              ["OIDC_homeassistant_CLIENT_HOMEPAGE_URL"] = "https://\(homeAssistant.hostname)"
+              ["OIDC_homeassistant_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "home-assistant-client-secret"
+              }
+              ["OIDC_homeassistant_CLIENT_REDIRECT_URLS"] =
+                "https://\(homeAssistant.hostname)/auth/oidc/callback"
+              ["OIDC_homeassistant_CLIENT_GROUPS"] = "home-assistant-users,home-assistant-admins"
             } |> envMapToListing
         }
       }
