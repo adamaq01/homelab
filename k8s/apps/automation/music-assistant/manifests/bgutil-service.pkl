@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "bgutil-ytdlp-pot-provider"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "bgutil-ytdlp-pot-provider"
+  }
+  ports {
+    new {
+      port = 4416
+      targetPort = 4416
+      protocol = "TCP"
+    }
+  }
+}

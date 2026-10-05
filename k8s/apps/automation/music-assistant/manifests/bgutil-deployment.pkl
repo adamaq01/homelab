@@ -1,0 +1,42 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+// Must match the yt-dlp plugin version bundled in the pinned music-assistant/server image
+// above, confirmed from its own logs ("Plugin and HTTP server major versions are mismatched"),
+// not the 1.2.1 music-assistant.io's docs currently recommend, that's stale for this version.
+// Kept off hostNetwork (unlike music-assistant itself), unrelated to this version mismatch:
+// this image always binds every interface inside its own container regardless of version, so
+// staying off hostNetwork is what keeps it scoped to the cluster's internal pod network instead
+// of the node's real LAN interface.
+local version = "2.0.1"
+
+local appLabel = "bgutil-ytdlp-pot-provider"
+
+metadata {
+  name = "bgutil-ytdlp-pot-provider"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "bgutil-ytdlp-pot-provider"
+          image = "brainicism/bgutil-ytdlp-pot-provider:\(version)"
+          ports {
+            new { containerPort = 4416 }
+          }
+        }
+      }
+    }
+  }
+}
