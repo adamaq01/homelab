@@ -1,0 +1,84 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../music-assistant/app.pkl" as musicAssistant
+
+local appLabel = "music-assistant-alexa-skill"
+
+metadata {
+  name = "music-assistant-alexa-skill"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  strategy {
+    // ReadWriteOnce PVC: a second pod scheduled elsewhere couldn't mount it anyway.
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "music-assistant-alexa-skill"
+          // No versioned tag published upstream, only :latest.
+          image = "ghcr.io/alams154/music-assistant-skill:latest"
+          imagePullPolicy = "Always"
+          ports {
+            new { containerPort = 5000 }
+          }
+          env {
+            new { name = "SKILL_HOSTNAME"; value = app.hostname }
+            // The skill only string-prefixes this onto MA's raw internal stream URL, so the
+            // path suffix rides along unvalidated, matching the /stream prefix stripped by
+            // music-assistant's own http-route.pkl before reaching its streaming port.
+            new { name = "MA_HOSTNAME"; value = "\(musicAssistant.hostname)/stream" }
+            new { name = "LOCALE"; value = "fr-FR" }
+            new { name = "TZ"; value = "Europe/Paris" }
+            new {
+              name = "MA_API_URL"
+              value = "http://\(musicAssistant.name).\(musicAssistant.namespace).svc.cluster.local:8095"
+            }
+            new {
+              name = "APP_USERNAME"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "app-username"
+                }
+              }
+            }
+            new {
+              name = "APP_PASSWORD"
+              valueFrom {
+                secretKeyRef {
+                  name = app.secretName
+                  key = "app-password"
+                }
+              }
+            }
+          }
+          volumeMounts {
+            new { name = "ask-data"; mountPath = "/root/.ask" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "ask-data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}

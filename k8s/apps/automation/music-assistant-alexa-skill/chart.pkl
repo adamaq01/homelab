@@ -1,0 +1,30 @@
+/// Seed once with:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/music-assistant-alexa-skill \
+///      app-username=<pick a username> \
+///      app-password=<random string, e.g. `openssl rand -hex 32`>
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["music-assistant-alexa-skill"] {
+        "app-username"
+        "app-password"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

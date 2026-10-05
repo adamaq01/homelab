@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "music-assistant-alexa-skill"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "music-assistant-alexa-skill"
+  }
+  ports {
+    new {
+      port = 5000
+      targetPort = 5000
+      protocol = "TCP"
+    }
+  }
+}

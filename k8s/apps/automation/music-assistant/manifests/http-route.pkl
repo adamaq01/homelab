@@ -5,6 +5,9 @@ import ".../networking/traefik/app.pkl" as traefik
 
 metadata {
   name = "music-assistant"
+  annotations {
+    [app.publicAnnotationKey] = ""
+  }
 }
 
 spec {
@@ -17,9 +20,34 @@ spec {
   }
   hostnames {
     app.hostname
-    app.aliasHostname
   }
   rules {
+    new {
+      // Music Assistant's dedicated streaming port (distinct from the main UI/API below),
+      // served from the same hostname under this one prefix since the Echo device fetches
+      // these stream URLs directly. The prefix itself is stripped before forwarding: MA's own
+      // stream paths (/flow, /single, /source, ...) start right after it, at this backend's root.
+      matches {
+        new { path { type = "PathPrefix"; value = "/stream" } }
+      }
+      filters {
+        new {
+          type = "URLRewrite"
+          urlRewrite {
+            path {
+              type = "ReplacePrefixMatch"
+              replacePrefixMatch = "/"
+            }
+          }
+        }
+      }
+      backendRefs {
+        new {
+          name = import("stream-service.pkl").metadata.name!!
+          port = 8097
+        }
+      }
+    }
     new {
       backendRefs {
         new {

@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "music-assistant-stream"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "music-assistant"
+  }
+  ports {
+    new {
+      port = 8097
+      targetPort = 8097
+      protocol = "TCP"
+    }
+  }
+}

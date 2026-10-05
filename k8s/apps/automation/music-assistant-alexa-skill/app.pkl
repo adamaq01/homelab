@@ -1,0 +1,5 @@
+extends ".../app.pkl"
+
+hostname: String = "ma-skill.\(module.rootDomain)"
+
+secretName: String = "music-assistant-alexa-skill-secrets"

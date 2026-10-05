@@ -54,6 +54,7 @@ spec {
           image = "ghcr.io/music-assistant/server:\(version)"
           ports {
             new { containerPort = 8095 }
+            new { containerPort = 8097 }
           }
           volumeMounts {
             new { name = "data"; mountPath = "/data" }
