@@ -1,0 +1,3 @@
+extends ".../app.pkl"
+
+hostname: String = "\(module.name).\(module.ingressDomain)"

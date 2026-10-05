@@ -1,0 +1,59 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../automation/home-assistant/app.pkl" as homeAssistant
+
+// renovate: datasource=docker packageName=ghcr.io/oyvhov/tunet
+local version = "1.22.1"
+
+local appLabel = "tunet"
+
+metadata {
+  name = "tunet"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  strategy {
+    // ReadWriteOnce PVC: a second pod scheduled elsewhere couldn't mount it anyway.
+    type = "Recreate"
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "tunet"
+          image = "ghcr.io/oyvhov/tunet:\(version)"
+          ports {
+            new { containerPort = 3002 }
+          }
+          env {
+            new {
+              name = "TUNET_INTERNAL_HA_URL"
+              value = "http://\(homeAssistant.name).\(homeAssistant.namespace).svc.cluster.local:8123"
+            }
+          }
+          volumeMounts {
+            new { name = "data"; mountPath = "/app/data" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}

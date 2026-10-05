@@ -1,0 +1,19 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "tunet"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "tunet"
+  }
+  ports {
+    new {
+      port = 3002
+      targetPort = 3002
+      protocol = "TCP"
+    }
+  }
+}
