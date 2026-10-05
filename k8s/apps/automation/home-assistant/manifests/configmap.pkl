@@ -45,6 +45,9 @@ local configuration = new {
     project_id = googleProjectIdTag
     service_account = googleServiceAccountTag
   }
+  alexa {
+    smart_home = null
+  }
 }
 
 metadata {
