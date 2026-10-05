@@ -1,0 +1,16 @@
+extends ".../app.pkl"
+
+hostname: String = "\(module.name).\(module.ingressDomain)"
+
+application {
+  spec {
+    syncPolicy {
+      managedNamespaceMetadata {
+        labels {
+          // hostNetwork, which the default PodSecurity "baseline" level blocks.
+          ["pod-security.kubernetes.io/enforce"] = "privileged"
+        }
+      }
+    }
+  }
+}

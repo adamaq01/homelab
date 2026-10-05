@@ -1,0 +1,31 @@
+amends "@gateway-api/HTTPRoute.pkl"
+
+import ".../app.pkl"
+import ".../networking/traefik/app.pkl" as traefik
+
+metadata {
+  name = "music-assistant"
+}
+
+spec {
+  parentRefs {
+    new {
+      name = traefik.gatewayName
+      namespace = traefik.namespace
+      sectionName = "websecure"
+    }
+  }
+  hostnames {
+    app.hostname
+  }
+  rules {
+    new {
+      backendRefs {
+        new {
+          name = import("service.pkl").metadata.name!!
+          port = 8095
+        }
+      }
+    }
+  }
+}
