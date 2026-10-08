@@ -11,6 +11,9 @@ local hassOidcAuthVersion = "v1.2.1"
 
 local appLabel = "home-assistant"
 
+// renovate: datasource=github-releases packageName=hacs/integration
+local hacsVersion = "2.0.5"
+
 // The release zip has no `hass_oidc_auth/` parent folder inside it.
 local fetchHassOidcAuthScript =
   """
@@ -18,6 +21,15 @@ local fetchHassOidcAuthScript =
   url = "https://github.com/christiaangoossens/hass-oidc-auth/releases/download/\(hassOidcAuthVersion)/hass-oidc-auth.zip"
   data = urllib.request.urlopen(url).read()
   zipfile.ZipFile(io.BytesIO(data)).extractall("/hass-oidc-auth")
+  """
+
+// Same no-parent-folder zip shape as hass-oidc-auth above.
+local fetchHacsScript =
+  """
+  import urllib.request, zipfile, io
+  url = "https://github.com/hacs/integration/releases/download/\(hacsVersion)/hacs.zip"
+  data = urllib.request.urlopen(url).read()
+  zipfile.ZipFile(io.BytesIO(data)).extractall("/hacs")
   """
 
 metadata {
@@ -71,6 +83,15 @@ spec {
             new { name = "hass-oidc-auth"; mountPath = "/hass-oidc-auth" }
           }
         }
+        new {
+          name = "fetch-hacs"
+          image = "ghcr.io/home-assistant/home-assistant:\(version)"
+          command { "python3"; "-c" }
+          args { fetchHacsScript }
+          volumeMounts {
+            new { name = "hacs"; mountPath = "/hacs" }
+          }
+        }
       }
       containers {
         new {
@@ -112,6 +133,10 @@ spec {
               mountPath = "/config/custom_components/hass_oidc_auth"
             }
             new {
+              name = "hacs"
+              mountPath = "/config/custom_components/hacs"
+            }
+            new {
               name = "google-service-account"
               mountPath = "/config/SERVICE_ACCOUNT.json"
               subPath = "google-service-account-json"
@@ -134,6 +159,10 @@ spec {
         }
         new {
           name = "hass-oidc-auth"
+          emptyDir {}
+        }
+        new {
+          name = "hacs"
           emptyDir {}
         }
         new {
