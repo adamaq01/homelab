@@ -1,0 +1,23 @@
+amends "@external-secrets/v1/ExternalSecret.pkl"
+
+import ".../secrets/openbao/app.pkl" as openbao
+
+metadata {
+  name = "headlamp-secrets"
+}
+
+spec {
+  secretStoreRef {
+    kind = "ClusterSecretStore"
+    name = openbao.clusterSecretStoreName
+  }
+  data {
+    new {
+      secretKey = "OIDC_CLIENT_SECRET"
+      remoteRef {
+        key = "voidauth"
+        property = "headlamp-client-secret"
+      }
+    }
+  }
+}

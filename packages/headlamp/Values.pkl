@@ -1,0 +1,665 @@
+/// This module was generated from JSON Schema from
+/// <https://raw.githubusercontent.com/kubernetes-sigs/headlamp/headlamp-helm-0.45.0/charts/headlamp/values.schema.json>.
+///
+/// WARN: The root schema describes open-ended properties, but this is not possible to describe at the
+/// module level.
+module Values
+
+/// Number of replicas to deploy
+replicaCount: Int(this >= 1)?
+
+/// Image
+///
+/// Image to deploy
+image: Image?
+
+/// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for
+/// pulling any of the images used by this PodSpec. If specified, these secrets will be passed to
+/// individual puller implementations for them to use.
+imagePullSecrets: Listing<ImagePullSecret>?
+
+/// Override the name of the chart
+nameOverride: String?
+
+/// Override the full name of the chart
+fullnameOverride: String?
+
+/// Override the deployment namespace; defaults to .Release.Namespace
+namespaceOverride: String?
+
+/// Init containers
+initContainers: Listing<InitContainer>?
+
+/// Headlamp deployment configuration
+config: Config?
+
+/// Environment variables to pass to the deployment
+env: Listing<ItemEnv>?
+
+/// Mount Service Account token in pod
+automountServiceAccountToken: Boolean?
+
+serviceAccount: ServiceAccount?
+
+clusterRoleBinding: ClusterRoleBinding?
+
+service: Service?
+
+persistentVolumeClaim: PersistentVolumeClaim?
+
+ingress: Ingress?
+
+/// HTTPRoute configuration for Gateway API
+httpRoute: HttpRoute?
+
+podDisruptionBudget: PodDisruptionBudget?
+
+/// Extra manifests to apply to the deployment
+extraManifests: Listing<String>?
+
+/// Probe configuration for liveness and readiness checks
+probes: Probes?
+
+/// Host aliases to add to the pod's /etc/hosts file
+hostAliases: Listing<HostAlias>?
+
+/// Image
+///
+/// Image to deploy
+class Image {
+  /// Registry of the image
+  registry: String?
+
+  /// Repository of the image
+  repository: String?
+
+  /// Pull policy of the image
+  pullPolicy: ("Always"|"IfNotPresent"|"Never")?
+
+  /// Tag of the image
+  tag: String?
+}
+
+class ImagePullSecret {
+  /// Name of the image pull secret
+  name: String?
+}
+
+class InitContainer {
+  /// Name of the init container
+  name: String?
+
+  /// Image of the init container
+  image: String?
+
+  /// Pull policy of the init container
+  imagePullPolicy: ("Always"|"IfNotPresent"|"Never")?
+
+  /// Command of the init container
+  command: Listing<String>?
+
+  /// Arguments of the init container
+  args: Listing<String>?
+
+  /// Resources of the init container
+  resources: Resources?
+
+  /// Environment variables of the init container
+  env: Listing<Env>?
+
+  /// Volume mounts of the init container
+  volumeMounts: Listing<VolumeMount>?
+}
+
+/// Resources of the init container
+class Resources {
+  /// Limits of the init container
+  limits: Limits?
+
+  /// Requests of the init container
+  requests: Requests?
+}
+
+/// Limits of the init container
+class Limits {
+  /// CPU limit
+  cpu: String?
+
+  /// Memory limit
+  memory: String?
+}
+
+/// Requests of the init container
+class Requests {
+  /// CPU request
+  cpu: String?
+
+  /// Memory request
+  memory: String?
+}
+
+class Env {
+  /// Name of the environment variable
+  name: String?
+
+  /// Value of the environment variable
+  value: String?
+}
+
+class VolumeMount {
+  /// Name of the volume mount
+  name: String?
+
+  /// Mount path of the volume mount
+  mountPath: String?
+
+  /// Read only of the volume mount
+  readOnly: Boolean?
+}
+
+/// Headlamp deployment configuration
+class Config {
+  /// Base URL of the application
+  baseURL: String?
+
+  /// The time in seconds for the session to be valid
+  ///
+  /// Default if undefined: `86400`
+  sessionTTL: Int(isBetween(1, 31536000))?
+
+  /// Default image to use when creating pod debug containers
+  podDebugImage: String?
+
+  /// Default image to use when creating node shell pods
+  nodeShellImage: String?
+
+  /// Default namespace to use when creating node shell pods
+  nodeShellNamespace: String?
+
+  /// UNSAFE: authenticate every user as the pod's service account in-cluster mode
+  unsafeUseServiceAccountToken: Boolean?
+
+  /// Path to the service account token file when unsafeUseServiceAccountToken is enabled
+  serviceAccountTokenPath: String?
+
+  /// OIDC configuration
+  oidc: Oidc?
+
+  /// Directory to load plugins from
+  pluginsDir: String?
+
+  /// Bundled (static) plugins shipped in the Headlamp image, such as the Prometheus plugin
+  staticPlugins: StaticPlugins?
+
+  /// Path of certificate file for TLS
+  tlsCertPath: String?
+
+  /// Path of private key file for TLS
+  tlsKeyPath: String?
+
+  /// Experimental/alpha Cluster Inventory configuration
+  clusterInventory: ClusterInventory?
+
+  /// Extra arguments to pass to the application
+  extraArgs: Listing<String>?
+}
+
+/// OIDC configuration
+class Oidc {
+  /// Secret created by Headlamp to authenticate with the OIDC provider
+  secret: Secret?
+
+  /// Issuer of the OIDC provider
+  clientID: String?
+
+  /// Client ID of the OIDC provider
+  clientSecret: String?
+
+  /// Client secret of the OIDC provider
+  issuerURL: String?
+
+  /// Scopes of the OIDC provider
+  scopes: String?
+
+  /// Use PKCE (Proof Key for Code Exchange) for enhanced security in OIDC flow
+  usePKCE: Boolean?
+
+  /// External secret to use for OIDC configuration
+  externalSecret: ExternalSecret?
+}
+
+/// Secret created by Headlamp to authenticate with the OIDC provider
+class Secret {
+  /// Name of the secret
+  name: String?
+
+  /// Create the secret
+  create: Boolean?
+}
+
+/// External secret to use for OIDC configuration
+class ExternalSecret {
+  /// Name of the external secret
+  name: String?
+
+  /// Enable the external secret
+  enabled: Boolean?
+
+  /// Set to true if the external secret contains an OIDC_SCOPES key
+  hasScopes: Boolean?
+}
+
+/// Bundled (static) plugins shipped in the Headlamp image, such as the Prometheus plugin
+class StaticPlugins {
+  /// Serve the bundled static plugins. Set to false to disable them (e.g. the "Show Prometheus metrics"
+  /// button)
+  ///
+  /// Default if undefined: `true`
+  enabled: Boolean?
+}
+
+/// Experimental/alpha Cluster Inventory configuration
+class ClusterInventory {
+  /// Enable experimental/alpha Cluster Inventory discovery
+  ///
+  /// Default if undefined: `false`
+  enabled: Boolean?
+
+  /// Experimental/alpha Cluster Inventory access providers config
+  ///
+  /// Default if undefined: `{}`
+  accessProvidersConfig: Dynamic?
+
+  /// Kubernetes image volumes that provide experimental/alpha Cluster Inventory access provider binaries
+  ///
+  /// Default if undefined: `{}`
+  plugins: Listing<Plugin>?
+
+  /// Kubernetes label selector used to filter experimental/alpha ClusterProfile resources
+  ///
+  /// Default if undefined: `"!headlamp.dev/ignore"`
+  labelSelector: String?
+
+  /// Namespaces watched for experimental/alpha ClusterProfile resources. Empty uses the Headlamp pod
+  /// namespace for in-cluster roots and the kubeconfig context namespace for kubeconfig roots; ["*"]
+  /// watches all and requires equivalent cluster-wide RBAC permissions
+  ///
+  /// Default if undefined: `{}`
+  namespaces: (
+    Listing<"*">(length <= 1)
+    |Listing<String(length.isBetween(1, 63), matches(Regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")))>)(isDistinct)?
+
+  /// Override the experimental/alpha Cluster Inventory root reconcile interval. Empty uses the Headlamp
+  /// default
+  ///
+  /// Default if undefined: `""`
+  rootReconcileInterval: String?
+
+  /// Override the experimental/alpha Cluster Inventory no-CRD cache TTL. Empty uses the Headlamp default
+  ///
+  /// Default if undefined: `""`
+  noCRDCacheTTL: String?
+}
+
+class Plugin {
+  /// DNS label name of the plugin image volume
+  name: String(length <= 63, matches(Regex("^[a-z0-9]([-a-z0-9]*[a-z0-9])?$")))
+
+  /// Image reference for the plugin image volume
+  image: String
+
+  /// Absolute read-only mount path for the plugin image volume
+  mountPath: String(contains(Regex("^/")))
+}
+
+class ItemEnv {
+  /// Name of the environment variable
+  name: String
+
+  /// Value of the environment variable
+  value: String?
+
+  /// Source for the environment variable's value
+  valueFrom: ValueFrom?
+}
+
+/// Source for the environment variable's value
+class ValueFrom {
+  /// Selects a key of a Secret
+  secretKeyRef: SecretKeyRef?
+
+  /// Selects a key of a ConfigMap
+  configMapKeyRef: ConfigMapKeyRef?
+
+  /// Selects a field of the pod
+  fieldRef: FieldRef?
+
+  /// Selects a resource of the container
+  resourceFieldRef: ResourceFieldRef?
+}
+
+/// Selects a key of a Secret
+class SecretKeyRef {
+  /// Name of the Secret
+  name: String?
+
+  /// Key of the Secret to select from
+  key: String
+
+  /// Specify whether the Secret or its key must be defined
+  optional: Boolean?
+}
+
+/// Selects a key of a ConfigMap
+class ConfigMapKeyRef {
+  /// Name of the ConfigMap
+  name: String?
+
+  /// Key of the ConfigMap to select from
+  key: String
+
+  /// Specify whether the ConfigMap or its key must be defined
+  optional: Boolean?
+}
+
+/// Selects a field of the pod
+class FieldRef {
+  /// API version of the schema the fieldPath is written in
+  apiVersion: String?
+
+  /// Path of the field to select in the specified API version
+  fieldPath: String
+}
+
+/// Selects a resource of the container
+class ResourceFieldRef {
+  /// Container name to select resources from
+  containerName: String?
+
+  /// Resource to select
+  resource: String
+
+  /// Output format of the exposed resource
+  divisor: String?
+}
+
+class ServiceAccount {
+  /// Specifies whether a service account should be created
+  create: Boolean?
+
+  /// Annotations to add to the service account
+  annotations: Dynamic?
+
+  /// The name of the service account to use
+  name: String?
+}
+
+class ClusterRoleBinding {
+  /// Specifies whether a cluster role binding should be created
+  create: Boolean?
+
+  /// The name of the ClusterRole to create in the cluster
+  clusterRoleName: String?
+
+  /// Annotations to add to the cluster role binding
+  annotations: Dynamic?
+}
+
+class Service {
+  /// Kubernetes Service type
+  type: ("ClusterIP"|"NodePort"|"LoadBalancer"|"ExternalName")?
+
+  /// Kubernetes Service port
+  port: Int?
+
+  /// Kubernetes Service port appProtocol (for the main http port)
+  appProtocol: String?
+
+  /// Kubernetes Service clusterIP
+  clusterIP: String?
+
+  /// Kubernetes Service loadBalancerIP
+  loadBalancerIP: String?
+
+  /// Kubernetes Service loadBalancerSourceRanges
+  loadBalancerSourceRanges: Listing<String>?
+
+  /// Kubernetes Service Nodeport
+  nodePort: Number?
+
+  /// Additional ports to expose on the Service in addition to the default http port
+  extraServicePorts: Listing<ExtraServicePort>?
+}
+
+class ExtraServicePort {
+  /// Port name (must be unique within the Service)
+  name: String
+
+  /// Service port number
+  port: Int
+
+  /// Pod-side target port (number or named port). Defaults to `port` when omitted
+  targetPort: (Int|String)?
+
+  /// Protocol (TCP/UDP/SCTP). Defaults to TCP
+  protocol: ("TCP"|"UDP"|"SCTP")?
+
+  /// Node port (only honored when service.type is NodePort or LoadBalancer)
+  nodePort: Number?
+}
+
+class PersistentVolumeClaim {
+  /// Enable Persistent Volume Claim
+  enabled: Boolean?
+
+  /// Annotations to add to the persistent volume claim (if enabled)
+  annotations: Dynamic?
+
+  accessModes: Listing<String>?
+
+  size: String?
+
+  storageClassName: String?
+
+  selector: Selector?
+
+  volumeMode: String?
+}
+
+class Selector {
+  matchLabels: Dynamic?
+
+  matchExpressions: Listing<MatchExpression>?
+}
+
+class MatchExpression {
+  key: String?
+
+  operator: String?
+
+  values: Listing<String>?
+}
+
+class Ingress {
+  /// Enable ingress controller resource
+  enabled: Boolean?
+
+  /// Annotations for Ingress resource
+  annotations: Dynamic?
+
+  /// Ingress class name
+  ingressClassName: String?
+
+  hosts: Listing<Host>?
+
+  tls: Listing<Tl>?
+}
+
+class Host {
+  host: String?
+
+  paths: Listing<Path>?
+}
+
+class Path {
+  path: String
+
+  type: String
+
+  /// Optional override of the backend Service for this path
+  backend: Backend?
+}
+
+/// Optional override of the backend Service for this path
+class Backend {
+  service: BackendService?
+}
+
+class BackendService {
+  /// Service name (supports tpl). Defaults to the Headlamp Service when omitted
+  name: String?
+
+  port: Port?
+}
+
+class Port {
+  number: Int?
+
+  name: String?
+}
+
+class Tl {
+  secretName: String?
+
+  hosts: Listing<String>?
+}
+
+/// HTTPRoute configuration for Gateway API
+class HttpRoute {
+  /// Enable HTTPRoute resource for Gateway API
+  enabled: Boolean?
+
+  /// Annotations for HTTPRoute resource
+  annotations: Dynamic?
+
+  /// Additional labels for HTTPRoute resource
+  labels: Dynamic?
+
+  /// Parent references (REQUIRED when enabled - HTTPRoute will not work without this)
+  parentRefs: Listing<ParentRef>?
+
+  /// Hostnames for the HTTPRoute
+  hostnames: Listing<String>?
+
+  /// Custom routing rules (optional, defaults to path prefix /)
+  rules: Listing<Dynamic>?
+}
+
+class ParentRef {
+  /// Name of the parent gateway
+  name: String
+
+  /// Namespace of the parent gateway
+  namespace: String?
+
+  /// Section name of the parent gateway listener
+  sectionName: String?
+}
+
+class PodDisruptionBudget {
+  /// Enable PodDisruptionBudget. See: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+  ///
+  /// Default if undefined: `false`
+  enabled: Boolean?
+
+  /// Minimum number/percentage of pods that should remain scheduled. When it's set, maxUnavailable must
+  /// be disabled by `maxUnavailable: null`
+  ///
+  /// Default if undefined: `0`
+  minAvailable: (Null|Int(isPositive)|String(matches(Regex(#"^([0-9]+%?|[0-9]*\.[0-9]+%)$"#))))?
+
+  /// Maximum number/percentage of pods that may be made unavailable
+  maxUnavailable: (Null|Int(isPositive)|String(matches(Regex(#"^([0-9]+%?|[0-9]*\.[0-9]+%)$"#))))?
+
+  /// How are unhealthy, but running, pods counted for eviction
+  unhealthyPodEvictionPolicy: (Null|"IfHealthyBudget"|"AlwaysAllow")?
+}
+
+/// Probe configuration for liveness and readiness checks
+class Probes {
+  /// Scheme for probes (HTTP or HTTPS). Set to HTTPS when TLS is enabled at the backend server.
+  ///
+  /// Default if undefined: `"HTTP"`
+  scheme: ("HTTP"|"HTTPS")?
+
+  /// Liveness probe settings
+  livenessProbe: LivenessProbe?
+
+  /// Readiness probe settings
+  readinessProbe: ReadinessProbe?
+}
+
+/// Liveness probe settings
+class LivenessProbe {
+  /// Initial delay in seconds before starting liveness probe
+  ///
+  /// Default if undefined: `0`
+  initialDelaySeconds: Int(isPositive)?
+
+  /// Period in seconds between liveness probe checks
+  ///
+  /// Default if undefined: `10`
+  periodSeconds: Int(this >= 1)?
+
+  /// Timeout in seconds for liveness probe
+  ///
+  /// Default if undefined: `1`
+  timeoutSeconds: Int(this >= 1)?
+
+  /// Minimum consecutive successes for the probe to be considered successful (must be 1 for liveness
+  /// probes per Kubernetes API)
+  ///
+  /// Default if undefined: `1`
+  successThreshold: Int(isBetween(1, 1), this == 1)?
+
+  /// Minimum consecutive failures for the probe to be considered failed
+  ///
+  /// Default if undefined: `3`
+  failureThreshold: Int(this >= 1)?
+}
+
+/// Readiness probe settings
+class ReadinessProbe {
+  /// Initial delay in seconds before starting readiness probe
+  ///
+  /// Default if undefined: `0`
+  initialDelaySeconds: Int(isPositive)?
+
+  /// Period in seconds between readiness probe checks
+  ///
+  /// Default if undefined: `10`
+  periodSeconds: Int(this >= 1)?
+
+  /// Timeout in seconds for readiness probe
+  ///
+  /// Default if undefined: `1`
+  timeoutSeconds: Int(this >= 1)?
+
+  /// Minimum consecutive successes for the probe to be considered successful
+  ///
+  /// Default if undefined: `1`
+  successThreshold: Int(this >= 1)?
+
+  /// Minimum consecutive failures for the probe to be considered failed
+  ///
+  /// Default if undefined: `3`
+  failureThreshold: Int(this >= 1)?
+}
+
+class HostAlias {
+  /// IP address the hostnames resolve to
+  ip: String
+
+  /// Hostnames that resolve to the given IP
+  hostnames: Listing<String>
+}

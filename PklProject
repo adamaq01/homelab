@@ -33,4 +33,5 @@ dependencies {
   ["cloudnative-pg"] = import("packages/cloudnative-pg/PklProject")
   ["node-feature-discovery"] = import("packages/node-feature-discovery/PklProject")
   ["intel-device-plugins"] = import("packages/intel-device-plugins/PklProject")
+  ["headlamp"] = import("packages/headlamp/PklProject")
 }

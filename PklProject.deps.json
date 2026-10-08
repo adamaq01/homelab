@@ -114,6 +114,11 @@
       "uri": "projectpackage://local/homelab/packages/node-feature-discovery@0.1.0",
       "path": "packages/node-feature-discovery"
     },
+    "package://local/homelab/packages/headlamp@0": {
+      "type": "local",
+      "uri": "projectpackage://local/homelab/packages/headlamp@0.1.0",
+      "path": "packages/headlamp"
+    },
     "package://local/homelab/packages/talos@0": {
       "type": "local",
       "uri": "projectpackage://local/homelab/packages/talos@0.1.0",

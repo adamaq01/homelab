@@ -1,0 +1,49 @@
+/// Generates a single Pkl module from the headlamp Helm chart's `values.schema.json`, exposing
+/// its properties as the module's own top-level properties.
+///
+/// Regenerate with:
+///
+/// ```
+/// pkl eval packages/headlamp/_generate.pkl --project-dir packages/headlamp -m packages/headlamp
+/// ```
+module headlamp.generate
+
+import "@jsonschema/JsonSchema.pkl"
+import "@jsonschema/Parser.pkl"
+import "@uri/URI.pkl"
+import "@org.json_schema.contrib/internal/ModuleGenerator.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/headlamp extractVersion=^headlamp-helm-(?<version>.*)$
+version = "0.45.0"
+
+sourceUri = "https://raw.githubusercontent.com/kubernetes-sigs/headlamp/headlamp-helm-\(version)/charts/headlamp/values.schema.json"
+
+local schemaBaseUri = URI.parse(sourceUri)!!
+
+local parsedRootSchema = Parser.parse(read(sourceUri)) as JsonSchema
+
+local plainPatternRegex = Regex(#"matches\(Regex\("([^"]*)"\)\)"#)
+local rawPatternRegex = Regex(##"matches\(Regex\(#"([^"]*)"#\)\)"##)
+
+local function relaxUnanchoredPatterns(text: String): String =
+  let (afterPlain = text.replaceAllMapped(plainPatternRegex, (m) ->
+    let (pattern = m.groups[1]!!.value)
+      if (pattern.endsWith("$")) m.value else "contains(Regex(\"\(pattern)\"))"
+  ))
+    afterPlain.replaceAllMapped(rawPatternRegex, (m) ->
+      let (pattern = m.groups[1]!!.value)
+        if (pattern.endsWith("$")) m.value else "contains(Regex(#\"" + pattern + "\"#))"
+    )
+
+output {
+  files {
+    ["Values.pkl"] {
+      text = relaxUnanchoredPatterns((new ModuleGenerator {
+        rootSchema = parsedRootSchema
+        baseUri = schemaBaseUri
+        moduleName = "Values"
+        existingTypes = Map()
+      }).moduleNode.output.text)
+    }
+  }
+}

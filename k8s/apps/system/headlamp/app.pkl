@@ -1,0 +1,85 @@
+extends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+import "@headlamp/Values.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+import ".../networking/traefik/app.pkl" as traefik
+import ".../storage/tns-csi/app.pkl" as tns_csi
+
+hostname: String = "\(module.name).\(module.ingressDomain)"
+aliasHostname: String = "\(module.name).\(module.ingressAliasDomain)"
+
+secretName: String = "headlamp-secrets"
+
+// renovate: datasource=helm packageName=headlamp registryUrl=https://kubernetes-sigs.github.io/headlamp/
+local version = "0.45.0"
+
+// renovate: datasource=github-releases packageName=privilegedescalation/headlamp-argocd-plugin
+local argoCdPluginVersion = "0.1.3"
+
+// `pluginsManager` exists in this chart version's values.yaml but is missing from its
+// values.schema.json, so it's absent from the generated `Values.pkl` and has to be added onto
+// the typed value's `toDynamic()` output instead of being a real `Values` property.
+local pluginsManagerConfigContent =
+  """
+  plugins:
+    - name: headlamp-argocd
+      source: https://artifacthub.io/packages/headlamp/headlamp-argocd/headlamp-argocd
+      version: \(argoCdPluginVersion)
+  """
+
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "https://kubernetes-sigs.github.io/headlamp/"
+    chart = "headlamp"
+    targetRevision = version
+    helm {
+      valuesObject =
+        (new Values {
+          config {
+            // VoidAuth gates who can reach Headlamp's login at all; everyone who gets in shares
+            // this one ServiceAccount's cluster-admin token.
+            unsafeUseServiceAccountToken = true
+            oidc {
+              externalSecret {
+                enabled = true
+                name = secretName
+                hasScopes = false
+              }
+            }
+          }
+          env {
+            new { name = "OIDC_CLIENT_ID"; value = "headlamp" }
+            new { name = "OIDC_ISSUER_URL"; value = "https://\(voidauth.hostname)/oidc" }
+            new { name = "OIDC_CALLBACK_URL"; value = "https://\(hostname)/oidc-callback" }
+          }
+          persistentVolumeClaim {
+            enabled = true
+            accessModes { "ReadWriteOnce" }
+            storageClassName = tns_csi.nvmeofStorageClassName
+            size = "2Gi"
+          }
+          httpRoute {
+            enabled = true
+            parentRefs {
+              new {
+                name = traefik.gatewayName
+                namespace = traefik.namespace
+                sectionName = "websecure"
+              }
+            }
+            hostnames {
+              hostname
+              aliasHostname
+            }
+          }
+        }.toDynamic()) {
+          pluginsManager {
+            enabled = true
+            configContent = pluginsManagerConfigContent
+          }
+        }
+    }
+  }
+  module.directorySource
+}
