@@ -1,0 +1,17 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "litellm"
+}
+
+spec {
+  selector {
+    ["app"] = "litellm"
+  }
+  ports {
+    new {
+      port = 4000
+      targetPort = 4000
+    }
+  }
+}

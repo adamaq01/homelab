@@ -1,0 +1,8 @@
+extends ".../app.pkl"
+
+hostname: String = "llm.\(module.rootDomain)"
+
+dbClusterName: String = "litellm-db"
+
+/// Holds LiteLLM's own `LITELLM_MASTER_KEY` plus its VoidAuth OIDC client secret.
+secretName: String = "litellm-secrets"

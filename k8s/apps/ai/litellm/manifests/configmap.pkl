@@ -1,0 +1,20 @@
+amends "@k8s/api/core/v1/ConfigMap.pkl"
+
+import ".../app.pkl"
+
+metadata {
+  name = "litellm-config"
+}
+
+data {
+  ["config.yaml"] =
+    """
+    model_list: []
+    general_settings:
+      disable_password_login_when_sso_enabled: true
+      disable_env_credential_login: true
+      maximum_spend_logs_retention_period: "90d"
+      trusted_proxy_ranges:
+        - \(app.podSubnet)
+    """
+}

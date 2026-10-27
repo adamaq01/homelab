@@ -1,0 +1,100 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+
+// renovate: datasource=docker packageName=ghcr.io/berriai/litellm
+local version = "v1.106.4"
+
+local appLabel = "litellm"
+
+metadata {
+  name = "litellm"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      containers {
+        new {
+          name = "litellm"
+          image = "ghcr.io/berriai/litellm:\(version)"
+          args {
+            "--config"
+            "/app/config.yaml"
+            "--port"
+            "4000"
+          }
+          ports {
+            new { containerPort = 4000 }
+          }
+          env {
+            new {
+              name = "DATABASE_URL"
+              valueFrom {
+                secretKeyRef { name = "\(app.dbClusterName)-app"; key = "uri" }
+              }
+            }
+            new { name = "STORE_MODEL_IN_DB"; value = "True" }
+            new {
+              name = "LITELLM_MASTER_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "master-key" }
+              }
+            }
+            new {
+              // Rotating this makes everything already encrypted with it unreadable.
+              name = "LITELLM_SALT_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "salt-key" }
+              }
+            }
+            new { name = "PROXY_BASE_URL"; value = "https://\(app.hostname)" }
+            new { name = "GENERIC_CLIENT_ID"; value = "litellm" }
+            new {
+              name = "GENERIC_CLIENT_SECRET"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "litellm-client-secret" }
+              }
+            }
+            new { name = "GENERIC_AUTHORIZATION_ENDPOINT"; value = "https://\(voidauth.hostname)/oidc/auth" }
+            new { name = "GENERIC_TOKEN_ENDPOINT"; value = "https://\(voidauth.hostname)/oidc/token" }
+            new { name = "GENERIC_USERINFO_ENDPOINT"; value = "https://\(voidauth.hostname)/oidc/me" }
+            new { name = "GENERIC_SCOPE"; value = "openid email profile" }
+            new { name = "GENERIC_USER_DISPLAY_NAME_ATTRIBUTE"; value = "name" }
+            new { name = "GENERIC_USER_ROLE_ATTRIBUTE"; value = "litellm_role" }
+            new { name = "LITELLM_DISABLE_NO_REDIS_WARNING"; value = "true" }
+            new { name = "NO_DOCS"; value = "True" }
+            new { name = "NO_REDOC"; value = "True" }
+            new { name = "NO_OPENAPI"; value = "True" }
+          }
+          volumeMounts {
+            new {
+              name = "config"
+              mountPath = "/app/config.yaml"
+              subPath = "config.yaml"
+            }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "config"
+          configMap {
+            name = import("configmap.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}

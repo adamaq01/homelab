@@ -1,0 +1,47 @@
+/// Self-hosted LiteLLM proxy (<https://www.litellm.ai>), an LLM gateway/virtual-key manager.
+/// Postgres-backed (CloudNativePG). Login is VoidAuth-only, no local accounts: `litellm-users`
+/// members get LiteLLM's default role, `litellm-admins` members get `proxy_admin`.
+///
+/// Seed once with:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/litellm \
+///      master-key=<random string, e.g. `echo "sk-$(openssl rand -hex 32)"`> \
+///      salt-key=<random string, e.g. `echo "sk-$(openssl rand -hex 32)"`, never rotate once set>
+///
+/// And add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
+/// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
+///      litellm-client-secret=<random string, e.g. `openssl rand -hex 32`>
+///
+/// After deploy, in VoidAuth's UI: create `litellm-users` and `litellm-admins` groups and assign
+/// users to them, then create a `litellm_role` custom claim with value `proxy_admin` and assign it
+/// to the `litellm-admins` group.
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["litellm"] {
+        "master-key"
+        "salt-key"
+      }
+      ["voidauth"] {
+        "litellm-client-secret"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

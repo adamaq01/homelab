@@ -8,6 +8,7 @@ import ".../finance/wallos/app.pkl" as wallos
 import ".../assets/homebox/app.pkl" as homebox
 import ".../automation/home-assistant/app.pkl" as homeAssistant
 import ".../system/headlamp/app.pkl" as headlamp
+import ".../ai/litellm/app.pkl" as litellm
 import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
@@ -169,6 +170,15 @@ spec {
               }
               ["OIDC_headlamp_CLIENT_REDIRECT_URLS"] = "https://\(headlamp.hostname)/oidc-callback"
               ["OIDC_headlamp_CLIENT_GROUPS"] = "headlamp-users"
+
+              ["OIDC_litellm_CLIENT_DISPLAY_NAME"] = "LiteLLM"
+              ["OIDC_litellm_CLIENT_HOMEPAGE_URL"] = "https://\(litellm.hostname)"
+              ["OIDC_litellm_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "litellm-client-secret"
+              }
+              ["OIDC_litellm_CLIENT_REDIRECT_URLS"] = "https://\(litellm.hostname)/sso/callback"
+              ["OIDC_litellm_CLIENT_GROUPS"] = "litellm-users,litellm-admins"
             } |> envMapToListing
         }
       }
