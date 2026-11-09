@@ -1,6 +1,7 @@
 extends ".../app.pkl"
 
 import "../cert-manager/app.pkl" as cert_manager
+import "@gateway-api/HTTPRoute.pkl"
 import "@traefik/Values.pkl"
 
 // renovate: datasource=helm packageName=traefik registryUrl=https://traefik.github.io/charts
@@ -9,6 +10,30 @@ local version = "41.4.0"
 // Chart default, left unset in `valuesObject` below. Referenced cross-app by HTTPRoutes'
 // `parentRefs` (e.g. `dozzle/chart.pkl`).
 gatewayName: String = "traefik-gateway"
+
+local ownNamespace = namespace
+
+/// The `parentRefs` every app's `HTTPRoute` should use, driven by the same annotations map it
+/// already sets on its own `metadata` for `module.publicAnnotationKey` (see `external-dns/app.pkl`):
+/// setting that one annotation is the only thing an app needs to do to also reach `websecure-public`.
+/// Accepts `Dynamic` as well as `Mapping`: a Helm chart's generated `annotations` field (e.g.
+/// `jellyfin/app.pkl`'s `httpRoute.annotations`) is built by `deepToTyped` without an inferred
+/// element type and comes out as `Dynamic`, not `Mapping`, even though it's set the same way.
+function parentRefsFor(annotations: (Dynamic|Mapping)?): Listing<HTTPRoute.ParentRef> =
+  new Listing {
+    new HTTPRoute.ParentRef {
+      name = gatewayName
+      namespace = ownNamespace
+      sectionName = "websecure"
+    }
+    when ((annotations?.toMap() ?? Map()).containsKey(module.publicAnnotationKey)) {
+      new HTTPRoute.ParentRef {
+        name = gatewayName
+        namespace = ownNamespace
+        sectionName = "websecure-public"
+      }
+    }
+  }
 
 // The Gateway resource this chart creates (via `gateway.listeners`) ends up in this Application's
 // own destination namespace, while cert-manager's wildcard Certificate/Secret for the domain
@@ -58,6 +83,18 @@ source {
               }
             }
           }
+          // Only `rathole`'s tunnel targets this Service port: a separate entrypoint from
+          // `websecure`'s, so a request arriving via the public tunnel can only ever match an
+          // HTTPRoute that explicitly attaches to `websecure-public` (see
+          // `.../networking/rathole/chart.pkl`), not every HTTPRoute in the cluster by hostname
+          // alone, the way it could when both LAN and tunneled traffic shared one entrypoint.
+          ["websecure-public"] {
+            port = 8444
+            expose {
+              default = true
+            }
+            exposedPort = 9443
+          }
         }
         providers {
           kubernetesGateway {
@@ -76,15 +113,33 @@ source {
             // Namespace-restricted by default in Gateway API, but every app's HTTPRoute lives in
             // its own namespace.
             //
-            // One listener covers every hostname in the cluster: which apps are reachable from
-            // where is entirely `HTTPRoute.hostnames`-driven, not listener-driven, so there's no
-            // routing/access-control reason to split listeners. The only reason multiple
-            // `certificateRefs` exist here is that a wildcard cert only covers one label of
-            // subdomain depth (`*.\(module.rootDomain)` doesn't cover `*.\(module.ingressDomain)`),
-            // so each hostname pattern in use needs its own cert; Traefik picks the right one
-            // per-request via SNI.
+            // Reachable only via the LAN (MetalLB's `gatewayIP`): `rathole` never forwards to this
+            // listener's port, only to `websecure-public` below. An app only needs a second
+            // `parentRef` targeting `websecure-public` once it's actually meant to be public (see
+            // e.g. `voidauth/manifests/http-route.pkl`); attaching only here, as most apps do, is
+            // what makes an app LAN-only, not DNS non-publication.
             ["websecure"] {
               port = 8443
+              protocol = "HTTPS"
+              mode = "Terminate"
+              namespacePolicy {
+                from = "All"
+              }
+              certificateRefs {
+                new {
+                  name = cert_manager.clusterCertSecretName
+                  namespace = cert_manager.namespace
+                }
+                new {
+                  name = cert_manager.rootCertSecretName
+                  namespace = cert_manager.namespace
+                }
+              }
+            }
+            // Same certs, same namespace policy: the only difference from `websecure` is which
+            // Service port it's reachable on (see `ports["websecure-public"]` above).
+            ["websecure-public"] {
+              port = 8444
               protocol = "HTTPS"
               mode = "Terminate"
               namespacePolicy {

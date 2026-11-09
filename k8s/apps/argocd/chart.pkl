@@ -53,6 +53,11 @@ local webhookHttpRoute: HTTPRoute = new {
         namespace = traefik.namespace
         sectionName = "websecure"
       }
+      new {
+        name = traefik.gatewayName
+        namespace = traefik.namespace
+        sectionName = "websecure-public"
+      }
     }
     hostnames {
       app.publicGatewayHostname

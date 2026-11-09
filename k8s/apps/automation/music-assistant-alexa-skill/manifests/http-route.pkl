@@ -11,13 +11,7 @@ metadata {
 }
 
 spec {
-  parentRefs {
-    new {
-      name = traefik.gatewayName
-      namespace = traefik.namespace
-      sectionName = "websecure"
-    }
-  }
+  parentRefs = traefik.parentRefsFor(metadata.annotations)
   hostnames {
     app.hostname
   }

@@ -1,5 +1,7 @@
 /// rathole (https://github.com/rathole-org/rathole) client, tunneling the public HTTP/HTTPS
-/// entrypoints back to Traefik's LAN-only Gateway (see `traefik/app.pkl`).
+/// entrypoints back to Traefik's `websecure-public` listener only (see `traefik/app.pkl`), never
+/// `websecure` (LAN-only), so a request arriving over this tunnel can only match an HTTPRoute
+/// that's explicitly attached to `websecure-public`.
 ///
 /// rathole itself has no way to substitute secret values into its TOML config, so the config's
 /// structure (topology, transport pattern, service names/targets) is tracked here, and only the
@@ -47,7 +49,7 @@ local renderConfigScript =
   remote_public_key = "$RATHOLE_REMOTE_PUBLIC_KEY"
 
   [client.services.https-gateway]
-  local_addr = "\(traefikServiceHost):443"
+  local_addr = "\(traefikServiceHost):9443"
 
   [client.services.http-gateway]
   local_addr = "\(traefikServiceHost):80"

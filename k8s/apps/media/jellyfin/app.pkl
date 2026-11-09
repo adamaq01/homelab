@@ -178,13 +178,7 @@ sources = new Listing {
           annotations {
             [module.publicAnnotationKey] = ""
           }
-          parentRefs {
-            new {
-              name = traefik.gatewayName
-              namespace = traefik.namespace
-              sectionName = "websecure"
-            }
-          }
+          parentRefs = traefik.parentRefsFor(annotations)
           hostnames {
             hostname
           }
