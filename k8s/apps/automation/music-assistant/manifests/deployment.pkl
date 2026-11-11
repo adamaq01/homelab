@@ -3,7 +3,7 @@ amends "@k8s/api/apps/v1/Deployment.pkl"
 import "@k8s/api/core/v1/NodeSelectorTerm.pkl"
 
 // renovate: datasource=docker packageName=ghcr.io/music-assistant/server
-local version = "2.10.5"
+local version = "2.10.9"
 
 local appLabel = "music-assistant"
 
