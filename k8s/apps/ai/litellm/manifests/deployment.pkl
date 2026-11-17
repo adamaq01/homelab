@@ -4,7 +4,7 @@ import ".../app.pkl"
 import ".../identity/voidauth/app.pkl" as voidauth
 
 // renovate: datasource=docker packageName=ghcr.io/berriai/litellm
-local version = "v1.106.4"
+local version = "v1.109.1"
 
 local appLabel = "litellm"
 
