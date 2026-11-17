@@ -6,6 +6,9 @@ import ".../identity/voidauth/app.pkl" as voidauth
 // renovate: datasource=docker packageName=ghcr.io/berriai/litellm
 local version = "v1.109.1"
 
+// renovate: datasource=docker packageName=busybox
+local busyboxVersion = "1.37.0"
+
 local appLabel = "litellm"
 
 metadata {
@@ -18,6 +21,10 @@ spec {
       ["app"] = appLabel
     }
   }
+  strategy {
+    // ReadWriteOnce `chatgpt-auth` PVC: a second pod scheduled elsewhere couldn't mount it anyway.
+    type = "Recreate"
+  }
   template {
     metadata {
       labels {
@@ -25,6 +32,24 @@ spec {
       }
     }
     spec {
+      initContainers {
+        new {
+          // Copies the openbao-seeded token onto the PVC only the first time it's empty: the proxy
+          // refreshes the access token in place roughly every 10 days, and must never have that
+          // refreshed token clobbered by the original seed on a later restart.
+          name = "seed-chatgpt-auth"
+          image = "busybox:\(busyboxVersion)"
+          command {
+            "sh"
+            "-c"
+            "test -f /data/auth.json || cp /seed/auth.json /data/auth.json"
+          }
+          volumeMounts {
+            new { name = "chatgpt-auth-seed"; mountPath = "/seed"; readOnly = true }
+            new { name = "chatgpt-auth-data"; mountPath = "/data" }
+          }
+        }
+      }
       containers {
         new {
           name = "litellm"
@@ -77,6 +102,7 @@ spec {
             new { name = "NO_DOCS"; value = "True" }
             new { name = "NO_REDOC"; value = "True" }
             new { name = "NO_OPENAPI"; value = "True" }
+            new { name = "CHATGPT_TOKEN_DIR"; value = "/chatgpt-auth" }
           }
           volumeMounts {
             new {
@@ -84,6 +110,7 @@ spec {
               mountPath = "/app/config.yaml"
               subPath = "config.yaml"
             }
+            new { name = "chatgpt-auth-data"; mountPath = "/chatgpt-auth" }
           }
         }
       }
@@ -92,6 +119,21 @@ spec {
           name = "config"
           configMap {
             name = import("configmap.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "chatgpt-auth-seed"
+          secret {
+            secretName = app.secretName
+            items {
+              new { key = "chatgpt-auth-json"; path = "auth.json" }
+            }
+          }
+        }
+        new {
+          name = "chatgpt-auth-data"
+          persistentVolumeClaim {
+            claimName = import("chatgpt-auth-pvc.pkl").metadata.name!!
           }
         }
       }

@@ -8,6 +8,20 @@
 ///      master-key=<random string, e.g. `echo "sk-$(openssl rand -hex 32)"`> \
 ///      salt-key=<random string, e.g. `echo "sk-$(openssl rand -hex 32)"`, never rotate once set>
 ///
+/// For the `chatgpt/` provider (<https://docs.litellm.ai/docs/providers/chatgpt>): run the sign-in
+/// flow locally first (`python -c "from litellm.llms.chatgpt.authenticator import Authenticator;
+/// Authenticator().get_access_token()"`), then seed the resulting `auth.json` as another field on
+/// the same path:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/litellm \
+///      chatgpt-auth-json=@/path/to/auth.json
+///
+/// This seeds the *initial* token only: `chatgpt-auth-pvc.pkl`'s PVC is what actually backs
+/// `CHATGPT_TOKEN_DIR` at runtime, since the proxy refreshes the access token in place roughly
+/// every 10 days and a Secret-backed volume can't be written to. The `seed-chatgpt-auth`
+/// initContainer in `deployment.pkl` only copies the seeded value onto the PVC once, the first time
+/// it's empty, so it never clobbers a token the proxy has since refreshed.
+///
 /// And add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
 /// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):
 ///
@@ -29,6 +43,7 @@ secretsExternalSecret =
       ["litellm"] {
         "master-key"
         "salt-key"
+        "chatgpt-auth-json"
       }
       ["voidauth"] {
         "litellm-client-secret"
