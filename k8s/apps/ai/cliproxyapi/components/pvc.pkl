@@ -1,0 +1,13 @@
+amends "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
+
+import ".../storage/tns-csi/app.pkl" as tns_csi
+
+spec {
+  accessModes { "ReadWriteOnce" }
+  storageClassName = tns_csi.nvmeofStorageClassName
+  resources {
+    requests {
+      ["storage"] = "1Gi"
+    }
+  }
+}

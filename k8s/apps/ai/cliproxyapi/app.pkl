@@ -1,0 +1,7 @@
+extends ".../app.pkl"
+
+hostname: String = "\(module.name).\(module.ingressDomain)"
+aliasHostname: String = "\(module.name).\(module.ingressAliasDomain)"
+
+/// Holds the management panel's `secret-key` and the Bearer API key issued to coding-CLI clients.
+secretName: String = "cliproxyapi-secrets"

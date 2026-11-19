@@ -1,0 +1,48 @@
+/// Seed once, shared by every instance:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/cliproxyapi \
+///      management-secret-key=<random string, e.g. `openssl rand -hex 32`> \
+///      access-api-key=<random string, e.g. `openssl rand -hex 32`>
+///
+/// Link a provider account by running that CLI's `--login` flow against the instance's own
+/// `/root/.cli-proxy-api` (`kubectl exec -it -n cliproxyapi deploy/cliproxyapi-<name> -- sh`), or
+/// copy an existing credential file into its PVC.
+///
+/// Add a new instance: `instances/<name>.pkl` amending `instance.pkl`.
+///
+/// VoidAuth: add a ProxyAuth Domain covering `/*/management.html`, `/*/v0/management`,
+/// `/*/v8/management`.
+///
+/// The management panel's own frontend auto-detects its API base from `window.location.origin`,
+/// ignoring the `/<name>` path prefix: on first login to an instance's panel, manually set API Base
+/// to `https://<hostname>/<name>` instead of accepting the auto-filled value.
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+local instances = import*("instances/*.pkl").toMap().values.toList()
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["cliproxyapi"] {
+        "management-secret-key"
+        "access-api-key"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+    for (instance in instances) {
+      ...instance.resources
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

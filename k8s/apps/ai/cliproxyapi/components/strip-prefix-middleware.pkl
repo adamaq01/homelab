@@ -1,0 +1,1 @@
+amends "@traefik-crds/Middleware.pkl"

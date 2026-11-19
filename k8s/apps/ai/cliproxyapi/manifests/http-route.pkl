@@ -1,0 +1,65 @@
+amends "@gateway-api/HTTPRoute.pkl"
+
+import "@gateway-api/HTTPRoute.pkl"
+import ".../app.pkl"
+import ".../networking/traefik/app.pkl" as traefik
+import "forward-auth-middleware.pkl" as forwardAuthMiddleware
+
+local instances = import*("../instances/*.pkl").toMap().values.toList()
+
+local function extensionRef(middlewareName: String): HTTPRoute.RuleFilter = new {
+  type = "ExtensionRef"
+  extensionRef {
+    group = "traefik.io"
+    kind = "Middleware"
+    name = middlewareName
+  }
+}
+
+local function rulesFor(instance): List<HTTPRoute.Rule> =
+  new Listing<HTTPRoute.Rule> {
+    for (match in List(
+      Pair("Exact", "/\(instance.name)/management.html"),
+      Pair("PathPrefix", "/\(instance.name)/v0/management"),
+      Pair("PathPrefix", "/\(instance.name)/v8/management"),
+    )) {
+      new {
+        matches {
+          new { path { type = match.first; value = match.second } }
+        }
+        filters {
+          extensionRef(instance.stripPrefixMiddleware.metadata.name!!)
+          extensionRef(forwardAuthMiddleware.metadata.name!!)
+        }
+        backendRefs {
+          new { name = instance.service.metadata.name!!; port = 8317 }
+        }
+      }
+    }
+    new {
+      matches {
+        new { path { type = "PathPrefix"; value = "/\(instance.name)" } }
+      }
+      filters {
+        extensionRef(instance.stripPrefixMiddleware.metadata.name!!)
+      }
+      backendRefs {
+        new { name = instance.service.metadata.name!!; port = 8317 }
+      }
+    }
+  }.toList()
+
+metadata {
+  name = "cliproxyapi"
+}
+
+spec {
+  parentRefs {
+    new { name = traefik.gatewayName; namespace = traefik.namespace; sectionName = "websecure" }
+  }
+  hostnames {
+    app.hostname
+    app.aliasHostname
+  }
+  rules = instances.flatMap((instance) -> rulesFor(instance)).toListing()
+}

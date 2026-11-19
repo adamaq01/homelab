@@ -1,0 +1,49 @@
+import "pkl:reflect"
+import "@k8s/api/apps/v1/Deployment.pkl"
+import "@k8s/api/core/v1/PersistentVolumeClaim.pkl"
+import "@k8s/api/core/v1/Service.pkl"
+import "@traefik-crds/Middleware.pkl"
+import "components/deployment.pkl" as deploymentTemplate
+import "components/pvc.pkl" as pvcTemplate
+import "components/service.pkl" as serviceTemplate
+import "components/strip-prefix-middleware.pkl" as stripPrefixTemplate
+
+name: String = reflect.Module(module).name
+
+local resourceName = "cliproxyapi-\(name)"
+
+pvc: PersistentVolumeClaim = (pvcTemplate) {
+  metadata {
+    name = "\(resourceName)-auth"
+  }
+}
+
+deployment: Deployment = (deploymentTemplate) {
+  metadata {
+    name = resourceName
+  }
+}
+
+service: Service = (serviceTemplate) {
+  metadata {
+    name = resourceName
+  }
+}
+
+stripPrefixMiddleware: Middleware = (stripPrefixTemplate) {
+  metadata {
+    name = "\(resourceName)-strip-prefix"
+  }
+  spec {
+    stripPrefix {
+      prefixes { "/\(name)" }
+    }
+  }
+}
+
+resources: Listing = new {
+  deployment
+  pvc
+  service
+  stripPrefixMiddleware
+}

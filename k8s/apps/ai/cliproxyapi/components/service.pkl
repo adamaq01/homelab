@@ -1,0 +1,13 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+local resourceName = metadata.name!!
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = resourceName
+  }
+  ports {
+    new { port = 8317; targetPort = 8317; protocol = "TCP" }
+  }
+}

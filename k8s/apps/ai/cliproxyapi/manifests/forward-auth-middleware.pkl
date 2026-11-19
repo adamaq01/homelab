@@ -1,0 +1,20 @@
+amends "@traefik-crds/Middleware.pkl"
+
+import ".../identity/voidauth/app.pkl" as voidauth
+
+metadata {
+  name = "cliproxyapi-voidauth-forward-auth"
+}
+
+spec {
+  forwardAuth {
+    address = "http://\(voidauth.name).\(voidauth.namespace).svc.cluster.local:3000/api/authz/forward-auth"
+    trustForwardHeader = true
+    authResponseHeaders {
+      "Remote-User"
+      "Remote-Name"
+      "Remote-Email"
+      "Remote-Groups"
+    }
+  }
+}

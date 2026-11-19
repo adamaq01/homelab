@@ -1,0 +1,23 @@
+amends "@k8s/api/core/v1/ConfigMap.pkl"
+
+metadata {
+  name = "cliproxyapi-config-template"
+}
+
+data {
+  ["config.yaml"] =
+    """
+    server:
+      port: 8317
+    access:
+      api-keys:
+        - "__ACCESS_API_KEY__"
+    management:
+      secret-key: "__MANAGEMENT_SECRET_KEY__"
+      allow-remote: true
+    oauth:
+      auth-dir: "/root/.cli-proxy-api"
+    routing:
+      force-model-prefix: true
+    """
+}

@@ -1,0 +1,101 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import "../app.pkl" as app
+import "../manifests/configmap.pkl" as configTemplate
+
+// renovate: datasource=docker packageName=eceasy/cli-proxy-api
+local version = "v8.0.76"
+
+// renovate: datasource=docker packageName=busybox
+local busyboxVersion = "1.37.0"
+
+local resourceName = metadata.name!!
+
+spec {
+  replicas = 1
+  strategy {
+    type = "Recreate"
+  }
+  selector {
+    matchLabels {
+      ["app"] = resourceName
+    }
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = resourceName
+      }
+    }
+    spec {
+      initContainers {
+        new {
+          name = "render-config"
+          image = "busybox:\(busyboxVersion)"
+          command {
+            "sh"
+            "-c"
+            #"""
+            sed -e "s#__MANAGEMENT_SECRET_KEY__#${MANAGEMENT_SECRET_KEY}#g" \
+                -e "s#__ACCESS_API_KEY__#${ACCESS_API_KEY}#g" \
+                /templates/config.yaml > /rendered/config.yaml
+            """#
+          }
+          env {
+            new {
+              name = "MANAGEMENT_SECRET_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "management-secret-key" }
+              }
+            }
+            new {
+              name = "ACCESS_API_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "access-api-key" }
+              }
+            }
+          }
+          volumeMounts {
+            new { name = "config-template"; mountPath = "/templates"; readOnly = true }
+            new { name = "config"; mountPath = "/rendered" }
+          }
+        }
+      }
+      containers {
+        new {
+          name = resourceName
+          image = "eceasy/cli-proxy-api:\(version)"
+          ports {
+            new { containerPort = 8317 }
+          }
+          volumeMounts {
+            new {
+              name = "config"
+              mountPath = "/CLIProxyAPI/config.yaml"
+              subPath = "config.yaml"
+            }
+            new { name = "auth-data"; mountPath = "/root/.cli-proxy-api" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "config-template"
+          configMap {
+            name = configTemplate.metadata.name!!
+          }
+        }
+        new {
+          name = "config"
+          emptyDir {}
+        }
+        new {
+          name = "auth-data"
+          persistentVolumeClaim {
+            claimName = "\(resourceName)-auth"
+          }
+        }
+      }
+    }
+  }
+}
