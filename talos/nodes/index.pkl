@@ -44,11 +44,13 @@ talosVersion: String = "v1.14.1"
 kubernetesVersion: String = "v1.37.1"
 
 // `nvme-cli` is needed on every node for `tns-csi`'s NVMe-oF connections.
+// `gvisor` is needed for Agent Substrate's `gvisor` sandbox class.
 schematic: Schematic = new {
   customization {
     systemExtensions {
       officialExtensions {
         "siderolabs/nvme-cli"
+        "siderolabs/gvisor"
       }
     }
   }
@@ -148,6 +150,14 @@ documents: documentsModule.Documents = new {
       ["net.ipv4.tcp_slow_start_after_idle"] = "0"
       ["net.ipv4.tcp_fastopen"] = "3"
       ["net.ipv4.tcp_mtu_probing"] = "1"
+      // Agent Substrate's gvisor sandbox class: Talos disables user namespaces by default, and
+      // gvisor runs each sandbox with its own network namespace.
+      ["user.max_user_namespaces"] = "11255"
+      ["net.ipv4.conf.all.proxy_arp"] = "1"
+      ["net.ipv6.conf.all.proxy_ndp"] = "1"
+      ["net.ipv4.neigh.default.gc_thresh1"] = "1024"
+      ["net.ipv4.neigh.default.gc_thresh2"] = "2048"
+      ["net.ipv4.neigh.default.gc_thresh3"] = "4096"
     }
   }
   (HostnameConfig) {
