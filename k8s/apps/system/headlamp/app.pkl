@@ -7,7 +7,6 @@ import ".../networking/traefik/app.pkl" as traefik
 import ".../storage/tns-csi/app.pkl" as tns_csi
 
 hostname: String = "\(module.name).\(module.ingressDomain)"
-aliasHostname: String = "\(module.name).\(module.ingressAliasDomain)"
 
 secretName: String = "headlamp-secrets"
 
@@ -70,7 +69,6 @@ sources = new Listing {
             }
             hostnames {
               hostname
-              aliasHostname
             }
           }
         }.toDynamic()) {

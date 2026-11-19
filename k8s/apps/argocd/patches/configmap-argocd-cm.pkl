@@ -11,9 +11,6 @@ patch = new Mixin<ConfigMap> {
   data = new Mapping {
     ["admin.enabled"] = "false"
     ["url"] = "https://\(app.primaryHostname)"
-    ["additionalUrls"] = """
-      - https://\(app.aliasHostname)
-      """
     ["webhook.maxPayloadSizeMB"] = "1"
     ["oidc.config"] = """
       name: VoidAuth

@@ -38,8 +38,8 @@ sources = new Listing {
           }
           // Declares the zone this token is allowed to touch. The real gate is `annotationFilter`
           // below: only HTTPRoutes explicitly opted into public exposure are ever considered, so
-          // the LAN-only `domain`/`ingressDomain`/`ingressAliasDomain` hostnames (themselves bare
-          // subdomains of this same zone) never get a public DNS record.
+          // the LAN-only `domain`/`ingressDomain` hostnames (themselves bare subdomains of this
+          // same zone) never get a public DNS record.
           domainFilters {
             module.rootDomain
           }

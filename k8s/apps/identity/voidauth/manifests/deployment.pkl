@@ -105,8 +105,7 @@ spec {
                 name = app.secretName
                 key = "argocd-client-secret"
               }
-              ["OIDC_argocd_CLIENT_REDIRECT_URLS"] =
-                "https://\(argocd.primaryHostname)/auth/callback, https://\(argocd.aliasHostname)/auth/callback"
+              ["OIDC_argocd_CLIENT_REDIRECT_URLS"] = "https://\(argocd.primaryHostname)/auth/callback"
               ["OIDC_argocd_CLIENT_POST_LOGOUT_URLS"] = "https://\(argocd.primaryHostname)"
               ["OIDC_argocd_CLIENT_GROUPS"] = "argocd-admins"
 
@@ -138,8 +137,7 @@ spec {
                 name = app.secretName
                 key = "wallos-client-secret"
               }
-              ["OIDC_wallos_CLIENT_REDIRECT_URLS"] =
-                "https://\(wallos.hostname)/, https://\(wallos.aliasHostname)/"
+              ["OIDC_wallos_CLIENT_REDIRECT_URLS"] = "https://\(wallos.hostname)/"
               ["OIDC_wallos_CLIENT_POST_LOGOUT_URLS"] = "https://\(wallos.hostname)"
 
               ["OIDC_homebox_CLIENT_DISPLAY_NAME"] = "Homebox"

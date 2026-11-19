@@ -27,7 +27,6 @@ local httpRoute: HTTPRoute = new {
     }
     hostnames {
       app.primaryHostname
-      app.aliasHostname
     }
     rules {
       new {

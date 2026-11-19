@@ -13,8 +13,8 @@ metadata {
 }
 
 /// `dns.nameservers.split` routes every hostname under [app.rootDomain] to the router's own DNS
-/// instead of the global resolvers. That covers every private hostname (`domain`/`ingressDomain`/
-/// `ingressAliasDomain` are all subdomains of it) plus every public-annotated one:
+/// instead of the global resolvers. That covers every private hostname (`domain`/`ingressDomain`
+/// are all subdomains of it) plus every public-annotated one:
 /// `external-dns-unifi` already gives those a split-horizon override on the router pointing
 /// straight at `gatewayIP`, instead of the public record which resolves to the rathole VPS, so
 /// routing tailnet clients' DNS here too avoids that same rathole round-trip.

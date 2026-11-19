@@ -59,7 +59,6 @@ spec {
   }
   hostnames {
     app.hostname
-    app.aliasHostname
   }
   rules = instances.flatMap((instance) -> rulesFor(instance)).toListing()
 }

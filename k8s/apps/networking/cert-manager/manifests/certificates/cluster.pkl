@@ -16,7 +16,5 @@ spec {
   dnsNames {
     app.ingressDomain
     "*.\(app.ingressDomain)"
-    app.ingressAliasDomain
-    "*.\(app.ingressAliasDomain)"
   }
 }
