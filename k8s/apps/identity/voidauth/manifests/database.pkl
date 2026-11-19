@@ -12,6 +12,9 @@ metadata {
 
 spec {
   instances = 1
+  // A single instance can never switch over, so CNPG's own PodDisruptionBudget (0 allowed
+  // disruptions for the primary) would block draining whichever node this lands on forever.
+  enablePDB = false
   storage {
     size = "5Gi"
     storageClass = tns_csi.postgresStorageClassName
