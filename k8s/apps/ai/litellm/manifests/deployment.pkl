@@ -103,6 +103,12 @@ spec {
             new { name = "NO_REDOC"; value = "True" }
             new { name = "NO_OPENAPI"; value = "True" }
             new { name = "CHATGPT_TOKEN_DIR"; value = "/chatgpt-auth" }
+            new {
+              name = "CLIPROXYAPI_ACCESS_API_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "access-api-key" }
+              }
+            }
           }
           volumeMounts {
             new {

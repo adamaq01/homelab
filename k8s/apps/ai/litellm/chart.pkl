@@ -31,6 +31,10 @@
 /// After deploy, in VoidAuth's UI: create `litellm-users` and `litellm-admins` groups and assign
 /// users to them, then create a `litellm_role` custom claim with value `proxy_admin` and assign it
 /// to the `litellm-admins` group.
+///
+/// `config.pkl` routes one `cpa-<name>/*` model group per `.../ai/cliproxyapi` instance, keyed by
+/// `CLIPROXYAPI_ACCESS_API_KEY` below (pulled from `cliproxyapi`'s own openbao path, not litellm's,
+/// since that's where it's seeded: see `.../ai/cliproxyapi/chart.pkl`).
 module chart
 
 import ".../utils/ExternalSecret.pkl"
@@ -47,6 +51,9 @@ secretsExternalSecret =
       }
       ["voidauth"] {
         "litellm-client-secret"
+      }
+      ["cliproxyapi"] {
+        "access-api-key"
       }
     }
   }.resource

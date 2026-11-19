@@ -1,0 +1,32 @@
+module config
+
+import ".../app.pkl"
+import ".../cliproxyapi/app.pkl" as cliproxyapi
+
+local cpaInstances = import*("../cliproxyapi/instances/*.pkl").toMap().values.toList()
+
+local cpaModelList = cpaInstances.map((instance) ->
+  new Dynamic {
+    model_name = "cpa-\(instance.name)/*"
+    litellm_params {
+      model = "openai/*"
+      api_base = "http://\(instance.service.metadata.name!!).\(cliproxyapi.namespace).svc.cluster.local:8317/v1"
+      api_key = "os.environ/CLIPROXYAPI_ACCESS_API_KEY"
+    }
+  }
+)
+
+value: Dynamic = new {
+  model_list = cpaModelList
+  general_settings {
+    disable_password_login_when_sso_enabled = true
+    disable_env_credential_login = true
+    maximum_spend_logs_retention_period = "90d"
+    trusted_proxy_ranges {
+      app.podSubnet
+    }
+  }
+  litellm_settings {
+    check_provider_endpoint = true
+  }
+}
