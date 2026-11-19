@@ -1,0 +1,116 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+
+// renovate: datasource=docker packageName=rustfs/rustfs
+local version = "1.0.6"
+
+local appLabel = "rustfs"
+
+metadata {
+  name = appLabel
+}
+
+spec {
+  replicas = 1
+  strategy {
+    type = "Recreate"
+  }
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      // `voidauth.hostname` has both an A record (LAN) and a public AAAA record; this pod has no
+      // IPv6 egress route, and RustFS's own HTTP client doesn't fall back to the A record the way
+      // e.g. `curl`'s Happy Eyeballs does, so OIDC discovery fails outright. Pinning it to the
+      // Gateway's stable LAN VIP forces IPv4-only resolution for just this one hostname.
+      hostAliases {
+        new { ip = app.gatewayIP; hostnames { voidauth.hostname } }
+      }
+      securityContext {
+        runAsUser = 10001
+        runAsGroup = 10001
+        fsGroup = 10001
+      }
+      containers {
+        new {
+          name = appLabel
+          image = "rustfs/rustfs:\(version)"
+          ports {
+            new { name = "api"; containerPort = 9000 }
+            new { name = "console"; containerPort = 9001 }
+          }
+          env {
+            new { name = "RUSTFS_ADDRESS"; value = ":9000" }
+            new { name = "RUSTFS_CONSOLE_ADDRESS"; value = ":9001" }
+            new { name = "RUSTFS_CONSOLE_ENABLE"; value = "true" }
+            new { name = "RUSTFS_VOLUMES"; value = "/data" }
+            new {
+              name = "RUSTFS_ACCESS_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "access-key" }
+              }
+            }
+            new {
+              name = "RUSTFS_SECRET_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "secret-key" }
+              }
+            }
+            new { name = "RUSTFS_BROWSER_REDIRECT_URL"; value = "https://\(app.hostname)" }
+            // RustFS's outbound SSRF guard blocks OIDC discovery when the issuer resolves to a
+            // private address (which it does here, via the `hostAliases` LAN pin above), so the
+            // origin needs an explicit allowlist entry.
+            new { name = "RUSTFS_OUTBOUND_ALLOW_ORIGINS"; value = "https://\(voidauth.hostname)" }
+
+            new { name = "RUSTFS_IDENTITY_OPENID_ENABLE"; value = "on" }
+            new {
+              name = "RUSTFS_IDENTITY_OPENID_CONFIG_URL"
+              value = "https://\(voidauth.hostname)/oidc"
+            }
+            new { name = "RUSTFS_IDENTITY_OPENID_CLIENT_ID"; value = "rustfs" }
+            new {
+              name = "RUSTFS_IDENTITY_OPENID_CLIENT_SECRET"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "rustfs-client-secret" }
+              }
+            }
+            new { name = "RUSTFS_IDENTITY_OPENID_SCOPES"; value = "openid,profile,email" }
+            new {
+              name = "RUSTFS_IDENTITY_OPENID_REDIRECT_URI"
+              value = "https://\(app.hostname)/rustfs/admin/v3/oidc/callback/default"
+            }
+            new { name = "RUSTFS_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC"; value = "off" }
+            new { name = "RUSTFS_IDENTITY_OPENID_DISPLAY_NAME"; value = "VoidAuth" }
+            // Maps a dedicated custom claim (set up in VoidAuth, not a generic group name) straight
+            // to RustFS's own policy names, so VoidAuth's `rustfs-admins` group membership doesn't
+            // have to be named after RustFS's internal policy.
+            new { name = "RUSTFS_IDENTITY_OPENID_ROLES_CLAIM"; value = "rustfs_role" }
+            new { name = "RUSTFS_IDENTITY_OPENID_EMAIL_CLAIM"; value = "email" }
+            new { name = "RUSTFS_IDENTITY_OPENID_USERNAME_CLAIM"; value = "preferred_username" }
+          }
+          volumeMounts {
+            new { name = "data"; mountPath = "/data" }
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "data"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+      }
+    }
+  }
+}

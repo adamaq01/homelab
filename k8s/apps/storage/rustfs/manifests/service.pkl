@@ -1,0 +1,16 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "rustfs"
+}
+
+spec {
+  type = "ClusterIP"
+  selector {
+    ["app"] = "rustfs"
+  }
+  ports {
+    new { name = "api"; port = 9000; targetPort = 9000; protocol = "TCP" }
+    new { name = "console"; port = 9001; targetPort = 9001; protocol = "TCP" }
+  }
+}

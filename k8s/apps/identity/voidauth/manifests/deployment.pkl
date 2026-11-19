@@ -9,6 +9,7 @@ import ".../assets/homebox/app.pkl" as homebox
 import ".../automation/home-assistant/app.pkl" as homeAssistant
 import ".../system/headlamp/app.pkl" as headlamp
 import ".../ai/litellm/app.pkl" as litellm
+import ".../storage/rustfs/app.pkl" as rustfs
 import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
@@ -179,6 +180,17 @@ spec {
               }
               ["OIDC_litellm_CLIENT_REDIRECT_URLS"] = "https://\(litellm.hostname)/sso/callback"
               ["OIDC_litellm_CLIENT_GROUPS"] = "litellm-users,litellm-admins"
+
+              ["OIDC_rustfs_CLIENT_DISPLAY_NAME"] = "RustFS"
+              ["OIDC_rustfs_CLIENT_HOMEPAGE_URL"] = "https://\(rustfs.hostname)"
+              ["OIDC_rustfs_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "rustfs-client-secret"
+              }
+              ["OIDC_rustfs_CLIENT_REDIRECT_URLS"] =
+                "https://\(rustfs.hostname)/rustfs/admin/v3/oidc/callback/default"
+              ["OIDC_rustfs_CLIENT_POST_LOGOUT_URLS"] = "https://\(rustfs.hostname)"
+              ["OIDC_rustfs_CLIENT_GROUPS"] = "rustfs-admins"
             } |> envMapToListing
         }
       }

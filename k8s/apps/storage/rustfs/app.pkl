@@ -1,0 +1,6 @@
+extends ".../app.pkl"
+
+hostname: String = "\(module.name).\(module.ingressAliasDomain)"
+
+/// Holds the S3 access/secret key pair, shared by every consumer.
+secretName: String = "rustfs-credentials"

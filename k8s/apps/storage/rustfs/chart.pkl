@@ -1,0 +1,52 @@
+/// Seed once:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/rustfs \
+///      access-key=<random string, e.g. `openssl rand -hex 16`> \
+///      secret-key=<random string, e.g. `openssl rand -hex 32`>
+///
+/// Any app that needs an S3-compatible bucket pulls its own copy of these two fields into its own
+/// namespace via its own `ExternalSecret` (a plain `secretKeyRef` can't cross namespaces) and talks
+/// to `rustfs.rustfs.svc.cluster.local:9000` directly; see `.../ai/agent-substrate/chart.pkl` for an
+/// example consumer.
+///
+/// Console web UI also gets VoidAuth OIDC login (RustFS has no config flag to disable its own
+/// root-credential login path; it's an intentional, permanent break-glass account that coexists
+/// with OIDC, not something this repo can turn off — the root access-key/secret-key above never
+/// leave Kubernetes Secrets, though, so OIDC is the only login path a human actually uses). Add
+/// this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
+/// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
+///      rustfs-client-secret=<random string, e.g. `openssl rand -hex 32`>
+///
+/// After deploy, in VoidAuth's UI: create a `rustfs-admins` group, then create a `rustfs_role`
+/// custom claim with value `consoleAdmin` (RustFS's built-in admin policy name) and assign it to
+/// that group, then assign users to the group.
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["rustfs"] {
+        "access-key"
+        "secret-key"
+      }
+      ["voidauth"] {
+        "rustfs-client-secret"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
