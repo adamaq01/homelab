@@ -3,9 +3,6 @@ amends "@k8s/api/apps/v1/Deployment.pkl"
 import "../app.pkl" as app
 import "../manifests/configmap.pkl" as configTemplate
 
-// renovate: datasource=docker packageName=eceasy/cli-proxy-api
-local version = "v8.0.76"
-
 // renovate: datasource=docker packageName=busybox
 local busyboxVersion = "1.37.0"
 
@@ -64,7 +61,8 @@ spec {
       containers {
         new {
           name = resourceName
-          image = "eceasy/cli-proxy-api:\(version)"
+          image = "ghcr.io/adamaq01/cli-proxy-api:latest"
+          imagePullPolicy = "Always"
           ports {
             new { containerPort = 8317 }
           }
