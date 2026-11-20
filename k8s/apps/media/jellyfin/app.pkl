@@ -33,6 +33,12 @@ sources = new Listing {
         image {
           tag = jellyfinVersion
         }
+        // The default RollingUpdate tries to schedule a second pod before removing the first,
+        // which can never succeed here: there's exactly one `gpu.intel.com/i915` unit on the one
+        // node that has it, already held by the pod being replaced.
+        deploymentStrategy {
+          type = "Recreate"
+        }
         // Requesting the device-plugin-advertised GPU resource (see `.../system/intel-gpu-plugin`)
         // already confines scheduling to a GPU node; `priorityClassName` lets it preempt
         // default-priority pods there if that node is otherwise full.
