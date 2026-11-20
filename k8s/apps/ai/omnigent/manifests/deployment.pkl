@@ -136,6 +136,16 @@ spec {
             }
             new { name = "OPENAI_BASE_URL"; value = "https://\(litellm.hostname)/v1" }
             new {
+              // Claude Code (the built-in harness) reads these; must be a LiteLLM virtual key.
+              name = "ANTHROPIC_API_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "anthropic-api-key" }
+              }
+            }
+            // No /v1 suffix: the Anthropic SDK/Claude Code appends /v1/messages itself, unlike the
+            // OpenAI client above whose base_url already includes /v1 by convention.
+            new { name = "ANTHROPIC_BASE_URL"; value = "https://\(litellm.hostname)" }
+            new {
               name = "DB_USER"
               valueFrom {
                 secretKeyRef { name = "\(app.dbClusterName)-app"; key = "user" }

@@ -11,13 +11,15 @@ value = new Dynamic {
     provider = "openshell"
     server_url = "https://\(app.hostname)"
     openshell {
-      // Server env var NAMES forwarded into every sandbox at provision time. OPENAI_BASE_URL
-      // points every sandbox's OpenAI-compatible client at LiteLLM instead of api.openai.com —
-      // OPENAI_API_KEY (seeded in secret/omnigent) must be a LiteLLM virtual key, not a raw
-      // OpenAI key.
+      // Server env var NAMES forwarded into every sandbox at provision time. *_BASE_URL points
+      // every sandbox's OpenAI- and Anthropic-compatible clients (including Claude Code, the
+      // built-in harness) at LiteLLM instead of api.openai.com/api.anthropic.com — both API keys
+      // (seeded in secret/omnigent) must be LiteLLM virtual keys, not raw provider keys.
       env {
         "OPENAI_API_KEY"
         "OPENAI_BASE_URL"
+        "ANTHROPIC_API_KEY"
+        "ANTHROPIC_BASE_URL"
       }
     }
   }

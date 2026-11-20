@@ -11,58 +11,52 @@
 /// namespace — see `.../ai/omnigent/chart.pkl`'s doc comment for how that bundle gets generated
 /// and synced elsewhere.)
 ///
-/// `/opt` has to be explicitly added to `read_only`: OpenShell's own default filesystem policy
-/// denies it (confirmed empirically — `/opt`, `/home`, `/var`, `/root` are all unreadable
-/// regardless of actual Unix permission bits, Landlock enforces a fixed allowlist), and
-/// `ghcr.io/omnigent-ai/omnigent-host` installs its Python venv at `/opt/venv` — every `python3`
-/// invocation needs to read `/opt/venv/pyvenv.cfg` at startup.
-///
-/// The default policy also denies all outbound network access, so this has to grant it explicitly
-/// once filesystem_policy is present — otherwise sandboxes would clear the filesystem check only
-/// to immediately fail reaching the Omnigent server callback or LiteLLM.
+/// This is deliberately permissive — single homelab, single operator, not a shared/public
+/// gateway — rather than enumerating every path and host a given harness (Claude Code, Codex,
+/// etc.) happens to need. OpenShell's own default filesystem policy denies `/opt`, `/home`,
+/// `/var`, `/root`, `/srv`, `/mnt` outright regardless of actual Unix permission bits (Landlock
+/// enforces a fixed allowlist), which broke `ghcr.io/omnigent-ai/omnigent-host` (its Python venv
+/// lives at `/opt/venv`) and would keep breaking on whatever the next harness needs. The default
+/// also denies all outbound network access.
 module sandboxPolicy
-
-import ".../ai/omnigent/app.pkl" as omnigent
-import ".../ai/litellm/app.pkl" as litellm
 
 policy = new Dynamic {
   version = 1
   filesystem_policy {
     include_workdir = true
     read_only {
-      "/opt"
+      "/"
     }
     read_write {
       "/tmp"
+      "/root"
+      "/home"
+      "/opt"
+      "/var"
+      "/srv"
+      "/mnt"
     }
   }
-  // `/opt/venv/bin/python3` is a symlink into the venv; OpenShell's binary matcher follows a
-  // process to its real executable, not the symlink it was invoked through (confirmed via
-  // `/opt/venv/pyvenv.cfg`'s own `executable = /usr/local/bin/python3.12`), so the real path has
-  // to be the one listed here.
+  // Hostless + allowed_ips 0.0.0.0/0 (rather than a wildcard host, which OpenShell requires to
+  // have at least 3 DNS labels and so can't express "any host") grants outbound access to any
+  // destination — OpenShell still always blocks loopback/link-local/unspecified addresses and the
+  // Kubernetes/etcd control-plane ports regardless of this policy. `/**` matches any binary.
   network_policies {
-    ["omnigent-callback"] {
+    ["allow-all"] {
       endpoints {
         new {
-          host = omnigent.hostname
-          port = 443
-          access = "full"
+          allowed_ips {
+            "0.0.0.0/0"
+            "::/0"
+          }
+          ports {
+            80
+            443
+          }
         }
       }
       binaries {
-        new { path = "/usr/local/bin/*" }
-      }
-    }
-    ["litellm-api"] {
-      endpoints {
-        new {
-          host = litellm.hostname
-          port = 443
-          access = "full"
-        }
-      }
-      binaries {
-        new { path = "/usr/local/bin/*" }
+        new { path = "/**" }
       }
     }
   }

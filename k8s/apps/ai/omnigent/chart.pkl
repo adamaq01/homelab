@@ -11,7 +11,9 @@
 ///      oidc-cookie-secret=<random string, e.g. `openssl rand -hex 32`> \
 ///      openai-api-key=<a LiteLLM virtual key — sandboxes call LiteLLM at OPENAI_BASE_URL, not
 ///        api.openai.com directly, so this must be a key LiteLLM itself accepts, not a raw
-///        OpenAI key>
+///        OpenAI key> \
+///      anthropic-api-key=<a LiteLLM virtual key too — Claude Code (the built-in harness) calls
+///        LiteLLM at ANTHROPIC_BASE_URL, not api.anthropic.com directly>
 ///
 /// Add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
 /// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):
@@ -54,6 +56,7 @@ secretsExternalSecret =
       ["omnigent"] {
         "oidc-cookie-secret"
         "openai-api-key"
+        "anthropic-api-key"
       }
       ["voidauth"] {
         "omnigent-client-secret"
