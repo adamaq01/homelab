@@ -3,6 +3,7 @@ amends "@k8s/api/apps/v1/Deployment.pkl"
 import ".../app.pkl"
 import ".../openshell/app.pkl" as openshell
 import ".../identity/voidauth/app.pkl" as voidauth
+import ".../litellm/app.pkl" as litellm
 
 // renovate: datasource=docker packageName=ghcr.io/omnigent-ai/omnigent-server-openshell
 local version = "v0.23.0"
@@ -127,11 +128,13 @@ spec {
             }
             new {
               // Forwarded into OpenShell sandboxes per `sandbox.openshell.env` in `../config.pkl`.
+              // Must be a LiteLLM virtual key (see OPENAI_BASE_URL below), not a raw OpenAI key.
               name = "OPENAI_API_KEY"
               valueFrom {
                 secretKeyRef { name = app.secretName; key = "openai-api-key" }
               }
             }
+            new { name = "OPENAI_BASE_URL"; value = "https://\(litellm.hostname)/v1" }
             new {
               name = "DB_USER"
               valueFrom {

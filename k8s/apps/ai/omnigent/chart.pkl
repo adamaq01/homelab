@@ -9,7 +9,9 @@
 ///
 ///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/omnigent \
 ///      oidc-cookie-secret=<random string, e.g. `openssl rand -hex 32`> \
-///      openai-api-key=<optional, only if sandboxes should get OPENAI_API_KEY>
+///      openai-api-key=<a LiteLLM virtual key — sandboxes call LiteLLM at OPENAI_BASE_URL, not
+///        api.openai.com directly, so this must be a key LiteLLM itself accepts, not a raw
+///        OpenAI key>
 ///
 /// Add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
 /// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):

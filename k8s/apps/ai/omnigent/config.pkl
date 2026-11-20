@@ -11,9 +11,13 @@ value = new Dynamic {
     provider = "openshell"
     server_url = "https://\(app.hostname)"
     openshell {
-      // Server env var NAMES forwarded into every sandbox at provision time.
+      // Server env var NAMES forwarded into every sandbox at provision time. OPENAI_BASE_URL
+      // points every sandbox's OpenAI-compatible client at LiteLLM instead of api.openai.com —
+      // OPENAI_API_KEY (seeded in secret/omnigent) must be a LiteLLM virtual key, not a raw
+      // OpenAI key.
       env {
         "OPENAI_API_KEY"
+        "OPENAI_BASE_URL"
       }
     }
   }
