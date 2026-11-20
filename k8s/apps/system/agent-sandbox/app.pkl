@@ -1,0 +1,3 @@
+extends ".../app.pkl"
+
+namespace: String = "agent-sandbox-system"

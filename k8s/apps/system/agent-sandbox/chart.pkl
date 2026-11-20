@@ -1,0 +1,14 @@
+/// `kubernetes-sigs/agent-sandbox` (the `sandboxes.agents.x-k8s.io` CRD and its controller): a
+/// cluster-scoped prerequisite for OpenShell's Kubernetes compute driver (`.../ai/openshell`),
+/// which deliberately doesn't install this itself. The embedded `Namespace` is excluded since
+/// ArgoCD's own `CreateNamespace=true` already owns `agent-sandbox-system`.
+module chart
+
+amends "@manifest/generate.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/agent-sandbox
+local version = "v1.0.11"
+
+source = "https://github.com/kubernetes-sigs/agent-sandbox/releases/download/\(version)/sandbox.yaml"
+
+resources = super.resources.filter((doc) -> doc.getOrNull("kind") != "Namespace")

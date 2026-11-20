@@ -1,0 +1,21 @@
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["openshell"] {
+        "key-encryption-key"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+  }
+  renderer = new YamlRenderer { isStream = true }
+}
