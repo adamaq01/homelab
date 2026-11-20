@@ -145,6 +145,7 @@ spec {
             // No /v1 suffix: the Anthropic SDK/Claude Code appends /v1/messages itself, unlike the
             // OpenAI client above whose base_url already includes /v1 by convention.
             new { name = "ANTHROPIC_BASE_URL"; value = "https://\(litellm.hostname)" }
+            new { name = "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY"; value = "1" }
             new {
               name = "DB_USER"
               valueFrom {

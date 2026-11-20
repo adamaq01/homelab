@@ -20,6 +20,9 @@ value = new Dynamic {
         "OPENAI_BASE_URL"
         "ANTHROPIC_API_KEY"
         "ANTHROPIC_BASE_URL"
+        // Makes Claude Code query LiteLLM for the actual available models instead of assuming
+        // Anthropic's own model lineup, which LiteLLM doesn't necessarily mirror 1:1.
+        "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY"
       }
     }
   }
