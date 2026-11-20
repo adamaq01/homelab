@@ -1,0 +1,11 @@
+amends "@k8s/api/core/v1/ConfigMap.pkl"
+
+import "../config.pkl" as config
+
+metadata {
+  name = "omnigent-server-config"
+}
+
+data {
+  ["config.yaml"] = new YamlRenderer {}.renderDocument(config.value)
+}

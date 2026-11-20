@@ -1,0 +1,20 @@
+/// `OMNIGENT_CONFIG` contents: only the sandbox section is needed here — secrets (`DATABASE_URL`,
+/// the cookie secret, LLM keys) stay in the environment, per the upstream openshell overlay's own
+/// convention (confirmed at `deploy/kubernetes/overlays/openshell/server-config.yaml`, tag
+/// v0.23.0).
+module config
+
+import "app.pkl"
+
+value = new Dynamic {
+  sandbox {
+    provider = "openshell"
+    server_url = "https://\(app.hostname)"
+    openshell {
+      // Server env var NAMES forwarded into every sandbox at provision time.
+      env {
+        "OPENAI_API_KEY"
+      }
+    }
+  }
+}

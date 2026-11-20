@@ -1,0 +1,18 @@
+amends "@k8s/api/core/v1/Service.pkl"
+
+metadata {
+  name = "omnigent"
+}
+
+spec {
+  selector {
+    ["app"] = "omnigent"
+  }
+  ports {
+    new {
+      name = "http"
+      port = 80
+      targetPort = 8000
+    }
+  }
+}

@@ -10,6 +10,7 @@ import ".../automation/home-assistant/app.pkl" as homeAssistant
 import ".../system/headlamp/app.pkl" as headlamp
 import ".../ai/litellm/app.pkl" as litellm
 import ".../storage/rustfs/app.pkl" as rustfs
+import ".../ai/omnigent/app.pkl" as omnigent
 import "@k8s/api/core/v1/EnvVar.pkl"
 
 // renovate: datasource=docker packageName=voidauth/voidauth
@@ -189,6 +190,15 @@ spec {
                 "https://\(rustfs.hostname)/rustfs/admin/v3/oidc/callback/default"
               ["OIDC_rustfs_CLIENT_POST_LOGOUT_URLS"] = "https://\(rustfs.hostname)"
               ["OIDC_rustfs_CLIENT_GROUPS"] = "rustfs-admins"
+
+              ["OIDC_omnigent_CLIENT_DISPLAY_NAME"] = "Omnigent"
+              ["OIDC_omnigent_CLIENT_HOMEPAGE_URL"] = "https://\(omnigent.hostname)"
+              ["OIDC_omnigent_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "omnigent-client-secret"
+              }
+              ["OIDC_omnigent_CLIENT_REDIRECT_URLS"] = "https://\(omnigent.hostname)/auth/callback"
+              ["OIDC_omnigent_CLIENT_GROUPS"] = "omnigent-users"
             } |> envMapToListing
         }
       }

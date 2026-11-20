@@ -1,0 +1,240 @@
+amends "@k8s/api/apps/v1/Deployment.pkl"
+
+import ".../app.pkl"
+import ".../openshell/app.pkl" as openshell
+import ".../identity/voidauth/app.pkl" as voidauth
+
+// renovate: datasource=docker packageName=ghcr.io/omnigent-ai/omnigent-server-openshell
+local version = "v0.23.0"
+
+// renovate: datasource=github-releases packageName=NVIDIA/OpenShell
+local openshellCliVersion = "0.1.9"
+
+local openshellCliChecksum = "3856ac7b6b2e33d6c8ab72a1036444156516e7303da85a9b13f661a2aa63bd2d"
+
+local appLabel = "omnigent"
+
+local openshellGatewayName = "openshell"
+
+local openshellGatewayEndpoint =
+  "https://openshell.\(openshell.namespace).svc.cluster.local:8080"
+
+metadata {
+  name = "omnigent"
+}
+
+spec {
+  selector {
+    matchLabels {
+      ["app"] = appLabel
+    }
+  }
+  template {
+    metadata {
+      labels {
+        ["app"] = appLabel
+      }
+    }
+    spec {
+      // The real `openshell` CLI (not a hand-built `metadata.json`/`active_gateway`) generates
+      // the gateway-config directory this pod needs: the init container fetches the pinned CLI
+      // release, drops the mTLS cert material (copied once from `.../ai/openshell`'s own
+      // `openshell-client-tls` Secret into OpenBao — see `../chart.pkl`) into the exact path the
+      // CLI itself expects, then runs `openshell gateway add --local`, which recognizes the certs
+      // are already in place and writes the rest (`metadata.json`, `active_gateway`) itself.
+      initContainers {
+        new {
+          name = "openshell-gateway-bootstrap"
+          image = "alpine:3.21"
+          env {
+            new { name = "HOME"; value = "/home/omnigent" }
+          }
+          command {
+            "sh"
+            "-c"
+            #"""
+            set -eu
+            arch="$(uname -m)"
+            case "$arch" in
+              x86_64) target=x86_64-unknown-linux-musl ;;
+              aarch64) target=aarch64-unknown-linux-musl ;;
+              *) echo "unsupported arch: $arch" >&2; exit 1 ;;
+            esac
+            asset="openshell-${target}.tar.gz"
+            url="https://github.com/NVIDIA/OpenShell/releases/download/v\#(openshellCliVersion)/${asset}"
+            cd /tmp
+            wget -qO "$asset" "$url"
+            if [ "$target" = "x86_64-unknown-linux-musl" ]; then
+              echo "\#(openshellCliChecksum)  ${asset}" | sha256sum -c -
+            fi
+            tar -xzf "$asset"
+            chmod +x openshell
+            mtls_dir="$HOME/.config/openshell/gateways/\#(openshellGatewayName)/mtls"
+            mkdir -p "$mtls_dir"
+            cp /secrets/openshell-client/ca.crt "$mtls_dir/ca.crt"
+            cp /secrets/openshell-client/tls.crt "$mtls_dir/tls.crt"
+            cp /secrets/openshell-client/tls.key "$mtls_dir/tls.key"
+            ./openshell gateway add "\#(openshellGatewayEndpoint)" --name \#(openshellGatewayName) --local
+            chmod -R a+rX "$HOME/.config/openshell"
+            """#
+          }
+          volumeMounts {
+            new {
+              name = "openshell-client-cert"
+              mountPath = "/secrets/openshell-client"
+              readOnly = true
+            }
+            new {
+              name = "openshell-gateway-config"
+              mountPath = "/home/omnigent/.config/openshell"
+            }
+          }
+        }
+      }
+      containers {
+        new {
+          name = "omnigent"
+          image = "ghcr.io/omnigent-ai/omnigent-server-openshell:\(version)"
+          ports {
+            new { containerPort = 8000; name = "http" }
+          }
+          envFrom {
+            new { configMapRef { name = "omnigent-config" } }
+          }
+          env {
+            // The image actually runs as root ($HOME=/root), not the `omnigent` user the
+            // gateway-config mount path below assumes — without this, the OpenShell SDK's
+            // from_active_cluster() looks under $HOME and finds nothing.
+            new { name = "HOME"; value = "/home/omnigent" }
+            new { name = "OMNIGENT_AUTH_PROVIDER"; value = "oidc" }
+            new { name = "OMNIGENT_OIDC_ISSUER"; value = "https://\(voidauth.hostname)/oidc" }
+            new { name = "OMNIGENT_OIDC_CLIENT_ID"; value = "omnigent" }
+            new {
+              name = "OMNIGENT_OIDC_CLIENT_SECRET"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "omnigent-client-secret" }
+              }
+            }
+            new {
+              name = "OMNIGENT_OIDC_REDIRECT_URI"
+              value = "https://\(app.hostname)/auth/callback"
+            }
+            new {
+              name = "OMNIGENT_OIDC_COOKIE_SECRET"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "oidc-cookie-secret" }
+              }
+            }
+            new {
+              // Forwarded into OpenShell sandboxes per `sandbox.openshell.env` in `../config.pkl`.
+              name = "OPENAI_API_KEY"
+              valueFrom {
+                secretKeyRef { name = app.secretName; key = "openai-api-key" }
+              }
+            }
+            new {
+              name = "DB_USER"
+              valueFrom {
+                secretKeyRef { name = "\(app.dbClusterName)-app"; key = "user" }
+              }
+            }
+            new {
+              name = "DB_PASSWORD"
+              valueFrom {
+                secretKeyRef { name = "\(app.dbClusterName)-app"; key = "password" }
+              }
+            }
+            new {
+              name = "DB_HOST"
+              valueFrom {
+                secretKeyRef { name = "\(app.dbClusterName)-app"; key = "host" }
+              }
+            }
+            new {
+              name = "DB_PORT"
+              valueFrom {
+                secretKeyRef { name = "\(app.dbClusterName)-app"; key = "port" }
+              }
+            }
+            new {
+              name = "DB_NAME"
+              valueFrom {
+                secretKeyRef { name = "\(app.dbClusterName)-app"; key = "dbname" }
+              }
+            }
+            new {
+              name = "DATABASE_URL"
+              value = "postgresql+psycopg://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+            }
+          }
+          volumeMounts {
+            new { name = "artifacts"; mountPath = "/data/artifacts" }
+            new {
+              name = "server-config"
+              mountPath = "/data/server-config.yaml"
+              subPath = "config.yaml"
+              readOnly = true
+            }
+            new {
+              name = "openshell-gateway-config"
+              mountPath = "/home/omnigent/.config/openshell"
+              readOnly = true
+            }
+          }
+          resources {
+            requests {
+              ["memory"] = "512Mi"
+              ["cpu"] = "250m"
+            }
+            limits {
+              ["memory"] = "1Gi"
+              ["cpu"] = "1000m"
+            }
+          }
+          livenessProbe {
+            httpGet {
+              path = "/health"
+              port = 8000
+            }
+            initialDelaySeconds = 20
+            periodSeconds = 30
+            timeoutSeconds = 5
+          }
+          readinessProbe {
+            httpGet {
+              path = "/health"
+              port = 8000
+            }
+            initialDelaySeconds = 10
+            periodSeconds = 10
+            timeoutSeconds = 5
+          }
+        }
+      }
+      volumes {
+        new {
+          name = "artifacts"
+          persistentVolumeClaim {
+            claimName = import("pvc.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "server-config"
+          configMap {
+            name = import("server-config-configmap.pkl").metadata.name!!
+          }
+        }
+        new {
+          name = "openshell-client-cert"
+          secret {
+            secretName = app.openshellClientSecretName
+          }
+        }
+        new {
+          name = "openshell-gateway-config"
+          emptyDir {}
+        }
+      }
+    }
+  }
+}
