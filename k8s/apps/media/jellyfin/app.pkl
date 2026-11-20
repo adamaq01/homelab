@@ -74,6 +74,14 @@ sources = new Listing {
         // shared between the two containers with propagation set so the sidecar's FUSE mount
         // becomes visible to Jellyfin's own container (the "sidecar mounts, main container
         // reads" pattern — see https://github.com/rclone/rclone/wiki/Mount-as-a-sidecar).
+        //
+        // `rclone-mount` is a native sidecar (`restartPolicy: Always` on an init container, not a
+        // plain `extraContainers` entry), so Kubernetes starts it before and stops it after
+        // Jellyfin's own container, and `preStop` force-unmounts even if Jellyfin hasn't released
+        // every open handle yet. Without both, a node drain's pod eviction can hang indefinitely:
+        // a plain sidecar has no shutdown-order guarantee against the main container, and a FUSE
+        // mount whose backing process dies while still "busy" leaves a stuck mountpoint that
+        // blocks kubelet's volume teardown.
         extraInitContainers {
           new PodSpec.Container {
             name = "rclone-config"
@@ -112,10 +120,9 @@ sources = new Listing {
               new { name = "rclone-config"; mountPath = "/rclone-config" }
             }
           }
-        }
-        extraContainers {
           new PodSpec.Container {
             name = "rclone-mount"
+            restartPolicy = "Always"
             image = "rclone/rclone:\(rcloneVersion)"
             // `rclone/rclone`'s default entrypoint is the `rclone` binary itself.
             args {
@@ -154,6 +161,20 @@ sources = new Listing {
                 // Propagates this container's own FUSE mount outward so `volumeMounts` below
                 // (Jellyfin's main container) can see it.
                 mountPropagation = "Bidirectional"
+              }
+            }
+            lifecycle {
+              preStop {
+                exec {
+                  command {
+                    "sh"
+                    "-c"
+                    // A lazy unmount detaches the mountpoint immediately even if a handle is
+                    // still open on it, instead of blocking kubelet's teardown until every
+                    // reader has closed it.
+                    "fusermount3 -uz /media/seedbox || fusermount -uz /media/seedbox || umount -l /media/seedbox || true"
+                  }
+                }
               }
             }
           }
