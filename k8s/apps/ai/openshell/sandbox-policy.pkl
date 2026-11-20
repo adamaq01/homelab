@@ -37,23 +37,58 @@ policy = new Dynamic {
       "/mnt"
     }
   }
-  // Hostless + allowed_ips 0.0.0.0/0 (rather than a wildcard host, which OpenShell requires to
-  // have at least 3 DNS labels and so can't express "any host") grants outbound access to any
-  // destination — OpenShell still always blocks loopback/link-local/unspecified addresses and the
-  // Kubernetes/etcd control-plane ports regardless of this policy. `/**` matches any binary.
+  // OpenShell has no "disable network policy" switch at all (confirmed against its own docs and
+  // schema) — it's always default-deny with an explicit allowlist, by design. A hostless
+  // allowed_ips rule (what this used to be) goes through "transparent TCP" handling, which
+  // OpenShell's own examples confirm the Kubernetes compute driver doesn't support at all — it
+  // "fails closed" there (Docker/Podman only). The closest thing to "no policy" the Kubernetes
+  // driver actually supports is: every host we might plausibly need, matched explicitly or via a
+  // same-domain wildcard (OpenShell requires wildcards to have >= 3 DNS labels and only one `**`
+  // as the whole first label — there's no syntax for "any domain" at all), in `audit` mode (logs
+  // rule violations but still allows the request, rather than `enforce` blocking them) and `/**`
+  // for "any binary". Add more hosts here as needed; there's no way to make this unbounded.
+  local function host(h: String) = new {
+    host = h
+    ports {
+      80
+      443
+    }
+    access = "full"
+    enforcement = "audit"
+  }
   network_policies {
-    ["allow-all"] {
+    ["allow-known-hosts"] {
       endpoints {
-        new {
+        // Wildcard/hostless endpoints can only reach private addresses via allowed_ips (per
+        // OpenShell's docs) — our own domain resolves to an internal LB IP (192.168.2.0/24, the
+        // homelab's node subnet), so the wildcard needs this explicitly or every internal hostname
+        // fails DNS resolution from inside the sandbox (confirmed empirically).
+        (host("**.adamaq01.fr")) {
           allowed_ips {
-            "0.0.0.0/0"
-            "::/0"
-          }
-          ports {
-            80
-            443
+            "192.168.2.0/24"
           }
         }
+        host("github.com")
+        host("**.github.com")
+        host("**.githubusercontent.com")
+        host("pypi.org")
+        host("**.pythonhosted.org")
+        host("**.npmjs.org")
+        host("**.python.org")
+        host("**.readthedocs.io")
+        host("**.huggingface.co")
+        host("**.anthropic.com")
+        host("**.openai.com")
+        host("**.google.com")
+        host("duckduckgo.com")
+        host("stackoverflow.com")
+        host("arxiv.org")
+        host("crates.io")
+        host("**.crates.io")
+        host("**.debian.org")
+        host("**.ubuntu.com")
+        host("**.docker.io")
+        host("**.docker.com")
       }
       binaries {
         new { path = "/**" }
