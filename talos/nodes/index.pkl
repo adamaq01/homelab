@@ -148,6 +148,14 @@ documents: documentsModule.Documents = new {
       ["net.ipv4.tcp_slow_start_after_idle"] = "0"
       ["net.ipv4.tcp_fastopen"] = "3"
       ["net.ipv4.tcp_mtu_probing"] = "1"
+      // Talos defaults to 2 ("admin-only attach"), which blocks OpenShell's required
+      // parent-to-workload-child task-memory probe (process_vm_readv/proc/<pid>/mem) with
+      // EPERM/EACCES even for a supervisor reading its own child — OpenShell's own guidance is to
+      // use a runtime whose default profile permits this, not to grant the sandbox pod
+      // CAP_SYS_PTRACE. 1 ("restricted", the common distro default: a process may ptrace only its
+      // own descendants) covers that parent-child relationship without opening same-UID ptrace
+      // between unrelated processes the way 0 would.
+      ["kernel.yama.ptrace_scope"] = "1"
     }
   }
   (HostnameConfig) {
