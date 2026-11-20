@@ -41,6 +41,15 @@ sources = new Listing {
         }
         server {
           dataStorageClass = tns_csi.nvmeofStorageClassName
+          // No default StorageClass in this cluster — without this, every sandbox's workspace PVC
+          // stays Pending forever and the sandbox never starts.
+          workspaceStorageClass = tns_csi.nvmeofStorageClassName
+          // `ghcr.io/omnigent-ai/omnigent-host` bakes in a `sandbox` user at this (OpenShift-SCC
+          // style) UID/GID and owns `/sandbox` 0700 to it. With no SCC present, the driver's own
+          // default (10001) can't read that directory at all — seed-workspace fails with EPERM
+          // before the sandbox container ever starts.
+          sandboxUid = 1000660000
+          sandboxGid = 1000660000
           credentialStorage {
             existingSecret = secretName
           }
