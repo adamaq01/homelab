@@ -1,0 +1,74 @@
+/// The gateway-wide sandbox policy, applied with `openshell policy set --global --policy ...`.
+/// There's no Kubernetes resource or CRD for this — it's a CLI-only gateway concept — so this file
+/// is the tracked source of truth and applying it is a one-time, non-GitOps operator action,
+/// re-run whenever this file changes:
+///
+///    pkl eval k8s/apps/ai/openshell/sandbox-policy.pkl -o /tmp/sandbox-policy.yaml
+///    openshell gateway add https://openshell.openshell.svc.cluster.local:8080 --name openshell --local
+///    openshell policy set --global --policy /tmp/sandbox-policy.yaml --yes
+///
+/// (the `gateway add` step needs the mTLS client bundle from `openshell-client-tls` in this
+/// namespace — see `.../ai/omnigent/chart.pkl`'s doc comment for how that bundle gets generated
+/// and synced elsewhere.)
+///
+/// `/opt` has to be explicitly added to `read_only`: OpenShell's own default filesystem policy
+/// denies it (confirmed empirically — `/opt`, `/home`, `/var`, `/root` are all unreadable
+/// regardless of actual Unix permission bits, Landlock enforces a fixed allowlist), and
+/// `ghcr.io/omnigent-ai/omnigent-host` installs its Python venv at `/opt/venv` — every `python3`
+/// invocation needs to read `/opt/venv/pyvenv.cfg` at startup.
+///
+/// The default policy also denies all outbound network access, so this has to grant it explicitly
+/// once filesystem_policy is present — otherwise sandboxes would clear the filesystem check only
+/// to immediately fail reaching the Omnigent server callback or LiteLLM.
+module sandboxPolicy
+
+import ".../ai/omnigent/app.pkl" as omnigent
+import ".../ai/litellm/app.pkl" as litellm
+
+policy = new Dynamic {
+  version = 1
+  filesystem_policy {
+    include_workdir = true
+    read_only {
+      "/opt"
+    }
+    read_write {
+      "/tmp"
+    }
+  }
+  // `/opt/venv/bin/python3` is a symlink into the venv; OpenShell's binary matcher follows a
+  // process to its real executable, not the symlink it was invoked through (confirmed via
+  // `/opt/venv/pyvenv.cfg`'s own `executable = /usr/local/bin/python3.12`), so the real path has
+  // to be the one listed here.
+  network_policies {
+    ["omnigent-callback"] {
+      endpoints {
+        new {
+          host = omnigent.hostname
+          port = 443
+          access = "full"
+        }
+      }
+      binaries {
+        new { path = "/usr/local/bin/*" }
+      }
+    }
+    ["litellm-api"] {
+      endpoints {
+        new {
+          host = litellm.hostname
+          port = 443
+          access = "full"
+        }
+      }
+      binaries {
+        new { path = "/usr/local/bin/*" }
+      }
+    }
+  }
+}
+
+output {
+  value = policy
+  renderer = new YamlRenderer {}
+}

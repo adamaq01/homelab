@@ -29,6 +29,10 @@ local version = "0.1.9"
 ///
 ///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/openshell \
 ///      key-encryption-key="$(openssl rand -base64 32)"
+///
+/// See `sandbox-policy.pkl` for the gateway-wide sandbox policy (filesystem + network access for
+/// sandboxed workloads) and its own one-time apply command — there's no CRD for it, so it's
+/// tracked here but applied out-of-band, same as this comment's OpenBao seed step.
 sources = new Listing {
   new Application.ComparedToSource {
     repoURL = "oci://ghcr.io/nvidia/openshell/helm-chart"
