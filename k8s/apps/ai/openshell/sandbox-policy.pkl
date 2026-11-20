@@ -35,6 +35,12 @@ policy = new Dynamic {
       "/var"
       "/srv"
       "/mnt"
+      // Landlock governs write-intent opens too, not just creating new files — allocating a PTY
+      // (openpty()/tmux, needed for Claude Code's native terminal) opens /dev/pts's ptmx and slave
+      // device nodes O_RDWR, which `/` read_only alone doesn't cover (confirmed empirically: plain
+      // fork() worked fine under read-only /, but os.openpty() failed with EPERM until this was
+      // added).
+      "/dev"
     }
   }
   // OpenShell has no "disable network policy" switch at all (confirmed against its own docs and
