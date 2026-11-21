@@ -1,9 +1,8 @@
 /// Self-hosted Omnigent (<https://omnigent.ai/docs/deploy/overview>) server, using Omnigent's own
-/// `agent_sandbox` provider (on-demand `Sandbox` custom resources via
-/// `.../system/agent-sandbox`'s controller — the same CRD/controller `.../ai/openshell` also
-/// depends on, but used here directly with no OpenShell gateway in between). Postgres-backed
-/// (CloudNativePG). Login is VoidAuth-only (OIDC) — Omnigent validates the IdP's `id_token` (always
-/// JWT, confirmed in `omnigent/server/routes/auth.py`), not VoidAuth's opaque access token.
+/// `agent_sandbox` provider (on-demand `Sandbox` custom resources via `.../system/agent-sandbox`'s
+/// controller). Postgres-backed (CloudNativePG). Login is VoidAuth-only (OIDC) — Omnigent validates
+/// the IdP's `id_token` (always JWT, confirmed in `omnigent/server/routes/auth.py`), not VoidAuth's
+/// opaque access token.
 ///
 /// Seed once with:
 ///

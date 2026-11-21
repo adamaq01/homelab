@@ -1,7 +1,7 @@
 /// `kubernetes-sigs/agent-sandbox` (the `sandboxes.agents.x-k8s.io` CRD and its controller): a
-/// cluster-scoped prerequisite for OpenShell's Kubernetes compute driver (`.../ai/openshell`),
-/// which deliberately doesn't install this itself. The embedded `Namespace` is excluded since
-/// ArgoCD's own `CreateNamespace=true` already owns `agent-sandbox-system`.
+/// cluster-scoped prerequisite for `.../ai/omnigent`'s `agent_sandbox` provider, which deliberately
+/// doesn't install this itself. The embedded `Namespace` is excluded since ArgoCD's own
+/// `CreateNamespace=true` already owns `agent-sandbox-system`.
 module chart
 
 amends "@manifest/generate.pkl"
