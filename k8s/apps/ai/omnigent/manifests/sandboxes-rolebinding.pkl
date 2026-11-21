@@ -1,0 +1,25 @@
+amends "@k8s/api/rbac/v1/RoleBinding.pkl"
+
+import ".../app.pkl"
+
+/// Cross-namespace binding: lives in [app.sandboxNamespace] alongside the Role it binds
+/// (`sandboxes-role.pkl`), but its subject — the server's own ServiceAccount — lives in
+/// [app.namespace]. This is what actually grants the server access; the Role alone grants nothing.
+metadata {
+  name = "omnigent-sandbox-manager"
+  namespace = app.sandboxNamespace
+}
+
+roleRef {
+  apiGroup = "rbac.authorization.k8s.io"
+  kind = "Role"
+  name = "omnigent-sandbox-manager"
+}
+
+subjects {
+  new {
+    kind = "ServiceAccount"
+    name = app.serverServiceAccountName
+    namespace = app.namespace
+  }
+}
