@@ -2,7 +2,6 @@ amends "@k8s/api/apps/v1/Deployment.pkl"
 
 import ".../app.pkl"
 import ".../identity/voidauth/app.pkl" as voidauth
-import ".../litellm/app.pkl" as litellm
 import ".../storage/tns-csi/app.pkl" as tns_csi
 
 // renovate: datasource=docker packageName=ghcr.io/omnigent-ai/omnigent-server-kubernetes
@@ -58,11 +57,6 @@ spec {
                 secretKeyRef { name = app.secretName; key = "oidc-cookie-secret" }
               }
             }
-            new { name = "OPENAI_BASE_URL"; value = "https://\(litellm.hostname)/v1" }
-            // No /v1 suffix: the Anthropic SDK/Claude Code appends /v1/messages itself, unlike the
-            // OpenAI client above whose base_url already includes /v1 by convention.
-            new { name = "ANTHROPIC_BASE_URL"; value = "https://\(litellm.hostname)" }
-            new { name = "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY"; value = "1" }
             // Moves each runner Pod's $HOME onto a per-sandbox PVC instead of an emptyDir, so the
             // workspace, ~/.omnigent and harness caches all survive an agent_sandbox suspend/resume.
             new { name = "OMNIGENT_AGENT_SANDBOX_WORKSPACE_SIZE"; value = "20Gi" }

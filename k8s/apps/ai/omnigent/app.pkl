@@ -5,8 +5,8 @@ hostname: String = "omnigent.\(module.rootDomain)"
 dbClusterName: String = "omnigent-db"
 
 /// Holds the OIDC client secret + cookie secret, and (via the CNPG app secret, referenced
-/// directly) `DATABASE_URL`'s components. The LLM provider keys sandboxes get injected with live
-/// in [sandboxCredsSecretName] instead.
+/// directly) `DATABASE_URL`'s components. Deliberately no LLM provider keys — each user brings
+/// their own via the web UI's own per-host credential dialog (see `config.pkl`'s doc comment).
 secretName: String = "omnigent-secrets"
 
 /// Dedicated namespace for on-demand `agent_sandbox`-provisioned runner Pods, kept separate from
@@ -20,7 +20,3 @@ runnerServiceAccountName: String = "omnigent-runner"
 /// The server's own ServiceAccount, bound to the RBAC grant in [sandboxNamespace] that lets it
 /// manage runner `Sandbox` resources there.
 serverServiceAccountName: String = "omnigent-server"
-
-/// Harness LLM credentials, projected into every runner Pod via `envFrom` — see
-/// `manifests/sandboxes-creds-secret.pkl`.
-sandboxCredsSecretName: String = "omnigent-creds"

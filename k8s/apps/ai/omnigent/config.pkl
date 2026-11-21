@@ -1,5 +1,5 @@
 /// `OMNIGENT_CONFIG` contents: only the sandbox section is needed here — secrets (`DATABASE_URL`,
-/// the cookie secret, LLM keys) stay in the environment, per the upstream
+/// the cookie secret) stay in the environment, per the upstream
 /// `deploy/kubernetes/overlays/sandbox-runners/sandbox-config.yaml` convention (tag v0.23.0).
 module config
 
@@ -12,22 +12,15 @@ value = new Dynamic {
     // dials back to, and it never leaves the cluster network.
     server_url = "http://omnigent.\(app.namespace).svc.cluster.local"
     // `agent_sandbox` reads this same `kubernetes:` block (confirmed in the upstream overlay's own
-    // docs: "switching sandbox.provider between the two needs no other config change").
+    // docs: "switching sandbox.provider between the two needs no other config change"). No
+    // `secret_name` and no shared LLM credentials/gateway here on purpose: each user brings their
+    // own via the web UI's own per-host "Add a credential" dialog (adopt / API key / gateway) —
+    // confirmed in `web/src/shell/HarnessCredentialForm.tsx` — instead of one shared key for
+    // everyone. `secret_name` is optional (defaults to unset) and only adds an `envFrom` to the
+    // runner Pod when set, so omitting it entirely means no forced Secret dependency either.
     kubernetes {
       namespace = app.sandboxNamespace
-      secret_name = app.sandboxCredsSecretName
       service_account = app.runnerServiceAccountName
-      // SERVER env var NAMES forwarded into every runner Pod as literal env. *_BASE_URL points
-      // every sandbox's OpenAI- and Anthropic-compatible clients (including Claude Code, the
-      // built-in harness) at LiteLLM instead of api.openai.com/api.anthropic.com — the actual API
-      // keys ride `sandboxCredsSecretName` instead (see `manifests/sandboxes-creds-secret.pkl`).
-      env {
-        "OPENAI_BASE_URL"
-        "ANTHROPIC_BASE_URL"
-        // Makes Claude Code query LiteLLM for the actual available models instead of assuming
-        // Anthropic's own model lineup, which LiteLLM doesn't necessarily mirror 1:1.
-        "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY"
-      }
     }
   }
 }

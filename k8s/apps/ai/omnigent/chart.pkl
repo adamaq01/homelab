@@ -4,15 +4,14 @@
 /// the IdP's `id_token` (always JWT, confirmed in `omnigent/server/routes/auth.py`), not VoidAuth's
 /// opaque access token.
 ///
+/// Deliberately no shared/operator-managed LLM provider keys anywhere in this app: each user adds
+/// their own API key or gateway through the web UI's own per-sandbox "Add a credential" dialog
+/// (confirmed in `web/src/shell/HarnessCredentialForm.tsx`) the first time a harness needs one.
+///
 /// Seed once with:
 ///
 ///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/omnigent \
-///      oidc-cookie-secret=<random string, e.g. `openssl rand -hex 32`> \
-///      openai-api-key=<a LiteLLM virtual key — sandboxes call LiteLLM at OPENAI_BASE_URL, not
-///        api.openai.com directly, so this must be a key LiteLLM itself accepts, not a raw
-///        OpenAI key> \
-///      anthropic-api-key=<a LiteLLM virtual key too — Claude Code (the built-in harness) calls
-///        LiteLLM at ANTHROPIC_BASE_URL, not api.anthropic.com directly>
+///      oidc-cookie-secret=<random string, e.g. `openssl rand -hex 32`>
 ///
 /// Add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path (see
 /// `.../identity/voidauth/manifests/secrets.pkl`'s own doc comment):
@@ -25,8 +24,7 @@ import ".../utils/ExternalSecret.pkl"
 import "app.pkl"
 
 // `OMNIGENT_OIDC_COOKIE_SECRET` and the VoidAuth OIDC client secret — wired individually via
-// `secretKeyRef`, not a single `envFrom`. The LLM provider keys ride a separate Secret instead
-// (`manifests/sandboxes-creds-secret.pkl`), in the sandbox namespace where runner Pods read them.
+// `secretKeyRef`, not a single `envFrom`.
 secretsExternalSecret =
   new ExternalSecret {
     name = app.secretName
