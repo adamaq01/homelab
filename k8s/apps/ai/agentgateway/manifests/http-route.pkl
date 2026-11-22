@@ -1,0 +1,44 @@
+amends "@gateway-api/HTTPRoute.pkl"
+
+import ".../app.pkl"
+import ".../networking/traefik/app.pkl" as traefik
+
+metadata {
+  name = "agentgateway"
+  annotations {
+    [app.publicAnnotationKey] = ""
+  }
+}
+
+spec {
+  parentRefs = traefik.parentRefsFor(metadata.annotations)
+  hostnames {
+    app.hostname
+  }
+  rules {
+    new {
+      matches {
+        new {
+          path {
+            type = "PathPrefix"
+            value = "/v1"
+          }
+        }
+      }
+      backendRefs {
+        new {
+          name = app.serviceName
+          port = app.llmPort
+        }
+      }
+    }
+    new {
+      backendRefs {
+        new {
+          name = app.serviceName
+          port = app.uiPort
+        }
+      }
+    }
+  }
+}

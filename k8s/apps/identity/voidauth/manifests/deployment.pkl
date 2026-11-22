@@ -9,6 +9,7 @@ import ".../assets/homebox/app.pkl" as homebox
 import ".../automation/home-assistant/app.pkl" as homeAssistant
 import ".../system/headlamp/app.pkl" as headlamp
 import ".../ai/litellm/app.pkl" as litellm
+import ".../ai/agentgateway/app.pkl" as agentgateway
 import ".../storage/rustfs/app.pkl" as rustfs
 import ".../ai/omnigent/app.pkl" as omnigent
 import "@k8s/api/core/v1/EnvVar.pkl"
@@ -179,6 +180,15 @@ spec {
               }
               ["OIDC_litellm_CLIENT_REDIRECT_URLS"] = "https://\(litellm.hostname)/sso/callback"
               ["OIDC_litellm_CLIENT_GROUPS"] = "litellm-users,litellm-admins"
+
+              ["OIDC_agentgateway_CLIENT_DISPLAY_NAME"] = "agentgateway"
+              ["OIDC_agentgateway_CLIENT_HOMEPAGE_URL"] = "https://\(agentgateway.hostname)"
+              ["OIDC_agentgateway_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "agentgateway-client-secret"
+              }
+              ["OIDC_agentgateway_CLIENT_REDIRECT_URLS"] = "https://\(agentgateway.hostname)/oauth/callback"
+              ["OIDC_agentgateway_CLIENT_GROUPS"] = "agentgateway-admins"
 
               ["OIDC_rustfs_CLIENT_DISPLAY_NAME"] = "RustFS"
               ["OIDC_rustfs_CLIENT_HOMEPAGE_URL"] = "https://\(rustfs.hostname)"

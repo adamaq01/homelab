@@ -1,0 +1,46 @@
+/// Self-hosted agentgateway (<https://agentgateway.dev>) standalone proxy, an LLM gateway with
+/// virtual keys. The Helm chart (see `app.pkl`) runs it in `database` mode: `config.pkl`
+/// is the read-only baseline, and models, virtual keys and policies added in the UI live in
+/// Postgres (CloudNativePG). The UI is VoidAuth-only and limited to `agentgateway-admins` members.
+///
+/// Seed once with:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/agentgateway \
+///      oidc-cookie-secret=<64 hex chars, e.g. `openssl rand -hex 32`>
+///
+/// Add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
+///      agentgateway-client-secret=<random string, e.g. `openssl rand -hex 32`>
+///
+/// After deploy, in VoidAuth's UI: create the `agentgateway-admins` group and assign users to it.
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+secretsExternalSecret =
+  new ExternalSecret {
+    name = app.secretName
+    secrets {
+      ["agentgateway"] {
+        "oidc-cookie-secret"
+      }
+      ["voidauth"] {
+        "agentgateway-client-secret"
+      }
+      ["cliproxyapi"] {
+        "access-api-key"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    secretsExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

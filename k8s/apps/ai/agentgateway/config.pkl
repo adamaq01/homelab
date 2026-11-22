@@ -1,0 +1,73 @@
+module config
+
+import ".../identity/voidauth/app.pkl" as voidauth
+import ".../cliproxyapi/app.pkl" as cliproxyapi
+
+local adminGroup = "agentgateway-admins"
+
+local cpaInstances = import*("../cliproxyapi/instances/*.pkl").toMap().values.toList()
+
+local cpaModels = cpaInstances.map((instance) ->
+  new Dynamic {
+    name = "cpa-\(instance.name)/*"
+    provider {
+      custom {
+        formats {
+          new { type = "completions" }
+          new { type = "messages" }
+          new { type = "responses" }
+        }
+      }
+    }
+    params {
+      baseUrl = "http://\(instance.service.metadata.name!!).\(cliproxyapi.namespace).svc.cluster.local:8317/v1"
+      apiKey = "$CLIPROXYAPI_ACCESS_API_KEY"
+    }
+    transformation {
+      model = #"llmRequest.model.stripPrefix("cpa-\#(instance.name)/")"#
+    }
+  }
+)
+
+value: Dynamic = new {
+  gateways {
+    ["default"] {
+      port = import("app.pkl").llmPort
+    }
+    ["ui"] {
+      port = import("app.pkl").uiPort
+    }
+  }
+  llm {
+    gateways = "default"
+    models = cpaModels
+    providers = new Listing {}
+    virtualModels = new Listing {}
+    policies {
+      apiKey {
+        mode = "strict"
+        keys = new Listing {}
+      }
+    }
+  }
+  mcp {
+    targets = new Listing {}
+  }
+  ui {
+    gateways = new Listing { "ui" }
+    policies {
+      oidc {
+        issuer = "https://\(voidauth.hostname)/oidc"
+        clientId = "agentgateway"
+        clientSecret = "${OIDC_CLIENT_SECRET}"
+        redirectURI = "https://\(import("app.pkl").hostname)/oauth/callback"
+        scopes = new Listing { "profile"; "email"; "groups" }
+      }
+      authorization {
+        rules = new Listing {
+          new Dynamic { allow = #""\#(adminGroup)" in jwt.groups"# }
+        }
+      }
+    }
+  }
+}

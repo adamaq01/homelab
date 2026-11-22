@@ -1,0 +1,65 @@
+extends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+import "config.pkl" as gatewayConfig
+
+hostname: String = "agentgateway.\(module.rootDomain)"
+
+dbClusterName: String = "agentgateway-db"
+
+secretName: String = "agentgateway-secrets"
+
+serviceName: String = name
+
+llmPort: Int = 4000
+
+uiPort: Int = 4001
+
+// renovate: datasource=docker packageName=cr.agentgateway.dev/charts/agentgateway-standalone
+local version = "v1.7.0"
+
+local function secretEnv(envName: String, secretName: String, secretKey: String): Dynamic = new {
+  name = envName
+  valueFrom {
+    secretKeyRef {
+      name = secretName
+      key = secretKey
+    }
+  }
+}
+
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "oci://cr.agentgateway.dev/charts/agentgateway-standalone"
+    targetRevision = version
+    path = "."
+    helm {
+      valuesObject {
+        fullnameOverride = serviceName
+        mode = "database"
+        database {
+          postgres {
+            url = "postgresql://agentgateway:${DB_PASSWORD}@\(dbClusterName)-rw.\(module.namespace).svc.cluster.local:5432/agentgateway"
+          }
+        }
+        extraEnv {
+          secretEnv("DB_PASSWORD", "\(dbClusterName)-app", "password")
+          secretEnv("OIDC_COOKIE_SECRET", secretName, "oidc-cookie-secret")
+          secretEnv("OIDC_CLIENT_SECRET", secretName, "agentgateway-client-secret")
+          secretEnv("CLIPROXYAPI_ACCESS_API_KEY", secretName, "access-api-key")
+        }
+        gateway {
+          service {
+            type = "ClusterIP"
+            ports {
+              new { name = "llm"; port = llmPort; targetPort = llmPort; protocol = "TCP" }
+              new { name = "ui"; port = uiPort; targetPort = uiPort; protocol = "TCP" }
+            }
+          }
+        }
+        config = gatewayConfig.value
+      }
+    }
+  }
+  module.directorySource
+}
