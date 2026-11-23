@@ -1,0 +1,18 @@
+/// `kubernetes-sigs/kube-network-policies`: enforces NetworkPolicy alongside Flannel, which has no
+/// enforcement of its own. Only traffic to and from pods a NetworkPolicy selects is inspected, and
+/// it fails open while the agent is down.
+module chart
+
+amends "@manifest/generate.pkl"
+
+// renovate: datasource=github-releases packageName=kubernetes-sigs/kube-network-policies
+local version = "v1.1.3"
+
+source = "https://raw.githubusercontent.com/kubernetes-sigs/kube-network-policies/\(version)/install.yaml"
+
+// The release tag's manifest still names the previous release's image.
+sourceContents =
+  read(source).text.replaceAll(
+    Regex(#"(registry\.k8s\.io/networking/kube-network-policies):v[0-9.]+"#),
+    "$1:\(version)"
+  )
