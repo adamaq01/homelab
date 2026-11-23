@@ -1,0 +1,81 @@
+/// Corral (<https://github.com/adamaq01/corral>): named, persistent sandboxes reachable over SSH,
+/// on agent-sandbox, with ContainerSSH as the SSH front door. The Helm chart (see `app.pkl`)
+/// carries everything but the Secrets below and the SSH TCPRoute.
+///
+/// The chart generates its keys with Helm's `lookup`, which ArgoCD's `helm template` never
+/// resolves, so all three are supplied from OpenBao instead. Seed once with:
+///
+///    corral-server keys generate   # prints CORRAL_SESSION_KEY and CORRAL_SECRETS_KEY
+///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/corral \
+///      CORRAL_SESSION_KEY=<from above> CORRAL_SECRETS_KEY=<from above>
+///    openssl genpkey -algorithm ed25519 | \
+///      kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/corral host_key=-
+///
+/// Add this app's VoidAuth OIDC client secret to the existing `secret/voidauth` path:
+///
+///    kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/voidauth \
+///      corral-client-secret=<random string, e.g. `openssl rand -hex 32`>
+///
+/// Users' credentials live in their own KV v2 mount, readable by Corral alone:
+///
+///    kubectl exec -n secrets openbao-0 -- bao secrets enable -path=corral kv-v2
+///    kubectl exec -i -n secrets openbao-0 -- bao policy write corral - <<'EOF'
+///    path "corral/data/corral/*" {
+///      capabilities = ["create", "read", "update"]
+///    }
+///    path "corral/metadata/corral/*" {
+///      capabilities = ["create", "read", "update", "delete"]
+///    }
+///    EOF
+///    kubectl exec -n secrets openbao-0 -- bao write auth/kubernetes/role/corral \
+///      bound_service_account_names=corral bound_service_account_namespaces=corral \
+///      policies=corral ttl=1h
+///
+/// In VoidAuth's UI: create the `corral-users` and `corral-admins` groups and assign users.
+module chart
+
+import ".../utils/ExternalSecret.pkl"
+import "app.pkl"
+
+keysExternalSecret =
+  new ExternalSecret {
+    name = app.keysSecretName
+    secrets {
+      ["corral"] {
+        "CORRAL_SESSION_KEY"
+        "CORRAL_SECRETS_KEY"
+      }
+    }
+  }.resource
+
+hostKeyExternalSecret =
+  new ExternalSecret {
+    name = app.hostKeySecretName
+    secrets {
+      ["corral"] {
+        "host_key"
+      }
+    }
+  }.resource
+
+oidcExternalSecret =
+  new ExternalSecret {
+    name = app.oidcSecretName
+    secrets {
+      ["voidauth"] {
+        "corral-client-secret"
+      }
+    }
+  }.resource
+
+output {
+  value = new Listing {
+    keysExternalSecret
+    hostKeyExternalSecret
+    oidcExternalSecret
+    for (_, resource in import*("manifests/**.pkl")) {
+      resource
+    }
+  }
+  renderer = new YamlRenderer { isStream = true }
+}

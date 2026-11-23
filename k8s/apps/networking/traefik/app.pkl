@@ -13,6 +13,10 @@ gatewayName: String = "traefik-gateway"
 
 local ownNamespace = namespace
 
+corralSshEntryPoint: String = "corral-ssh"
+
+corralSshPort: Int = 48291
+
 /// The `parentRefs` every app's `HTTPRoute` should use, driven by the same annotations map it
 /// already sets on its own `metadata` for `module.publicAnnotationKey` (see `external-dns/app.pkl`):
 /// setting that one annotation is the only thing an app needs to do to also reach `websecure-public`.
@@ -94,6 +98,23 @@ source {
               default = true
             }
             exposedPort = 9443
+          }
+          // Raw TCP for Corral's SSH front door (an IngressRouteTCP, see
+          // `.../ai/corral/manifests/ingress-route-tcp.pkl`), on the LAN address and through
+          // `rathole`. ContainerSSH cannot have its own Service on this MetalLB IP, since MetalLB
+          // only shares an IP between `Local` Services that select the same pods.
+          [corralSshEntryPoint] {
+            port = corralSshPort
+            expose {
+              default = true
+            }
+            exposedPort = corralSshPort
+            transport {
+              respondingTimeouts {
+                readTimeout = 0
+                idleTimeout = 0
+              }
+            }
           }
         }
         providers {

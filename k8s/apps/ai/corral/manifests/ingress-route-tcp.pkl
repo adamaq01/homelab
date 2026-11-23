@@ -1,0 +1,25 @@
+amends "@traefik-crds/IngressRouteTCP.pkl"
+
+import ".../app.pkl"
+import ".../networking/traefik/app.pkl" as traefik
+
+metadata {
+  name = "corral-ssh"
+}
+
+spec {
+  entryPoints {
+    traefik.corralSshEntryPoint
+  }
+  routes {
+    new {
+      match = "HostSNI(`*`)"
+      services {
+        new {
+          name = app.containersshServiceName
+          port = app.sshPort
+        }
+      }
+    }
+  }
+}

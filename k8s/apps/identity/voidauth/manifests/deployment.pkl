@@ -10,6 +10,7 @@ import ".../automation/home-assistant/app.pkl" as homeAssistant
 import ".../system/headlamp/app.pkl" as headlamp
 import ".../ai/litellm/app.pkl" as litellm
 import ".../ai/agentgateway/app.pkl" as agentgateway
+import ".../ai/corral/app.pkl" as corral
 import ".../storage/rustfs/app.pkl" as rustfs
 import ".../ai/omnigent/app.pkl" as omnigent
 import "@k8s/api/core/v1/EnvVar.pkl"
@@ -189,6 +190,25 @@ spec {
               }
               ["OIDC_agentgateway_CLIENT_REDIRECT_URLS"] = "https://\(agentgateway.hostname)/oauth/callback"
               ["OIDC_agentgateway_CLIENT_GROUPS"] = "agentgateway-admins"
+
+              ["OIDC_corral_CLIENT_DISPLAY_NAME"] = "Corral"
+              ["OIDC_corral_CLIENT_HOMEPAGE_URL"] = "https://\(corral.hostname)"
+              ["OIDC_corral_CLIENT_SECRET"] {
+                name = app.secretName
+                key = "corral-client-secret"
+              }
+              ["OIDC_corral_CLIENT_REDIRECT_URLS"] = "https://\(corral.hostname)/auth/oidc/callback"
+              ["OIDC_corral_CLIENT_GROUPS"] = "corral-users,corral-admins"
+
+              // Public client for `opkssh login` (see Corral's docs/opkssh.md): opkssh always sends
+              // PKCE and listens on the first free of these three ports, and VoidAuth's consent
+              // form cannot redirect to http://localhost.
+              ["OIDC_opkssh_CLIENT_DISPLAY_NAME"] = "Corral SSH (opkssh)"
+              ["OIDC_opkssh_CLIENT_AUTH_METHOD"] = "none"
+              ["OIDC_opkssh_CLIENT_REDIRECT_URLS"] =
+                "http://localhost:3000/login-callback, http://localhost:10001/login-callback, http://localhost:11110/login-callback"
+              ["OIDC_opkssh_CLIENT_SKIP_CONSENT"] = "true"
+              ["OIDC_opkssh_CLIENT_GROUPS"] = "corral-users,corral-admins"
 
               ["OIDC_rustfs_CLIENT_DISPLAY_NAME"] = "RustFS"
               ["OIDC_rustfs_CLIENT_HOMEPAGE_URL"] = "https://\(rustfs.hostname)"

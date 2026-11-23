@@ -53,6 +53,9 @@ local renderConfigScript =
 
   [client.services.http-gateway]
   local_addr = "\(traefikServiceHost):80"
+
+  [client.services.corral-ssh]
+  local_addr = "\(traefikServiceHost):\(traefik.corralSshPort)"
   EOF
   """
 

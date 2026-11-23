@@ -1,0 +1,151 @@
+extends ".../app.pkl"
+
+import "@argocd/Application.pkl"
+import ".../identity/voidauth/app.pkl" as voidauth
+import ".../networking/traefik/app.pkl" as traefik
+import ".../secrets/openbao/app.pkl" as openbao
+import ".../storage/tns-csi/app.pkl" as tns_csi
+
+hostname: String = "corral.\(module.rootDomain)"
+
+sshPort: Int = traefik.corralSshPort
+
+keysSecretName: String = "corral-keys"
+
+hostKeySecretName: String = "corral-host-key"
+
+oidcSecretName: String = "corral-oidc"
+
+/// The KV v2 mount holding users' credentials, kept apart from `secret/` so the External Secrets
+/// role (read on `secret/data/*`) cannot read them.
+vaultMount: String = "corral"
+
+vaultPathPrefix: String = "corral"
+
+vaultRole: String = "corral"
+
+containersshServiceName: String = "\(name)-containerssh"
+
+// Follows every build of Corral's `main`, published as `0.2.0-main.<run>`.
+local version = ">=0.0.0-0"
+
+local catalogSizes = new Listing<Dynamic> {
+  new {
+    key = "small"
+    label = "Small: 2 CPUs, 4 GiB"
+    cpuRequest = "500m"
+    cpuLimit = "2"
+    memoryRequest = "1Gi"
+    memoryLimit = "4Gi"
+    homeSize = "10Gi"
+  }
+  new {
+    key = "large"
+    label = "Large: 4 CPUs, 8 GiB"
+    cpuRequest = "1"
+    cpuLimit = "4"
+    memoryRequest = "2Gi"
+    memoryLimit = "8Gi"
+    homeSize = "30Gi"
+  }
+}
+
+values: Dynamic = new {
+  baseUrl = "https://\(hostname)"
+  trustForwardedFor = true
+  ssh {
+    publicHost = hostname
+    publicPort = sshPort
+  }
+  identity {
+    `local` {
+      enabled = false
+    }
+    oidc {
+      enabled = true
+      issuer = "https://\(voidauth.hostname)/oidc"
+      clientId = "corral"
+      clientSecret {
+        existingSecret = oidcSecretName
+        key = "corral-client-secret"
+      }
+      opkssh {
+        enabled = true
+      }
+    }
+  }
+  keys {
+    existingSecret = keysSecretName
+  }
+  secretStore {
+    kind = "vault"
+    vault {
+      address = "http://openbao.\(openbao.namespace).svc.cluster.local:8200"
+      mount = vaultMount
+      pathPrefix = vaultPathPrefix
+      auth {
+        kind = "kubernetes"
+        role = vaultRole
+      }
+    }
+  }
+  database {
+    kind = "cnpg"
+    cnpg {
+      instances = 2
+      size = "5Gi"
+      storageClass = tns_csi.postgresStorageClassName
+    }
+  }
+  sandboxes {
+    storageClass = tns_csi.nvmeofStorageClassName
+  }
+  keepOnUninstall = true
+  limits {
+    maxSandboxesPerUser = 5
+    maxRunning = 6
+  }
+  catalog {
+    images {
+      new {
+        key = "ubuntu"
+        label = "Ubuntu 24.04"
+        reference = "ghcr.io/adamaq01/corral-sandbox:latest"
+      }
+    }
+    sizes = catalogSizes
+  }
+  httpRoute {
+    enabled = true
+    annotations {
+      [module.publicAnnotationKey] = ""
+    }
+    parentRefs = traefik.parentRefsFor(annotations)
+  }
+  containerssh {
+    hostKey {
+      existingSecret = hostKeySecretName
+    }
+    // Every connection reaches ContainerSSH from a Traefik pod (see `manifests/tcp-route.pkl`),
+    // and Traefik is not pinned to a node, so only the whole pod network always contains it.
+    lockoutExemptNetworks {
+      module.podSubnet
+    }
+    service {
+      type = "ClusterIP"
+    }
+  }
+}
+
+sources = new Listing {
+  new Application.ComparedToSource {
+    repoURL = "ghcr.io/adamaq01/charts"
+    chart = "corral"
+    targetRevision = version
+    path = null
+    helm {
+      valuesObject = values
+    }
+  }
+  module.directorySource
+}
