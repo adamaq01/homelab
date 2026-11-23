@@ -92,7 +92,10 @@ values: Dynamic = new {
   database {
     kind = "cnpg"
     cnpg {
-      instances = 2
+      instances = 1
+      // A single instance can never switch over, so CNPG's PodDisruptionBudget would block
+      // draining its node forever.
+      enablePDB = false
       size = "5Gi"
       storageClass = tns_csi.postgresStorageClassName
     }
