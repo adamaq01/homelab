@@ -21,10 +21,10 @@
 ///    kubectl exec -n secrets openbao-0 -- bao secrets enable -path=corral kv-v2
 ///    kubectl exec -i -n secrets openbao-0 -- bao policy write corral - <<'EOF'
 ///    path "corral/data/corral/*" {
-///      capabilities = ["create", "read", "update"]
+///      capabilities = ["create", "read", "update", "delete"]
 ///    }
 ///    path "corral/metadata/corral/*" {
-///      capabilities = ["create", "read", "update", "delete"]
+///      capabilities = ["create", "read", "update", "delete", "list"]
 ///    }
 ///    EOF
 ///    kubectl exec -n secrets openbao-0 -- bao write auth/kubernetes/role/corral \
