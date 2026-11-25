@@ -24,9 +24,9 @@ vaultPathPrefix: String = "corral"
 
 vaultRole: String = "corral"
 
-containersshServiceName: String = "\(name)-containerssh"
+gateServiceName: String = "\(name)-gate"
 
-// Follows every build of Corral's `main`, published as `0.2.0-main.<run>`.
+// Follows every build of Corral's `main`, published as `<chart version>-main.<run>`.
 local version = ">=0.0.0-0"
 
 local catalogSizes = new Listing<Dynamic> {
@@ -56,6 +56,19 @@ values: Dynamic = new {
   ssh {
     publicHost = hostname
     publicPort = sshPort
+    hostKey {
+      existingSecret = hostKeySecretName
+    }
+    // Every connection reaches the gate from a Traefik pod (see `manifests/ingress-route-tcp.pkl`),
+    // and Traefik is not pinned to a node, so only the whole pod network always contains it.
+    lockoutExemptNetworks {
+      module.podSubnet
+    }
+  }
+  gate {
+    service {
+      type = "ClusterIP"
+    }
   }
   identity {
     `local` {
@@ -124,19 +137,6 @@ values: Dynamic = new {
       [module.publicAnnotationKey] = ""
     }
     parentRefs = traefik.parentRefsFor(annotations)
-  }
-  containerssh {
-    hostKey {
-      existingSecret = hostKeySecretName
-    }
-    // Every connection reaches ContainerSSH from a Traefik pod (see `manifests/tcp-route.pkl`),
-    // and Traefik is not pinned to a node, so only the whole pod network always contains it.
-    lockoutExemptNetworks {
-      module.podSubnet
-    }
-    service {
-      type = "ClusterIP"
-    }
   }
 }
 

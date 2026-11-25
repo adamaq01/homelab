@@ -101,7 +101,7 @@ source {
           }
           // Raw TCP for Corral's SSH front door (an IngressRouteTCP, see
           // `.../ai/corral/manifests/ingress-route-tcp.pkl`), on the LAN address and through
-          // `rathole`. ContainerSSH cannot have its own Service on this MetalLB IP, since MetalLB
+          // `rathole`. Corral's gate cannot have its own Service on this MetalLB IP, since MetalLB
           // only shares an IP between `Local` Services that select the same pods.
           [corralSshEntryPoint] {
             port = corralSshPort

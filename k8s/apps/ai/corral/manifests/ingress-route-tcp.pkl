@@ -16,7 +16,7 @@ spec {
       match = "HostSNI(`*`)"
       services {
         new {
-          name = app.containersshServiceName
+          name = app.gateServiceName
           port = app.sshPort
         }
       }

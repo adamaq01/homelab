@@ -1,13 +1,14 @@
 /// Corral (<https://github.com/adamaq01/corral>): named, persistent sandboxes reachable over SSH,
-/// on agent-sandbox, with ContainerSSH as the SSH front door. The Helm chart (see `app.pkl`)
-/// carries everything but the Secrets below and the SSH TCPRoute.
+/// on agent-sandbox, with its own SSH front door, the gate. The Helm chart (see `app.pkl`)
+/// carries everything but the Secrets below and the SSH IngressRouteTCP.
 ///
 /// The chart generates its keys with Helm's `lookup`, which ArgoCD's `helm template` never
-/// resolves, so all three are supplied from OpenBao instead. Seed once with:
+/// resolves, so they are supplied from OpenBao instead. Seed once with:
 ///
-///    corral-server keys generate   # prints CORRAL_SESSION_KEY and CORRAL_SECRETS_KEY
+///    corral-server keys generate   # prints the three CORRAL_* keys below
 ///    kubectl exec -i -n secrets openbao-0 -- bao kv put secret/corral \
-///      CORRAL_SESSION_KEY=<from above> CORRAL_SECRETS_KEY=<from above>
+///      CORRAL_SESSION_KEY=<from above> CORRAL_SECRETS_KEY=<from above> \
+///      CORRAL_GATE_SECRET=<from above>
 ///    openssl genpkey -algorithm ed25519 | \
 ///      kubectl exec -i -n secrets openbao-0 -- bao kv patch secret/corral host_key=-
 ///
@@ -44,6 +45,7 @@ keysExternalSecret =
       ["corral"] {
         "CORRAL_SESSION_KEY"
         "CORRAL_SECRETS_KEY"
+        "CORRAL_GATE_SECRET"
       }
     }
   }.resource
