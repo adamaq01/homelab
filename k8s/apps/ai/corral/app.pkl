@@ -72,7 +72,7 @@ values: Dynamic = new {
   }
   identity {
     `local` {
-      enabled = false
+      enabled = true
     }
     oidc {
       enabled = true
