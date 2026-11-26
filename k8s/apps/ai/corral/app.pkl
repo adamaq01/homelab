@@ -118,7 +118,7 @@ values: Dynamic = new {
   }
   keepOnUninstall = true
   limits {
-    maxSandboxesPerUser = 5
+    maxSandboxesPerMember = 5
     maxRunning = 6
   }
   catalog {
